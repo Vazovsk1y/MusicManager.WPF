@@ -1,3 +1,67 @@
-﻿namespace MusicManager.Domain.ValueObjects;
+﻿using MusicManager.Domain.Errors;
+using MusicManager.Domain.Shared;
 
-public record ProductionInfo(string Year, string Country);
+namespace MusicManager.Domain.ValueObjects;
+
+public class ProductionInfo
+{
+    #region --Fields--
+
+    public static readonly ProductionInfo Default = new("Undefined", 0);
+
+    #endregion
+
+    #region --Properties--
+
+    public string Country { get; private set; } = string.Empty;
+
+    public int Year { get; private set; }
+
+    #endregion
+
+    #region --Constructors--
+
+    private ProductionInfo(string country, int year)
+    {
+        Country = country;
+        Year = year;
+    }
+
+    #endregion
+
+    #region --Methods--
+
+    internal static Result<ProductionInfo> Create(string country, string year)
+    {
+        if (string.IsNullOrEmpty(country) || string.IsNullOrEmpty(year))
+        {
+            return Result.Failure<ProductionInfo>(DomainErrors.NullPassedError());
+        }
+
+        if (int.TryParse(year, out int result) && IsYearCorrect(result))
+        {
+            return new ProductionInfo(country, result);
+        }
+
+        return Result.Failure<ProductionInfo>(DomainErrors.ProductInfoErrors.IncorrectYearPassed);
+    }
+
+    public static Result<ProductionInfo> Create(string country, int year)
+    {
+        if (string.IsNullOrEmpty(country))
+        {
+            return Result.Failure<ProductionInfo>(DomainErrors.NullPassedError(nameof(country)));
+        }
+
+        if (IsYearCorrect(year))
+        {
+            return new ProductionInfo(country, year);
+        }
+
+        return Result.Failure<ProductionInfo>(DomainErrors.ProductInfoErrors.IncorrectYearPassed);
+    }
+
+    private static bool IsYearCorrect(int year) => year > 0 && year <= DateTime.Now.Year;
+
+    #endregion
+}
