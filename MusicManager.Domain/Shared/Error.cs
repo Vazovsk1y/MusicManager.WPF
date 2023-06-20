@@ -4,15 +4,11 @@ public class Error : IEquatable<Error>
 {
     #region --Fields--
 
-    public static readonly Error None = new(string.Empty, string.Empty);
-
-    public static readonly Error NullValue = new($"{nameof(Error) + nameof(NullValue)}", "The specified result value is null.");
+    public static readonly Error None = new(string.Empty);
 
     #endregion
 
     #region --Properties--
-
-    public string Code { get; }
 
     public string Message { get; }
 
@@ -20,9 +16,8 @@ public class Error : IEquatable<Error>
 
     #region --Constructors--
 
-    public Error(string code, string message)
+    public Error(string message)
     {
-        Code = code;
         Message = message;
     }
 
@@ -47,9 +42,9 @@ public class Error : IEquatable<Error>
 
     public static bool operator !=(Error? left, Error? right) => !(left == right);
 
-    public static implicit operator string(Error error) => error.Code;
+    public static implicit operator string(Error error) => error.Message;
 
-    public bool Equals(Error? other) => Equals(other);
+    public bool Equals(Error? other) => Equals(other as object);
 
     public override bool Equals(object? obj)
     {
@@ -68,10 +63,10 @@ public class Error : IEquatable<Error>
             return false;
         }
 
-        return error.Code == Code && error.Message == Message;
+        return error.Message == Message;
     }
 
-    public override int GetHashCode() => Code.GetHashCode() ^ Message.GetHashCode();
+    public override int GetHashCode() => Message.GetHashCode();
 
     #endregion
 }
