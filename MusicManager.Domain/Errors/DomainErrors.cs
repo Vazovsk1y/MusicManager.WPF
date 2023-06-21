@@ -14,8 +14,7 @@ internal static class DomainErrors
 
     internal static class EntityDirectoryInfoErrors
     {
-        public static readonly Error IncorrectPathPassed = new(
-                "The passed path don't ends by passed file name.");
+        public static readonly Error IncorrectPathPassed = new("The passed path don't ends by passed file name.");
     }
 
     #endregion

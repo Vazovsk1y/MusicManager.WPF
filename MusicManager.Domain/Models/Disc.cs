@@ -22,7 +22,7 @@ public class Disc : Entity
 
     public ProductionInfo ProductionInfo { get; private set; }
 
-    public DiscType DiscType { get; private set; }
+    public DiscType Type { get; private set; }
 
     public string Identifier { get; private set; } = string.Empty;
 
@@ -36,7 +36,7 @@ public class Disc : Entity
         DiscType discType,
         string identifier) : base()
     {
-        DiscType = discType;
+        Type = discType;
         Identifier = identifier;
         ProductionInfo = ProductionInfo.None;
     }

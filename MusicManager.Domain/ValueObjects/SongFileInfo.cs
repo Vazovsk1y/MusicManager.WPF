@@ -2,4 +2,4 @@
 
 namespace MusicManager.Domain.ValueObjects;
 
-public record SongFileInfo(string Name, string FullPath, SongFileType SongFileType);
+public record SongFileInfo(string Name, string FullPath, SongFileType FileType);
