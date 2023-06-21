@@ -6,4 +6,5 @@ public enum DiscType
     LP,
     TwoCD,
     ThreeeCD,
+    Bootleg,
 }

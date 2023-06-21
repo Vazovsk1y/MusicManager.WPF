@@ -7,7 +7,7 @@ public class ProductionInfo
 {
     #region --Fields--
 
-    public static readonly ProductionInfo Default = new("Undefined", 0);
+    public static readonly ProductionInfo None = new("Undefined", "Undefined");
 
     #endregion
 
@@ -15,13 +15,13 @@ public class ProductionInfo
 
     public string Country { get; private set; } = string.Empty;
 
-    public int Year { get; private set; }
+    public string Year { get; private set; }
 
     #endregion
 
     #region --Constructors--
 
-    private ProductionInfo(string country, int year)
+    private ProductionInfo(string country, string year)
     {
         Country = country;
         Year = year;
@@ -31,16 +31,16 @@ public class ProductionInfo
 
     #region --Methods--
 
-    internal static Result<ProductionInfo> Create(string country, string year)
+    public static Result<ProductionInfo> Create(string country, string year)
     {
         if (string.IsNullOrEmpty(country) || string.IsNullOrEmpty(year))
         {
-            return Result.Failure<ProductionInfo>(DomainErrors.NullPassedError());
+            return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassedError());
         }
 
         if (int.TryParse(year, out int result) && IsYearCorrect(result))
         {
-            return new ProductionInfo(country, result);
+            return new ProductionInfo(country, year);
         }
 
         return Result.Failure<ProductionInfo>(DomainErrors.ProductInfoErrors.IncorrectYearPassed);
@@ -50,12 +50,12 @@ public class ProductionInfo
     {
         if (string.IsNullOrEmpty(country))
         {
-            return Result.Failure<ProductionInfo>(DomainErrors.NullPassedError(nameof(country)));
+            return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassedError(nameof(country)));
         }
 
         if (IsYearCorrect(year))
         {
-            return new ProductionInfo(country, year);
+            return new ProductionInfo(country, year.ToString());
         }
 
         return Result.Failure<ProductionInfo>(DomainErrors.ProductInfoErrors.IncorrectYearPassed);
