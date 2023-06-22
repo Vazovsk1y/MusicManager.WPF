@@ -1,9 +1,10 @@
-﻿using MusicManager.Domain.Errors;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.ValueObjects;
 
-public class EntityDirectoryInfo
+public class EntityDirectoryInfo : ValueObject<EntityDirectoryInfo>
 {
     public string Name { get; private set; } = string.Empty;
 
@@ -28,5 +29,11 @@ public class EntityDirectoryInfo
         }
 
         return new EntityDirectoryInfo(name, fullPath);
+    }
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+        yield return Name;
+        yield return FullPath;
     }
 }
