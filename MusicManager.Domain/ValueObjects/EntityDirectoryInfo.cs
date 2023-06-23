@@ -25,7 +25,7 @@ public class EntityDirectoryInfo : ValueObject<EntityDirectoryInfo>
 
         if (!fullPath.EndsWith(name))
         {
-            return Result.Failure<EntityDirectoryInfo>(DomainErrors.EntityDirectoryInfoErrors.IncorrectPathPassed); 
+            return Result.Failure<EntityDirectoryInfo>(DomainErrors.EntityDirectoryInfo.PassedPathDontEndsByPassedName(fullPath, name)); 
         }
 
         return new EntityDirectoryInfo(name, fullPath);

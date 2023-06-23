@@ -7,14 +7,14 @@ internal static class DomainErrors
 {
     #region --Particular domain classes errors--
 
-    internal static class ProductInfoErrors
+    internal static class ProductInfo
     {
-        public static readonly Error IncorrectYearPassed = new("The passed year wasn't correct.");
-    }
+        public static Error IncorrectYearPassed(string year) => new($"The passed [{year}] year wasn't correct.");
+    } 
 
-    internal static class EntityDirectoryInfoErrors
+    internal static class EntityDirectoryInfo
     {
-        public static readonly Error IncorrectPathPassed = new("The passed path don't ends by passed file name.");
+        public static Error PassedPathDontEndsByPassedName(string path, string name) => new($"The passed [{path}] path don't ends by passed [{name}] file name.");
     }
 
     #endregion

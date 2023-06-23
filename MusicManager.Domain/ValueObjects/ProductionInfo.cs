@@ -43,7 +43,7 @@ public class ProductionInfo
             return new ProductionInfo(country, year);
         }
 
-        return Result.Failure<ProductionInfo>(DomainErrors.ProductInfoErrors.IncorrectYearPassed);
+        return Result.Failure<ProductionInfo>(DomainErrors.ProductInfo.IncorrectYearPassed(year));
     }
 
     public static Result<ProductionInfo> Create(string country, int year)
@@ -58,7 +58,7 @@ public class ProductionInfo
             return new ProductionInfo(country, year.ToString());
         }
 
-        return Result.Failure<ProductionInfo>(DomainErrors.ProductInfoErrors.IncorrectYearPassed);
+        return Result.Failure<ProductionInfo>(DomainErrors.ProductInfo.IncorrectYearPassed(year.ToString()));
     }
 
     private static bool IsYearCorrect(int year) => year > 0 && year <= DateTime.Now.Year;
