@@ -30,7 +30,7 @@ public class Movie : Entity
 
     #region --Constructors--
 
-    private Movie() { ProductionInfo = ProductionInfo.None; }
+    private Movie() : base() { ProductionInfo = ProductionInfo.None; }
 
     #endregion
 
