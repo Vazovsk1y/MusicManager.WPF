@@ -36,7 +36,26 @@ public class Movie : Entity
 
     #region --Methods--
 
-    public static Result<Movie> Create(string title, string productionYear, string productionCountry, string directoryName, string directoryFullPath)
+    public static Result<Movie> Create(
+        string title, 
+        string productionYear, 
+        string productionCountry)
+    {
+        var prodInfoResult = ProductionInfo.Create(productionCountry, productionYear);
+
+        return prodInfoResult.IsFailure ? Result.Failure<Movie>(prodInfoResult.Error) : new Movie
+        {
+            Title = title,
+            ProductionInfo = prodInfoResult.Value
+        };
+    }
+
+    public static Result<Movie> Create(
+        string title, 
+        string productionYear, 
+        string productionCountry, 
+        string directoryName, 
+        string directoryFullPath)
     {
         var creationResult = Create(title, productionYear, productionCountry);
         if (creationResult.IsFailure)
@@ -50,17 +69,6 @@ public class Movie : Entity
             Result.Failure<Movie>(settingDirInfoResult.Error)
             :
             creationResult.Value;
-    }
-
-    public static Result<Movie> Create(string title, string productionYear, string productionCountry)
-    {
-        var prodInfoResult = ProductionInfo.Create(productionCountry, productionYear);
-
-        return prodInfoResult.IsFailure ? Result.Failure<Movie>(prodInfoResult.Error) : new Movie
-        {
-            Title = title,
-            ProductionInfo = prodInfoResult.Value
-        };
     }
 
     public Result SetParent(Songwriter songwriter)
