@@ -1,13 +1,14 @@
-﻿using MusicManager.Domain.Errors;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.ValueObjects;
 
-public class ProductionInfo
+public class ProductionInfo : ValueObject<ProductionInfo>
 {
     #region --Fields--
 
-    public static readonly ProductionInfo None = new("Undefined", "Undefined");
+    public static readonly ProductionInfo Undefined = new("Undefined", "Undefined");
 
     #endregion
 
@@ -62,6 +63,12 @@ public class ProductionInfo
     }
 
     private static bool IsYearCorrect(int year) => year > 0 && year <= DateTime.Now.Year;
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+        yield return Country;
+        yield return Year;
+    }
 
     #endregion
 }

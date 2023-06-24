@@ -1,10 +1,9 @@
-﻿using MusicManager.Domain.Common;
-using MusicManager.Domain.Shared;
+﻿using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Models;
 
-public class Movie : Entity
+public class Movie 
 {
     #region --Fields--
 
@@ -14,13 +13,15 @@ public class Movie : Entity
 
     #region --Properties--
 
-    public Guid SongwriterId { get; private set; }
+    public MovieId Id { get; private set; }
 
-    public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
-
-    public DirectorInfo? DirectorInfo { get; private set; }
+    public SongwriterId SongwriterId { get; private set; }
 
     public ProductionInfo ProductionInfo { get; private set; }
+
+    public DirectorInfo DirectorInfo { get; private set; }
+
+    public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
 
     public string Title { get; private set; } = string.Empty;
 
@@ -30,34 +31,44 @@ public class Movie : Entity
 
     #region --Constructors--
 
-    private Movie() : base() { ProductionInfo = ProductionInfo.None; }
+    private Movie(SongwriterId songwriterId) 
+    { 
+        ProductionInfo = ProductionInfo.Undefined;
+        DirectorInfo = DirectorInfo.Undefined;
+        Id = MovieId.Create();
+        SongwriterId = songwriterId;
+    }
 
     #endregion
 
     #region --Methods--
 
     public static Result<Movie> Create(
+        SongwriterId songwriterId,
         string title, 
         string productionYear, 
         string productionCountry)
     {
         var prodInfoResult = ProductionInfo.Create(productionCountry, productionYear);
 
-        return prodInfoResult.IsFailure ? Result.Failure<Movie>(prodInfoResult.Error) : new Movie
-        {
-            Title = title,
-            ProductionInfo = prodInfoResult.Value
-        };
+        return prodInfoResult.IsFailure ? Result.Failure<Movie>(prodInfoResult.Error)
+            :
+            new Movie(songwriterId)
+            {
+                Title = title,
+                ProductionInfo = prodInfoResult.Value
+            };
     }
 
     public static Result<Movie> Create(
+        SongwriterId songwriterId,
         string title, 
         string productionYear, 
         string productionCountry, 
         string directoryName, 
         string directoryFullPath)
     {
-        var creationResult = Create(title, productionYear, productionCountry);
+        var creationResult = Create(songwriterId, title, productionYear, productionCountry);
         if (creationResult.IsFailure)
         {
             return creationResult;
@@ -69,12 +80,6 @@ public class Movie : Entity
             Result.Failure<Movie>(settingDirInfoResult.Error)
             :
             creationResult.Value;
-    }
-
-    public Result SetParent(Songwriter songwriter)
-    {
-        SongwriterId = songwriter.Id;
-        return Result.Success();
     }
 
     public Result SetDirectoryInfo(string name, string fullPath)
@@ -90,5 +95,23 @@ public class Movie : Entity
         return Result.Success();
     }
 
+    public Result SetProductionInfo(string productionCountry, string productionYear)
+    {
+        var result = ProductionInfo.Create(productionCountry, productionYear);
+
+        if (result.IsSuccess)
+        {
+            ProductionInfo = result.Value;
+            return Result.Success();
+        }
+
+        return Result.Failure(result.Error);
+    }
+
     #endregion
+}
+
+public record MovieId(Guid Value)
+{
+    public static MovieId Create() => new(Guid.NewGuid());
 }

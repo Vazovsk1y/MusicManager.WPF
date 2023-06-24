@@ -1,13 +1,11 @@
-﻿using MusicManager.Domain.Common;
-using MusicManager.Domain.Enums;
+﻿using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
-using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Models;
 
-public class Disc : Entity
+public class Disc
 {
     #region --Fields--
 
@@ -17,9 +15,13 @@ public class Disc : Entity
 
     #region --Properties--
 
-    public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
+    public DiscId DiscId { get; private set; }
 
-    public Guid? MovieId { get; private set; }
+    public SongwriterId SongwriterId { get; private set; }
+
+    public MovieId? MovieId { get; private set; }
+
+    public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
 
     public ProductionInfo ProductionInfo { get; private set; }
 
@@ -33,9 +35,11 @@ public class Disc : Entity
 
     #region --Constructors--
 
-    private Disc() : base()
+    private Disc(SongwriterId songwriterId) 
     {
-        ProductionInfo = ProductionInfo.None;
+        SongwriterId = songwriterId; 
+        DiscId = DiscId.Create();
+        ProductionInfo = ProductionInfo.Undefined;
     }
 
     #endregion
@@ -43,6 +47,7 @@ public class Disc : Entity
     #region --Methods--
 
     public static Result<Disc> Create(
+        SongwriterId songwriterId,
         DiscType discType, 
         string identifier)
     {
@@ -51,94 +56,88 @@ public class Disc : Entity
             return Result.Failure<Disc>(DomainErrors.NullOrEmptyStringPassedError(nameof(identifier)));
         }
 
-        return new Disc 
+        return new Disc(songwriterId) 
         {
-            Type =discType, 
+            Type = discType, 
             Identifier = identifier 
         };
     }
 
     public static Result<Disc> Create(
-        DiscType discType, 
-        string identifier, 
-        string directoryName, 
-        string directoryFullPath)
+        Movie movieParent,
+        DiscType discType,
+        string identifier)
     {
-        var diskCreationResult = Create(discType, identifier);
-
-        if (diskCreationResult.IsFailure)
+        if (string.IsNullOrEmpty(identifier))
         {
-            return diskCreationResult;
+            return Result.Failure<Disc>(DomainErrors.NullOrEmptyStringPassedError(nameof(identifier)));
         }
 
-        var directorySettingInfoResult = diskCreationResult.Value.SetDirectoryInfo(directoryName, directoryFullPath);
-
-        return directorySettingInfoResult.IsSuccess ? 
-            diskCreationResult.Value : Result.Failure<Disc>(directorySettingInfoResult.Error);
+        return new Disc(movieParent.SongwriterId)
+        {
+            Type = discType,
+            MovieId = movieParent.Id,
+            Identifier = identifier
+        };
     }
 
     public static Result<Disc> Create(
-        string discTypeRow, 
-        string identifier, 
-        string directoryName, 
-        string directoryFullPath)
-    {
-        var diskTypeMappingResult = discTypeRow.CreateDiscType();
-        if (diskTypeMappingResult.IsFailure)
-        {
-            return Result.Failure<Disc>(diskTypeMappingResult.Error);
-        }
-
-        var diskCreationResult = Create(diskTypeMappingResult.Value, identifier);
-        if (diskCreationResult.IsFailure)
-        {
-            return diskCreationResult;
-        }
-
-        var directorySettingInfoResult = diskCreationResult.Value.SetDirectoryInfo(directoryName, directoryFullPath);
-
-        return directorySettingInfoResult.IsSuccess ?
-            diskCreationResult.Value : Result.Failure<Disc>(directorySettingInfoResult.Error);
-    }
-
-    public static Result<Disc> Create(
-        string discTypeRow, 
+        Movie parent,
+        DiscType diskType, 
         string identifier, 
         string directoryName, 
         string directoryFullPath, 
         string productionYear, 
         string productionCountry)
     {
-        var diskTypeMappingResult = discTypeRow.CreateDiscType();
-        if (diskTypeMappingResult.IsFailure)
-        {
-            return Result.Failure<Disc>(diskTypeMappingResult.Error);
-        }
-
-        var diskCreationResult = Create(diskTypeMappingResult.Value, identifier, directoryName, directoryFullPath);
+        var diskCreationResult = Create(parent, diskType, identifier);
 
         if (diskCreationResult.IsFailure)
         {
             return diskCreationResult;
         }
 
+        var disk = diskCreationResult.Value;
+        var settingProdInfoResult = disk.SetProductionInfo(productionCountry, productionYear);
+
+        if (settingProdInfoResult.IsFailure)
+        {
+            return Result.Failure<Disc>(settingProdInfoResult.Error);
+        }
+
+        var settingDirectoryInfoResult = disk.SetDirectoryInfo(directoryName, directoryFullPath);
+
+        return settingDirectoryInfoResult.IsSuccess ?
+            disk : Result.Failure<Disc>(settingDirectoryInfoResult.Error);
+    }
+
+    public static Result<Disc> Create(
+        SongwriterId songwriterId,
+        DiscType discType,
+        string identifier,
+        string directoryName,
+        string directoryFullPath,
+        string productionYear,
+        string productionCountry)
+    {
+        var diskCreationResult = Create(songwriterId, discType, identifier);
+
+        if (diskCreationResult.IsFailure)
+        {
+            return diskCreationResult;
+        }
+
+        var settingDirectoryInfoResutlt = diskCreationResult.Value.SetDirectoryInfo(directoryName, directoryFullPath);
+
+        if (settingDirectoryInfoResutlt.IsFailure)
+        {
+            Result.Failure<Disc>(settingDirectoryInfoResutlt.Error);
+        }
+
         var settingProdInfoResult = diskCreationResult.Value.SetProductionInfo(productionCountry, productionYear);
 
         return settingProdInfoResult.IsSuccess ?
             diskCreationResult.Value : Result.Failure<Disc>(settingProdInfoResult.Error);
-    }
-
-    public Result SetProductionInfo(string productionCountry, string productionYear)
-    {
-        var result = ProductionInfo.Create(productionCountry, productionYear);
-
-        if (result.IsSuccess)
-        {
-            ProductionInfo = result.Value;
-            return Result.Success();
-        }
-
-        return Result.Failure(result.Error);
     }
 
     public Result SetDirectoryInfo(string name, string fullPath)
@@ -154,5 +153,23 @@ public class Disc : Entity
         return result;
     }
 
+    public Result SetProductionInfo(string productionCountry, string productionYear)
+    {
+        var result = ProductionInfo.Create(productionCountry, productionYear);
+
+        if (result.IsSuccess)
+        {
+            ProductionInfo = result.Value;
+            return Result.Success();
+        }
+
+        return Result.Failure(result.Error);
+    }
+
     #endregion
+}
+
+public record DiscId(Guid Value)
+{
+    public static DiscId Create() => new(Guid.NewGuid());
 }

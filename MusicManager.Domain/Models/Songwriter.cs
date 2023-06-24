@@ -1,39 +1,49 @@
-﻿using MusicManager.Domain.Common;
-using MusicManager.Domain.Errors;
+﻿using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Models;
 
-public class Songwriter : Entity
+public class Songwriter
 {
     #region --Fields--
 
     private readonly List<Movie> _movies = new();
 
+    private readonly List<Disc> _discs = new();
+
     #endregion
 
     #region --Properties--
 
-    public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
+    public SongwriterId Id { get; private set; }
 
     public string Name { get; private set; } = string.Empty;
 
     public string Surname { get; private set; } = string.Empty;
 
+    public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
+
     public IReadOnlyCollection<Movie> Movies => _movies.ToList();
+
+    public IReadOnlyCollection<Disc> Discs => _discs.ToList();
 
     #endregion
 
     #region --Constructors--
 
-    private Songwriter() : base() { }
+    private Songwriter()
+    {
+        Id = SongwriterId.Create();
+    }
 
     #endregion
 
     #region --Methods--
 
-    public static Result<Songwriter> Create(string name, string surname)
+    public static Result<Songwriter> Create(
+        string name, 
+        string surname)
     {
         if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(surname)) 
         {
@@ -47,7 +57,11 @@ public class Songwriter : Entity
         };
     }
 
-    public static Result<Songwriter> Create(string name, string surname, string directoryName, string directoryFullPath)
+    public static Result<Songwriter> Create(
+        string name, 
+        string surname, 
+        string directoryName, 
+        string directoryFullPath)
     {
         var creationResult = Create(name, surname);
         if (creationResult.IsFailure)
@@ -55,12 +69,13 @@ public class Songwriter : Entity
             return creationResult;
         }
 
-        var settingDirInfoResult = creationResult.Value.SetDirectoryInfo(directoryName, directoryFullPath);
+        var songwriter = creationResult.Value;
+        var settingDirInfoResult = songwriter.SetDirectoryInfo(directoryName, directoryFullPath);
 
-        return settingDirInfoResult.IsFailure ? 
-            Result.Failure<Songwriter>(settingDirInfoResult.Error) 
-            : 
-            creationResult.Value;
+        return settingDirInfoResult.IsFailure ?
+            Result.Failure<Songwriter>(settingDirInfoResult.Error)
+            :
+            songwriter;
     }
 
     public Result SetDirectoryInfo(string name, string fullPath)
@@ -77,4 +92,9 @@ public class Songwriter : Entity
     }
 
     #endregion
+}
+
+public record SongwriterId(Guid Value)
+{
+    public static SongwriterId Create() => new(Guid.NewGuid());
 }

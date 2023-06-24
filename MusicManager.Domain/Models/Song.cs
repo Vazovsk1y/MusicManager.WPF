@@ -1,20 +1,48 @@
-﻿using MusicManager.Domain.Common;
-using MusicManager.Domain.ValueObjects;
+﻿using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Models;
 
-public class Song : Entity
+public class Song 
 {
-    public Song(Guid id, string name) : base(id)
-    {
-        Name = name;
-    }
+    #region --Fields--
+
+
+
+    #endregion
+
+    #region --Properties--
+
+    public SongId Id { get; private set; }
+
+    public MovieId? MovieId { get; private set; }
 
     public SongFileInfo? SongFileInfo { get; private set; }
 
     public TimeSpan Duration { get; private set; }
 
-    public string Name { get; private set; }
+    public string Name { get; private set; } = string.Empty;
 
-    public Guid? MovieId { get; private set; }
+    #endregion
+
+    #region --Constructors--
+
+    public Song(string name)
+    {
+        Id = SongId.Create();
+        Name = name;
+        Duration = TimeSpan.Zero;
+    }
+
+    #endregion
+
+    #region --Methods--
+
+
+
+    #endregion
+}
+
+public record SongId(Guid Value)
+{
+    public static SongId Create() => new(Guid.NewGuid());
 }
