@@ -15,7 +15,7 @@ public class Disc
 
     #region --Properties--
 
-    public DiscId DiscId { get; private set; }
+    public DiscId Id { get; private set; }
 
     public SongwriterId SongwriterId { get; private set; }
 
@@ -38,7 +38,7 @@ public class Disc
     private Disc(SongwriterId songwriterId) 
     {
         SongwriterId = songwriterId; 
-        DiscId = DiscId.Create();
+        Id = DiscId.Create();
         ProductionInfo = ProductionInfo.Undefined;
     }
 
@@ -51,7 +51,7 @@ public class Disc
         DiscType discType, 
         string identifier)
     {
-        if (string.IsNullOrEmpty(identifier))
+        if (string.IsNullOrWhiteSpace(identifier))
         {
             return Result.Failure<Disc>(DomainErrors.NullOrEmptyStringPassedError(nameof(identifier)));
         }
@@ -68,7 +68,7 @@ public class Disc
         DiscType discType,
         string identifier)
     {
-        if (string.IsNullOrEmpty(identifier))
+        if (string.IsNullOrWhiteSpace(identifier))
         {
             return Result.Failure<Disc>(DomainErrors.NullOrEmptyStringPassedError(nameof(identifier)));
         }
@@ -85,7 +85,6 @@ public class Disc
         Movie parent,
         DiscType diskType, 
         string identifier, 
-        string directoryName, 
         string directoryFullPath, 
         string productionYear, 
         string productionCountry)
@@ -105,7 +104,7 @@ public class Disc
             return Result.Failure<Disc>(settingProdInfoResult.Error);
         }
 
-        var settingDirectoryInfoResult = disk.SetDirectoryInfo(directoryName, directoryFullPath);
+        var settingDirectoryInfoResult = disk.SetDirectoryInfo(directoryFullPath);
 
         return settingDirectoryInfoResult.IsSuccess ?
             disk : Result.Failure<Disc>(settingDirectoryInfoResult.Error);
@@ -115,7 +114,6 @@ public class Disc
         SongwriterId songwriterId,
         DiscType discType,
         string identifier,
-        string directoryName,
         string directoryFullPath,
         string productionYear,
         string productionCountry)
@@ -127,7 +125,7 @@ public class Disc
             return diskCreationResult;
         }
 
-        var settingDirectoryInfoResutlt = diskCreationResult.Value.SetDirectoryInfo(directoryName, directoryFullPath);
+        var settingDirectoryInfoResutlt = diskCreationResult.Value.SetDirectoryInfo(directoryFullPath);
 
         if (settingDirectoryInfoResutlt.IsFailure)
         {
@@ -140,9 +138,9 @@ public class Disc
             diskCreationResult.Value : Result.Failure<Disc>(settingProdInfoResult.Error);
     }
 
-    public Result SetDirectoryInfo(string name, string fullPath)
+    public Result SetDirectoryInfo(string fullPath)
     {
-        var result = EntityDirectoryInfo.Create(name, fullPath);
+        var result = EntityDirectoryInfo.Create(fullPath);
 
         if (result.IsSuccess)
         {

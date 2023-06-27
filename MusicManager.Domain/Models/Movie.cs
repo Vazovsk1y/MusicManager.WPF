@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Shared;
+﻿using MusicManager.Domain.Errors;
+using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Models;
@@ -49,6 +50,11 @@ public class Movie
         string productionYear, 
         string productionCountry)
     {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return Result.Failure<Movie>(DomainErrors.NullOrEmptyStringPassedError(nameof(title)));
+        }
+
         var prodInfoResult = ProductionInfo.Create(productionCountry, productionYear);
 
         return prodInfoResult.IsFailure ? Result.Failure<Movie>(prodInfoResult.Error)
@@ -65,7 +71,6 @@ public class Movie
         string title, 
         string productionYear, 
         string productionCountry, 
-        string directoryName, 
         string directoryFullPath)
     {
         var creationResult = Create(songwriterId, title, productionYear, productionCountry);
@@ -74,7 +79,7 @@ public class Movie
             return creationResult;
         }
 
-        var settingDirInfoResult = creationResult.Value.SetDirectoryInfo(directoryName, directoryFullPath);
+        var settingDirInfoResult = creationResult.Value.SetDirectoryInfo(directoryFullPath);
 
         return settingDirInfoResult.IsFailure ?
             Result.Failure<Movie>(settingDirInfoResult.Error)
@@ -82,9 +87,9 @@ public class Movie
             creationResult.Value;
     }
 
-    public Result SetDirectoryInfo(string name, string fullPath)
+    public Result SetDirectoryInfo(string fullPath)
     {
-        var result = EntityDirectoryInfo.Create(name, fullPath);
+        var result = EntityDirectoryInfo.Create(fullPath);
 
         if (result.IsFailure)
         {

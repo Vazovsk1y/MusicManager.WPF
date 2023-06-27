@@ -1,34 +1,35 @@
 ﻿using MusicManager.Domain.Common;
 using MusicManager.Domain.Errors;
+using MusicManager.Domain.Helpers;
 using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.ValueObjects;
 
 public class EntityDirectoryInfo : ValueObject<EntityDirectoryInfo>
 {
-    public string Name { get; private set; } = string.Empty;
+    public string Name { get; }
 
     public string FullPath { get; private set; } = string.Empty;
 
-    private EntityDirectoryInfo(string name, string fullPath)
+    private EntityDirectoryInfo(string fullPath)
     {
-        Name = name;
         FullPath = fullPath;
+        Name = Path.GetFileName(fullPath);
     }
 
-    public static Result<EntityDirectoryInfo> Create(string name, string fullPath)
+    internal static Result<EntityDirectoryInfo> Create(string fullPath)
     {
-        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(fullPath))
+        if (string.IsNullOrWhiteSpace(fullPath))
         {
-            return Result.Failure<EntityDirectoryInfo>(DomainErrors.NullOrEmptyStringPassedError());
+            return Result.Failure<EntityDirectoryInfo>(DomainErrors.NullOrEmptyStringPassedError(nameof(fullPath)));
         }
 
-        if (!fullPath.EndsWith(name))
+        if (!PathValidator.IsValid(fullPath))
         {
-            return Result.Failure<EntityDirectoryInfo>(DomainErrors.EntityDirectoryInfo.PassedPathDontEndsByPassedName(fullPath, name)); 
+            return Result.Failure<EntityDirectoryInfo>(DomainErrors.EntityDirectoryInfo.InvalidPathPassed(fullPath));
         }
 
-        return new EntityDirectoryInfo(name, fullPath);
+        return new EntityDirectoryInfo(fullPath);
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

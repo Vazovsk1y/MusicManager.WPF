@@ -14,7 +14,7 @@ internal static class DomainErrors
 
     internal static class EntityDirectoryInfo
     {
-        public static Error PassedPathDontEndsByPassedName(string path, string name) => new($"The passed [{path}] path don't ends by passed [{name}] file name.");
+        public static Error InvalidPathPassed(string path) => new($"The passed path [{path}] wasn't a directory path.");
     }
 
     #endregion

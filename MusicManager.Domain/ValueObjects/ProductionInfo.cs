@@ -32,9 +32,9 @@ public class ProductionInfo : ValueObject<ProductionInfo>
 
     #region --Methods--
 
-    public static Result<ProductionInfo> Create(string country, string year)
+    internal static Result<ProductionInfo> Create(string country, string year)
     {
-        if (string.IsNullOrEmpty(country) || string.IsNullOrEmpty(year))
+        if (string.IsNullOrWhiteSpace(country) || string.IsNullOrWhiteSpace(year))
         {
             return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassedError());
         }
@@ -47,9 +47,9 @@ public class ProductionInfo : ValueObject<ProductionInfo>
         return Result.Failure<ProductionInfo>(DomainErrors.ProductInfo.IncorrectYearPassed(year));
     }
 
-    public static Result<ProductionInfo> Create(string country, int year)
+    internal static Result<ProductionInfo> Create(string country, int year)
     {
-        if (string.IsNullOrEmpty(country))
+        if (string.IsNullOrWhiteSpace(country))
         {
             return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassedError(nameof(country)));
         }

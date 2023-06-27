@@ -45,7 +45,7 @@ public class Songwriter
         string name, 
         string surname)
     {
-        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(surname)) 
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(surname)) 
         {
             return Result.Failure<Songwriter>(DomainErrors.NullOrEmptyStringPassedError());
         }
@@ -60,7 +60,6 @@ public class Songwriter
     public static Result<Songwriter> Create(
         string name, 
         string surname, 
-        string directoryName, 
         string directoryFullPath)
     {
         var creationResult = Create(name, surname);
@@ -70,7 +69,7 @@ public class Songwriter
         }
 
         var songwriter = creationResult.Value;
-        var settingDirInfoResult = songwriter.SetDirectoryInfo(directoryName, directoryFullPath);
+        var settingDirInfoResult = songwriter.SetDirectoryInfo(directoryFullPath);
 
         return settingDirInfoResult.IsFailure ?
             Result.Failure<Songwriter>(settingDirInfoResult.Error)
@@ -78,9 +77,9 @@ public class Songwriter
             songwriter;
     }
 
-    public Result SetDirectoryInfo(string name, string fullPath)
+    public Result SetDirectoryInfo(string fullPath)
     {
-        var result = EntityDirectoryInfo.Create(name, fullPath);
+        var result = EntityDirectoryInfo.Create(fullPath);
 
         if (result.IsFailure)
         {
