@@ -2,6 +2,7 @@
 
 public enum SongFileType
 {
+    Unknown,
     Mp3,
     Flac,
     WV,

@@ -1,22 +1,34 @@
-﻿using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Helpers;
+using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.Services.Implementations;
 
-public class DirectoryToSongwriterService : IStorageToSongwriterService
+public class DirectoryToSongwriterService : IPathToSongwriterService
 {
-    private const char Separator = '.';
+    private readonly char _separator = '.';
 
-    public Task<Result<Songwriter>> GetEntityAsync(IStorage storage)
+    public Task<Result<Songwriter>> GetEntityAsync(string songWriterPath)
     {
-        var (isInfoSuccessfullyExtracted, name, surname) = GetSongwriterInfo(storage.Name);
-        if (!isInfoSuccessfullyExtracted)
+        if (!PathValidator.IsValid(songWriterPath))
         {
-            return Task.FromResult(Result.Failure<Songwriter>(DomainServicesErrors.PassedDirectoryNamedIncorrect(storage.FullPath)));
+            return Task.FromResult(Result.Failure<Songwriter>(DomainServicesErrors.PassedDirectoryPathIsInvalid(songWriterPath)));
         }
 
-        var songwriterCreationResult = Songwriter.Create(name!, surname!, storage.Name, storage.FullPath);
+        var directoryInfo = new DirectoryInfo(songWriterPath);
+        if (!directoryInfo.Exists)
+        {
+            return Task.FromResult(Result.Failure<Songwriter>(DomainServicesErrors.PassedDirectoryIsNotExists(songWriterPath)));
+        }
+
+        var (isInfoSuccessfullyExtracted, name, surname) = GetSongwriterInfo(directoryInfo.Name);
+        if (!isInfoSuccessfullyExtracted)
+        {
+            return Task.FromResult(Result.Failure<Songwriter>(DomainServicesErrors.PassedDirectoryNamedIncorrect(songWriterPath)));
+        }
+
+        var songwriterCreationResult = Songwriter.Create(name!, surname!, directoryInfo.FullName);
         if (songwriterCreationResult.IsFailure)
         {
             return Task.FromResult(Result.Failure<Songwriter>(songwriterCreationResult.Error));
@@ -28,7 +40,7 @@ public class DirectoryToSongwriterService : IStorageToSongwriterService
 
     private (bool isInfoSuccessfullyExtracted, string? name, string? surname) GetSongwriterInfo(string directoryName)
     {
-        var info = directoryName.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+        var info = directoryName.Split(_separator, StringSplitOptions.RemoveEmptyEntries);
 
         return info.Length < 2 ? (false, null, null) : (true, info[0], info[1]);
     }

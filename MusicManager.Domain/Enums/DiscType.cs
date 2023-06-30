@@ -2,6 +2,7 @@
 
 public enum DiscType 
 {
+    Unknown = 0,
     CD,
     LP,
     TwoCD,

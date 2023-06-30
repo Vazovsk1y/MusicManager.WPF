@@ -1,0 +1,104 @@
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Constants;
+using MusicManager.Domain.Enums;
+using MusicManager.Domain.Errors;
+using MusicManager.Domain.Helpers;
+using MusicManager.Domain.Shared;
+
+namespace MusicManager.Domain.ValueObjects;
+
+public class SongPlayInfo : ValueObject<SongPlayInfo>
+{
+    public string ExecutableFileName { get; }
+
+    public string ExecutableFileFullPath { get; }
+
+    public string? CueFilePath { get; private set; }
+
+    public SongFileType ExecutableType { get; init; }
+
+    public TimeSpan SongDuration { get; init; }
+
+    private SongPlayInfo(string fullPath) 
+    {
+        ExecutableFileFullPath = fullPath;
+        ExecutableFileName = Path.GetFileName(ExecutableFileFullPath);
+    }
+
+    internal static Result<SongPlayInfo> Create(
+        string fullPath, 
+        TimeSpan duration)
+    {
+        if (string.IsNullOrWhiteSpace(fullPath))
+        {
+            return Result.Failure<SongPlayInfo>(DomainErrors.NullOrEmptyStringPassedError());
+        }
+
+        if (!PathValidator.IsValid(fullPath))
+        {
+            return Result.Failure<SongPlayInfo>(new Error($"The passed path {fullPath} wasn't a file path."));
+        }
+
+        return Path.GetExtension(fullPath) switch
+        {
+            DomainConstants.FlacExtension => new SongPlayInfo(fullPath)
+            {
+                SongDuration = duration,
+                ExecutableType = SongFileType.Flac,
+            },
+            DomainConstants.Mp3Extension => new SongPlayInfo(fullPath)
+            {
+                SongDuration = duration,
+                ExecutableType = SongFileType.Mp3,
+            },
+            DomainConstants.WVExtension => new SongPlayInfo(fullPath)
+            {
+                SongDuration = duration,
+                ExecutableType = SongFileType.WV,
+            },
+            _ => Result.Failure<SongPlayInfo>(new Error("Song file extension is not supported.")),
+        };
+    }
+
+    internal static Result<SongPlayInfo> Create(
+        string fullPath,
+        TimeSpan duration,
+        string cueFileFullPath)
+    {
+        var creationResult = Create(fullPath, duration);
+
+        if (creationResult.IsFailure)
+        {
+            return creationResult;
+        }
+
+        if (string.IsNullOrWhiteSpace(cueFileFullPath))
+        {
+            return Result.Failure<SongPlayInfo>(DomainErrors.NullOrEmptyStringPassedError(nameof(cueFileFullPath)));
+        }
+
+        if (!PathValidator.IsValid(cueFileFullPath) || !cueFileFullPath.EndsWith(DomainConstants.CueExtension))
+        {
+            return Result.Failure<SongPlayInfo>(new Error($"Incorrect cue path was passed {cueFileFullPath}."));
+        }
+
+        var songPlayInfo = creationResult.Value;
+        songPlayInfo.CueFilePath = cueFileFullPath;
+        return songPlayInfo;
+    }
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+        yield return ExecutableFileName;
+        yield return ExecutableFileFullPath;
+        yield return ExecutableType;
+        yield return SongDuration;
+
+        if (CueFilePath is not null)
+        {
+            yield return CueFilePath;
+        }
+    }
+}
+
+
