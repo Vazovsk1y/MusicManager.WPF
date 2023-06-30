@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Constants;
 using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Helpers;
@@ -8,11 +9,6 @@ namespace MusicManager.Domain.ValueObjects;
 
 public class SongFileInfo : ValueObject<SongFileInfo>
 {
-    private const string FlacExtension = ".flac";
-    private const string Mp3Extension = ".mp3";
-    private const string WVExtension = ".wv";
-    private const string CueExtension = ".cue";
-
     public string Name { get; }
 
     public string FullPath { get; }
@@ -45,17 +41,17 @@ public class SongFileInfo : ValueObject<SongFileInfo>
 
         return Path.GetExtension(fullPath) switch
         {
-            FlacExtension => new SongFileInfo(fullPath)
+            DomainConstants.FlacExtension => new SongFileInfo(fullPath)
             {
                 SongDuration = duration,
                 Type = SongFileType.Flac,
             },
-            Mp3Extension => new SongFileInfo(fullPath)
+            DomainConstants.Mp3Extension => new SongFileInfo(fullPath)
             {
                 SongDuration = duration,
                 Type = SongFileType.Mp3,
             },
-            WVExtension => new SongFileInfo(fullPath)
+            DomainConstants.WVExtension => new SongFileInfo(fullPath)
             {
                 SongDuration = duration,
                 Type = SongFileType.WV,
@@ -81,7 +77,7 @@ public class SongFileInfo : ValueObject<SongFileInfo>
             return Result.Failure<SongFileInfo>(DomainErrors.NullOrEmptyStringPassedError(nameof(cueFileFullPath)));
         }
 
-        if (!PathValidator.IsValid(cueFileFullPath) || !cueFileFullPath.EndsWith(CueExtension))
+        if (!PathValidator.IsValid(cueFileFullPath) || !cueFileFullPath.EndsWith(DomainConstants.CueExtension))
         {
             return Result.Failure<SongFileInfo>(new Error($"Incorrect cue path was passed {cueFileFullPath}."));
         }

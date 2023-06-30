@@ -82,6 +82,44 @@ public class Disc
     }
 
     public static Result<Disc> Create(
+        SongwriterId songwriterId,
+        DiscType discType,
+        string identifier,
+        string directoryFullPath)
+    {
+        var creationResult = Create(songwriterId, discType, identifier);
+
+        if (creationResult.IsFailure)
+        {
+            return creationResult;
+        }
+
+        var settingDirectoryInfoResult = creationResult.Value.SetDirectoryInfo(directoryFullPath);
+
+        return settingDirectoryInfoResult.IsFailure ? 
+            Result.Failure<Disc>(settingDirectoryInfoResult.Error) : creationResult.Value;
+    }
+
+    public static Result<Disc> Create(
+        Movie movieParent,
+        DiscType discType,
+        string identifier,
+        string directoryFullPath)
+    {
+        var creationResult = Create(movieParent, discType, identifier);
+
+        if (creationResult.IsFailure)
+        {
+            return creationResult;
+        }
+
+        var settingDirectoryInfoResult = creationResult.Value.SetDirectoryInfo(directoryFullPath);
+
+        return settingDirectoryInfoResult.IsFailure ?
+            Result.Failure<Disc>(settingDirectoryInfoResult.Error) : creationResult.Value;
+    }
+
+    public static Result<Disc> Create(
         Movie parent,
         DiscType diskType, 
         string identifier, 
