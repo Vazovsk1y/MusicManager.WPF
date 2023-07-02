@@ -1,181 +1,209 @@
-﻿using MusicManager.Domain.Helpers;
-using MusicManager.Domain.Models;
-using MusicManager.Domain.Services.Implementations.Errors;
+﻿using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
-using System.IO;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace MusicManager.Domain.Services.Implementations
 {
-    
-
     public partial class FileToSongService : IPathToSongService
     {
-        [GeneratedRegex(@"\((CD\d)\)")]
-        private static partial Regex FindDiscNumberRegex();
-
-        private const string CDKeyWord = "CD";
+        #region --Fields--
 
         private readonly ICueFileInteractor _cueFileInteractor;
+
+        #endregion
+
+        #region --Properties--
+
+
+
+        #endregion
+
+        #region --Constructors--
 
         public FileToSongService(ICueFileInteractor cueFileInteractor)
         {
             _cueFileInteractor = cueFileInteractor;
         }
 
+        #endregion
+
+        #region --Methods--
+
+        #region __Public__
+
+        public Task<Result<Song>> GetEntityAsync(string songFilePath, DiscId parentId)
+        {
+            var songInfoResult = GetSongFileInfo(songFilePath);
+            if (songInfoResult.IsFailure)
+            {
+                return Task.FromResult(Result.Failure<Song>(songInfoResult.Error));
+            }
+
+            var songInfo = songInfoResult.Value;
+            var fileName = Path.GetFileName(songInfo.Name);
+            var discNumberMatch = FindDiscNumber().Match(fileName);
+
+            if (discNumberMatch.Success)
+            {
+                return Task.FromResult(
+                    Song.Create(
+                    songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
+                    parentId,
+                    TrimDiscNumber(discNumberMatch.Groups[0].Value),
+                    songFilePath,
+                    songInfo.Properties.Duration
+                    ));
+            }
+
+            var songCreationResult = Song.Create(
+                songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
+                parentId,
+                songFilePath,
+                songInfo.Properties.Duration
+                );
+
+            if (songCreationResult.IsFailure)
+            {
+                return Task.FromResult(Result.Failure<Song>(songCreationResult.Error));
+            }
+
+            return Task.FromResult(Result.Success(songCreationResult.Value));
+        }
+
         public async Task<Result<IEnumerable<Song>>> GetEntitiesFromCueFileAsync(string songFilePath, string cueFilePath, DiscId parentId)
         {
-            if (!PathValidator.IsValid(songFilePath))
+            var songInfoResult = GetSongFileInfo(songFilePath);
+            if (songInfoResult.IsFailure)
             {
-                return Result.Failure<IEnumerable<Song>>(DomainServicesErrors.PassedDirectoryPathIsInvalid(songFilePath));
+                return Result.Failure<IEnumerable<Song>>(songInfoResult.Error);
             }
 
-            var fileInfo = new FileInfo(songFilePath);
-            if (!fileInfo.Exists)
+            var songFileInfo = songInfoResult.Value;
+            TimeSpan allSongFileDuration = songFileInfo.Properties.Duration;
+            var fileName = Path.GetFileName(songFileInfo.Name);
+            var discNumberMatch = FindDiscNumber().Match(fileName);
+
+            var cueFileTracksGettingResult = await _cueFileInteractor.GetTracksAsync(cueFilePath);
+            if (cueFileTracksGettingResult.IsFailure)
             {
-                return Result.Failure<IEnumerable<Song>>(DomainServicesErrors.PassedDirectoryIsNotExists(songFilePath));
+                return Result.Failure<IEnumerable<Song>>(cueFileTracksGettingResult.Error);
             }
 
-            var songs = new List<Song>();   
-            if (fileInfo.Name.Contains(CDKeyWord))
+            var cueFileTracks = cueFileTracksGettingResult.Value.ToList();
+            if (discNumberMatch.Success)
             {
-                var cdMatch = FindDiscNumberRegex().Match(fileInfo.Name);
-                if (!cdMatch.Success)
-                {
-                    return Result.Failure<IEnumerable<Song>>(new Error("Can't get a disc number from file name."));
-                }
-
-                var tracksGettingResult1 = await _cueFileInteractor.GetTracksAsync(cueFilePath);
-
-                if (tracksGettingResult1.IsFailure)
-                {
-                    return Result.Failure<IEnumerable<Song>>(tracksGettingResult1.Error);
-                }
-
-                var tracks1 = tracksGettingResult1.Value.ToList();
-                for (int i = 1; i < tracks1.Count; i++)
-                {
-                    var previousTrack = tracks1[i-1];
-                    var currentTrack = tracks1[i];
-
-                    var songCreationResult = Song.Create(
-                        previousTrack.Title, 
-                        parentId, 
-                        cdMatch.Groups[0].Value.Replace("(", "").Replace(")", ""));
-
-                    if (songCreationResult.IsFailure)
-                    {
-                        return Result.Failure<IEnumerable<Song>>(songCreationResult.Error);
-                    }
-
-                    var song = songCreationResult.Value;
-                    var settingSongFileInfoResult = song.SetSongFileInfo(
-                        songFilePath, 
-                        currentTrack.Index01 - previousTrack.Index00,
-                        cueFilePath);
-
-                    if (settingSongFileInfoResult.IsFailure)
-                    {
-                        return Result.Failure<IEnumerable<Song>>(settingSongFileInfoResult.Error);
-                    }
-
-                    songs.Add(song);
-                }
-
-                return songs;
+                return ParseCueFileTracksToSongs(
+                    cueFileTracks, 
+                    parentId, 
+                    songFilePath, 
+                    cueFilePath, 
+                    allSongFileDuration,
+                    TrimDiscNumber(discNumberMatch.Groups[0].Value));
             }
 
-            var tracksGettingResult = await _cueFileInteractor.GetTracksAsync(cueFilePath);
+            return ParseCueFileTracksToSongs(
+                cueFileTracks, 
+                parentId, 
+                songFilePath, 
+                cueFilePath, 
+                allSongFileDuration);
+        }
 
-            if (tracksGettingResult.IsFailure)
+        #endregion
+
+        #region __Private__
+
+        [GeneratedRegex(@"\((CD\d)\)")]
+        private static partial Regex FindDiscNumber();
+
+        private Result<TagLib.File> GetSongFileInfo(string songPath)
+        {
+            TagLib.File songInfo;
+            try
             {
-                return Result.Failure<IEnumerable<Song>>(tracksGettingResult.Error);
+                songInfo = TagLib.File.Create(songPath);
             }
+            catch (Exception e)
+            {
+                return Result.Failure<TagLib.File>(new Error(e.Message));
+            }
+            return songInfo;
+        }
 
-            var tracks = tracksGettingResult.Value.ToList();
+        private Result<IEnumerable<Song>> ParseCueFileTracksToSongs(
+            IEnumerable<ICueFileTrack> cueFileTracks,
+            DiscId parent,
+            string songFilePath,
+            string cueFilePath,
+            TimeSpan allSongFileDuration,
+            string? discNumber = null)
+        {
+            var results = new List<Song>();
+            var tracks = cueFileTracks.ToList();
+
             for (int i = 1; i < tracks.Count; i++)
             {
                 var previousTrack = tracks[i - 1];
                 var currentTrack = tracks[i];
 
-                var songCreationResult = Song.Create(
+                var songCreationResult = discNumber is null ?
+                    Song.Create(
                     previousTrack.Title,
-                    parentId);
+                    parent,
+                    songFilePath,
+                    currentTrack.Index01 - previousTrack.Index01,
+                    cueFilePath)
+                    :
+                    Song.Create(
+                    previousTrack.Title,
+                    parent,
+                    discNumber,
+                    songFilePath,
+                    currentTrack.Index01 - previousTrack.Index01,
+                    cueFilePath
+                    );
 
                 if (songCreationResult.IsFailure)
                 {
                     return Result.Failure<IEnumerable<Song>>(songCreationResult.Error);
                 }
 
-                var song = songCreationResult.Value;
-                var settingSongFileInfoResult = song.SetSongFileInfo(
+                results.Add(songCreationResult.Value);
+            }
+
+            var lastTrack = tracks.Last();
+            var lastSongCreationResult = discNumber is null ?
+                    Song.Create(
+                    lastTrack.Title,
+                    parent,
                     songFilePath,
-                    currentTrack.Index01 - previousTrack.Index01,
-                    cueFilePath);
+                    allSongFileDuration - lastTrack.Index01,
+                    cueFilePath)
+                    :
+                    Song.Create(
+                    lastTrack.Title,
+                    parent,
+                    discNumber,
+                    songFilePath,
+                    allSongFileDuration - lastTrack.Index01,
+                    cueFilePath
+                    );
 
-                if (settingSongFileInfoResult.IsFailure)
-                {
-                    return Result.Failure<IEnumerable<Song>>(settingSongFileInfoResult.Error);
-                }
-
-                songs.Add(song);
+            if (lastSongCreationResult.IsSuccess)
+            {
+                results.Add(lastSongCreationResult.Value);
+                return results;
             }
 
-            return songs;
+            return Result.Failure<IEnumerable<Song>>(lastSongCreationResult.Error);
         }
 
-        public Task<Result<Song>> GetEntityAsync(string songFilePath, DiscId parentId)
-        {
-            TagLib.File songInfo;
-            try
-            {
-                songInfo = TagLib.File.Create(songFilePath);
-            }
-            catch (Exception e)
-            {
-                return Task.FromResult(Result.Failure<Song>(new Error(e.Message)));
-            }
+        private string TrimDiscNumber(string untrimedDiscNumberRow) => untrimedDiscNumberRow
+            .Replace("(", string.Empty)
+            .Replace(")", string.Empty);
 
-            if (Path.GetFileName(songInfo.Name).Contains(CDKeyWord))
-            {
-                var cdMatch = FindDiscNumberRegex().Match(songInfo.Name);
-                if (!cdMatch.Success)
-                {
-                    return Task.FromResult(Result.Failure<Song>(new Error("Can't get a disc number from file name.")));
-                }
+        #endregion
 
-                var songCreationResult = Song.Create(
-                songInfo.Tag.Title,
-                parentId,
-                cdMatch.Groups[1].Value.Replace("(", "").Replace(")", "")
-                );
-
-                if (songCreationResult.IsFailure)
-                {
-                    return Task.FromResult(Result.Failure<Song>(songCreationResult.Error));
-                }
-            }
-
-            var songCreationResultWithoutDiscNumber = Song.Create(
-                songInfo.Tag.Title ?? songInfo.Name,
-                parentId
-                );
-
-            if (songCreationResultWithoutDiscNumber.IsFailure)
-            {
-                return Task.FromResult(Result.Failure<Song>(songCreationResultWithoutDiscNumber.Error));
-            }
-
-            var song = songCreationResultWithoutDiscNumber.Value;
-            var settingSongFileInfoResult = song.SetSongFileInfo(songFilePath, songInfo.Properties.Duration);
-
-            if (settingSongFileInfoResult.IsFailure)
-            {
-                return Task.FromResult(Result.Failure<Song>(settingSongFileInfoResult.Error));
-            }
-
-            return Task.FromResult(Result.Success(song));
-        }
+        #endregion
     }
 }
