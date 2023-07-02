@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace MusicManager.Domain.Services.Implementations;
 
-public partial class CueFileParser : ICueFileInteractor
+public partial class CueFileInteractor : ICueFileInteractor
 {
     #region --Fields--
 
@@ -121,8 +121,8 @@ public partial class CueFileParser : ICueFileInteractor
             if (row.Contains(TitleKeyWord))
             {
                 track.Title = row
-                    .RemoveAllSpaces()
-                    .Trim(TitleKeyWord.ToArray())
+                    .TrimStart()
+                    .TrimStart(TitleKeyWord.ToArray())
                     .Replace("\"", "");
                 continue;
             }
@@ -163,9 +163,9 @@ public partial class CueFileParser : ICueFileInteractor
     private TimeSpan ParseToTimeSpan(string timeSpanString)
     {
         var timeComponents = timeSpanString.Split(":");
-        int index01ComponentsCount = 3;
+        const int IndexesComponentsCount = 3;
 
-        if (timeComponents.Length != index01ComponentsCount)
+        if (timeComponents.Length != IndexesComponentsCount)
         {
             return TimeSpan.Zero;
         }
