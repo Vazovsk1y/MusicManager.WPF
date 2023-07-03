@@ -172,9 +172,9 @@ public class Song
         return song;
     }
 
-    public Result SetSongPlayInfo(string fullPath, TimeSpan Duration)
+    public Result SetSongPlayInfo(string fullPath, TimeSpan duration)
     {
-        var settingSongFileInfoResult = SongPlayInfo.Create(fullPath, Duration);
+        var settingSongFileInfoResult = SongPlayInfo.Create(fullPath, Id, duration);
 
         if (settingSongFileInfoResult.IsFailure)
         {
@@ -185,9 +185,9 @@ public class Song
         return Result.Success();
     }
 
-    public Result SetSongPlayInfo(string fullPath, TimeSpan Duration, string cueFileFullPath)
+    public Result SetSongPlayInfo(string fullPath, TimeSpan duration, string cueFileFullPath)
     {
-        var settingSongFileInfoResult = SongPlayInfo.Create(fullPath, Duration, cueFileFullPath);
+        var settingSongFileInfoResult = SongPlayInfo.Create(fullPath, Id, duration, cueFileFullPath);
 
         if (settingSongFileInfoResult.IsFailure)
         {

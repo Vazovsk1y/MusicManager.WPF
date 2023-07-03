@@ -17,7 +17,7 @@ public class EntityDirectoryInfo : ValueObject<EntityDirectoryInfo>
         Name = Path.GetFileName(fullPath);
     }
 
-    internal static Result<EntityDirectoryInfo> Create(string fullPath)
+    public static Result<EntityDirectoryInfo> Create(string fullPath)
     {
         if (string.IsNullOrWhiteSpace(fullPath))
         {

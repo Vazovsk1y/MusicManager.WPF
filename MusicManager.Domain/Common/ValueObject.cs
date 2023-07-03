@@ -25,7 +25,7 @@
                 }
             });
 
-        public static bool operator ==(ValueObject<T> left, ValueObject<T> right)
+        public static bool operator ==(ValueObject<T>? left, ValueObject<T>? right)
         {
             if (left is null && right is null)
                 return true;
@@ -36,7 +36,7 @@
             return left.Equals(right);
         }
 
-        public static bool operator !=(ValueObject<T> a, ValueObject<T> b) => !(a == b);
+        public static bool operator !=(ValueObject<T>? a, ValueObject<T>? b) => !(a == b);
 
         protected abstract IEnumerable<object> GetEqualityComponents();
     }
