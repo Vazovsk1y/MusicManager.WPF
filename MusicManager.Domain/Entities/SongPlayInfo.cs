@@ -1,14 +1,13 @@
-﻿using MusicManager.Domain.Common;
-using MusicManager.Domain.Constants;
+﻿using MusicManager.Domain.Constants;
 using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Helpers;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
 
-namespace MusicManager.Domain.ValueObjects;
+namespace MusicManager.Domain.Entities;
 
-public class SongPlayInfo : ValueObject<SongPlayInfo>
+public class SongPlayInfo
 {
     public SongId SongId { get; private set; }
 
@@ -24,7 +23,7 @@ public class SongPlayInfo : ValueObject<SongPlayInfo>
 
     protected SongPlayInfo() { } // for EF core
 
-    private SongPlayInfo(string fullPath, SongId songId) 
+    private SongPlayInfo(string fullPath, SongId songId)
     {
         ExecutableFileFullPath = fullPath;
         ExecutableFileName = Path.GetFileName(ExecutableFileFullPath);
@@ -93,19 +92,6 @@ public class SongPlayInfo : ValueObject<SongPlayInfo>
         var songPlayInfo = creationResult.Value;
         songPlayInfo.CueFilePath = cueFileFullPath;
         return songPlayInfo;
-    }
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return ExecutableFileName;
-        yield return ExecutableFileFullPath;
-        yield return ExecutableType;
-        yield return SongDuration;
-
-        if (CueFilePath is not null)
-        {
-            yield return CueFilePath;
-        }
     }
 }
 
