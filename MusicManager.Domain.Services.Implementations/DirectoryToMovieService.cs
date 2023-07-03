@@ -11,17 +11,13 @@ public class DirectoryToMovieService : IPathToMovieService
 
     public Task<Result<Movie>> GetEntityAsync(string moviePath)
     {
-        if (!PathValidator.IsValid(moviePath))
+        var isAbleToMoveNext = IsAbleToMoveNext(moviePath);
+        if (isAbleToMoveNext.IsFailure)
         {
-            return Task.FromResult(Result.Failure<Movie>(DomainServicesErrors.PassedDirectoryPathIsInvalid(moviePath)));
+            return Task.FromResult(Result.Failure<Movie>(isAbleToMoveNext.Error));
         }
 
-        var directoryInfo = new DirectoryInfo(moviePath);
-        if (!directoryInfo.Exists)
-        {
-            return Task.FromResult(Result.Failure<Movie>(DomainServicesErrors.PassedDirectoryIsNotExists(moviePath)));
-        }
-
+        var directoryInfo = isAbleToMoveNext.Value;
         var (isInfoSuccessfullyExtracted, year, title) = GetMovieInfo(directoryInfo.Name);
         if (!isInfoSuccessfullyExtracted)
         {
@@ -50,5 +46,21 @@ public class DirectoryToMovieService : IPathToMovieService
             .ToList();
 
         return info.Count < 2 ? (false, null, null) : (true, info[0], info[1]);
+    }
+
+    private Result<DirectoryInfo> IsAbleToMoveNext(string moviePath)
+    {
+        if (!PathValidator.IsValid(moviePath))
+        {
+            return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryPathIsInvalid(moviePath));
+        }
+
+        var directoryInfo = new DirectoryInfo(moviePath);
+        if (!directoryInfo.Exists)
+        {
+            return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryIsNotExists(moviePath));
+        }
+
+        return directoryInfo;
     }
 }
