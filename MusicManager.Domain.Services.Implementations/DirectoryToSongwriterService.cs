@@ -11,17 +11,13 @@ public class DirectoryToSongwriterService : IPathToSongwriterService
 
     public Task<Result<Songwriter>> GetEntityAsync(string songWriterPath)
     {
-        if (!PathValidator.IsValid(songWriterPath))
+        var isAbleToMoveNext = IsAbleToMoveNext(songWriterPath);
+        if (isAbleToMoveNext.IsFailure)
         {
-            return Task.FromResult(Result.Failure<Songwriter>(DomainServicesErrors.PassedDirectoryPathIsInvalid(songWriterPath)));
+            return Task.FromResult(Result.Failure<Songwriter>(isAbleToMoveNext.Error));
         }
 
-        var directoryInfo = new DirectoryInfo(songWriterPath);
-        if (!directoryInfo.Exists)
-        {
-            return Task.FromResult(Result.Failure<Songwriter>(DomainServicesErrors.PassedDirectoryIsNotExists(songWriterPath)));
-        }
-
+        var directoryInfo = isAbleToMoveNext.Value;
         var (isInfoSuccessfullyExtracted, name, surname) = GetSongwriterInfo(directoryInfo.Name);
         if (!isInfoSuccessfullyExtracted)
         {
@@ -43,5 +39,21 @@ public class DirectoryToSongwriterService : IPathToSongwriterService
         var info = directoryName.Split(_separator, StringSplitOptions.RemoveEmptyEntries);
 
         return info.Length < 2 ? (false, null, null) : (true, info[0], info[1]);
+    }
+
+    private Result<DirectoryInfo> IsAbleToMoveNext(string songWriterPath)
+    {
+        if (!PathValidator.IsValid(songWriterPath))
+        {
+            return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryPathIsInvalid(songWriterPath));
+        }
+
+        var directoryInfo = new DirectoryInfo(songWriterPath);
+        if (!directoryInfo.Exists)
+        {
+            return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryIsNotExists(songWriterPath));
+        }
+
+        return directoryInfo;
     }
 }
