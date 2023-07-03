@@ -1,10 +1,11 @@
-﻿using MusicManager.Domain.Errors;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Models;
 
-public class Movie 
+public class Movie : IAggregateRoot
 {
     #region --Fields--
 

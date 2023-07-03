@@ -1,10 +1,11 @@
-﻿using MusicManager.Domain.Errors;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Models;
 
-public class Songwriter
+public class Songwriter : IAggregateRoot
 {
     #region --Fields--
 

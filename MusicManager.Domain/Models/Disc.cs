@@ -1,11 +1,12 @@
-﻿using MusicManager.Domain.Enums;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Models;
 
-public class Disc
+public class Disc : IAggregateRoot
 {
     #region --Fields--
 
