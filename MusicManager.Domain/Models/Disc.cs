@@ -11,6 +11,8 @@ public class Disc
 
     private readonly List<Song> _songs = new();
 
+    private readonly List<Movie> _movies = new();
+
     #endregion
 
     #region --Properties--
@@ -18,8 +20,6 @@ public class Disc
     public DiscId Id { get; private set; }
 
     public SongwriterId SongwriterId { get; private set; }
-
-    public MovieId? MovieId { get; private set; }
 
     public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
 
@@ -29,7 +29,9 @@ public class Disc
 
     public string Identifier { get; private set; } = string.Empty;
 
-    public IReadOnlyCollection<Song> Songs => _songs.ToList();  
+    public IReadOnlyCollection<Song> Songs => _songs.ToList();
+    
+    public IReadOnlyCollection<Movie> Movies => _movies.ToList();
 
     #endregion
 
@@ -64,24 +66,6 @@ public class Disc
     }
 
     public static Result<Disc> Create(
-        Movie movieParent,
-        DiscType discType,
-        string identifier)
-    {
-        if (string.IsNullOrWhiteSpace(identifier))
-        {
-            return Result.Failure<Disc>(DomainErrors.NullOrEmptyStringPassedError(nameof(identifier)));
-        }
-
-        return new Disc(movieParent.SongwriterId)
-        {
-            Type = discType,
-            MovieId = movieParent.Id,
-            Identifier = identifier
-        };
-    }
-
-    public static Result<Disc> Create(
         SongwriterId songwriterId,
         DiscType discType,
         string identifier,
@@ -98,54 +82,6 @@ public class Disc
 
         return settingDirectoryInfoResult.IsFailure ? 
             Result.Failure<Disc>(settingDirectoryInfoResult.Error) : creationResult.Value;
-    }
-
-    public static Result<Disc> Create(
-        Movie movieParent,
-        DiscType discType,
-        string identifier,
-        string directoryFullPath)
-    {
-        var creationResult = Create(movieParent, discType, identifier);
-
-        if (creationResult.IsFailure)
-        {
-            return creationResult;
-        }
-
-        var settingDirectoryInfoResult = creationResult.Value.SetDirectoryInfo(directoryFullPath);
-
-        return settingDirectoryInfoResult.IsFailure ?
-            Result.Failure<Disc>(settingDirectoryInfoResult.Error) : creationResult.Value;
-    }
-
-    public static Result<Disc> Create(
-        Movie parent,
-        DiscType diskType, 
-        string identifier, 
-        string directoryFullPath, 
-        string productionYear, 
-        string productionCountry)
-    {
-        var diskCreationResult = Create(parent, diskType, identifier);
-
-        if (diskCreationResult.IsFailure)
-        {
-            return diskCreationResult;
-        }
-
-        var disk = diskCreationResult.Value;
-        var settingProdInfoResult = disk.SetProductionInfo(productionCountry, productionYear);
-
-        if (settingProdInfoResult.IsFailure)
-        {
-            return Result.Failure<Disc>(settingProdInfoResult.Error);
-        }
-
-        var settingDirectoryInfoResult = disk.SetDirectoryInfo(directoryFullPath);
-
-        return settingDirectoryInfoResult.IsSuccess ?
-            disk : Result.Failure<Disc>(settingDirectoryInfoResult.Error);
     }
 
     public static Result<Disc> Create(
@@ -200,6 +136,16 @@ public class Disc
         }
 
         return Result.Failure(result.Error);
+    }
+
+    public void AddSong(Song song)
+    {
+        _songs.Add(song);
+    }
+
+    public void AddMovie(Movie movie)
+    {
+        _movies.Add(movie);
     }
 
     #endregion

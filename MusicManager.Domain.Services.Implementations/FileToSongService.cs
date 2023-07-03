@@ -47,8 +47,8 @@ namespace MusicManager.Domain.Services.Implementations
             {
                 return Task.FromResult(
                     Song.Create(
-                    songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
                     parentId,
+                    songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
                     TrimDiscNumber(discNumberMatch.Groups[0].Value),
                     songFilePath,
                     songInfo.Properties.Duration
@@ -56,8 +56,8 @@ namespace MusicManager.Domain.Services.Implementations
             }
 
             var songCreationResult = Song.Create(
-                songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
                 parentId,
+                songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
                 songFilePath,
                 songInfo.Properties.Duration
                 );
@@ -148,15 +148,15 @@ namespace MusicManager.Domain.Services.Implementations
 
                 var songCreationResult = discNumber is null ?
                     Song.Create(
-                    previousTrack.Title,
                     parent,
+                    previousTrack.Title,
                     songFilePath,
                     currentTrack.Index01 - previousTrack.Index01,
                     cueFilePath)
                     :
                     Song.Create(
+                    parent, 
                     previousTrack.Title,
-                    parent,
                     discNumber,
                     songFilePath,
                     currentTrack.Index01 - previousTrack.Index01,
@@ -174,15 +174,15 @@ namespace MusicManager.Domain.Services.Implementations
             var lastTrack = tracks.Last();
             var lastSongCreationResult = discNumber is null ?
                     Song.Create(
-                    lastTrack.Title,
                     parent,
+                    lastTrack.Title,
                     songFilePath,
                     allSongFileDuration - lastTrack.Index01,
                     cueFilePath)
                     :
                     Song.Create(
-                    lastTrack.Title,
                     parent,
+                    lastTrack.Title,
                     discNumber,
                     songFilePath,
                     allSongFileDuration - lastTrack.Index01,

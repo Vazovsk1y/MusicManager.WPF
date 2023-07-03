@@ -366,3 +366,4 @@ FodyWeavers.xsd
 /TEsts/TEsts.csproj
 /TEsts/UnitTest1.cs
 /TEsts/Usings.cs
+/TestPlace/TestContext.cs

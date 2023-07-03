@@ -40,8 +40,8 @@ public class Song
     #region --Methods--
 
     public static Result<Song> Create(
-        string name, 
-        DiscId discId)
+        DiscId discId,
+        string name)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -52,8 +52,8 @@ public class Song
     }
 
     public static Result<Song> Create(
-        string name, 
         DiscId discId, 
+        string name, 
         string discNumber)
     {
         if (string.IsNullOrEmpty(discNumber))
@@ -61,7 +61,7 @@ public class Song
             return Result.Failure<Song>(DomainErrors.NullOrEmptyStringPassedError(nameof(discNumber)));
         }
 
-        var songCreationResult = Create(name, discId);
+        var songCreationResult = Create(discId, name);
         if (songCreationResult.IsFailure)
         {
             return songCreationResult;
@@ -73,13 +73,13 @@ public class Song
     }
 
     public static Result<Song> Create(
-        string name, 
         DiscId discId, 
+        string name, 
         string discNumber, 
         string songFileFullPath,
         TimeSpan songDuration)
     {
-        var songCreationResult = Create(name, discId);
+        var songCreationResult = Create(discId, name, discNumber);
 
         if (songCreationResult.IsFailure)
         {
@@ -87,8 +87,6 @@ public class Song
         }
 
         var song = songCreationResult.Value;
-        song.DiscNumber = discNumber;
-
         var settingInfoResult = song.SetSongPlayInfo(songFileFullPath, songDuration);
 
         if (settingInfoResult.IsFailure)
@@ -100,12 +98,12 @@ public class Song
     }
 
     public static Result<Song> Create(
-        string name,
         DiscId discId,
+        string name,
         string songFileFullPath,
         TimeSpan songDuration)
     {
-        var songCreationResult = Create(name, discId);
+        var songCreationResult = Create(discId, name);
 
         if (songCreationResult.IsFailure)
         {
@@ -124,14 +122,14 @@ public class Song
     }
 
     public static Result<Song> Create(
+        DiscId discId, 
         string name,
-        DiscId discId,
         string discNumber,
         string songFileFullPath,
         TimeSpan songDuration,
         string cueFileFullPath)
     {
-        var songCreationResult = Create(name, discId, discNumber);
+        var songCreationResult = Create(discId, name, discNumber);
 
         if (songCreationResult.IsFailure)
         {
@@ -150,13 +148,13 @@ public class Song
     }
 
     public static Result<Song> Create(
+        DiscId discId, 
         string name,
-        DiscId discId,
         string songFileFullPath,
         TimeSpan songDuration,
         string cueFileFullPath)
     {
-        var songCreationResult = Create(name, discId);
+        var songCreationResult = Create(discId, name);
 
         if (songCreationResult.IsFailure)
         {

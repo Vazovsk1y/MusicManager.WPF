@@ -5,5 +5,5 @@ namespace MusicManager.Domain.Services;
 
 public interface IPathToMovieService
 {
-    Task<Result<Movie>> GetEntityAsync(string moviePath, SongwriterId songwriterId);
+    Task<Result<Movie>> GetEntityAsync(string moviePath);
 }

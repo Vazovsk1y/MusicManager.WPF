@@ -10,7 +10,7 @@ public class Songwriter
 
     private readonly List<Movie> _movies = new();
 
-    private readonly List<Disc> _discs = new();
+    private readonly List<Disc> _compilations = new();
 
     #endregion
 
@@ -26,7 +26,7 @@ public class Songwriter
 
     public IReadOnlyCollection<Movie> Movies => _movies.ToList();
 
-    public IReadOnlyCollection<Disc> Discs => _discs.ToList();
+    public IReadOnlyCollection<Disc> Compilations => _compilations.ToList();
 
     #endregion
 
@@ -88,6 +88,16 @@ public class Songwriter
 
         EntityDirectoryInfo = result.Value;
         return Result.Success();
+    }
+
+    public void AddMovie(Movie movie)
+    {
+        _movies.Add(movie);
+    }
+
+    public void AddDisc(Disc disc)
+    {
+        _compilations.Add(disc);
     }
 
     #endregion

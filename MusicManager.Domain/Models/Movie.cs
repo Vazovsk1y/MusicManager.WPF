@@ -8,6 +8,8 @@ public class Movie
 {
     #region --Fields--
 
+    private readonly List<Songwriter> _songwriters = new();
+
     private readonly List<Disc> _discs = new();
 
     #endregion
@@ -15,8 +17,6 @@ public class Movie
     #region --Properties--
 
     public MovieId Id { get; private set; }
-
-    public SongwriterId SongwriterId { get; private set; }
 
     public ProductionInfo ProductionInfo { get; private set; }
 
@@ -28,16 +28,17 @@ public class Movie
 
     public IReadOnlyCollection<Disc> Discs => _discs.ToList();
 
+    public IReadOnlyCollection<Songwriter> Songwriters => _songwriters.ToList();
+
     #endregion
 
     #region --Constructors--
 
-    private Movie(SongwriterId songwriterId) 
+    private Movie() 
     { 
         ProductionInfo = ProductionInfo.Undefined;
         DirectorInfo = DirectorInfo.Undefined;
         Id = MovieId.Create();
-        SongwriterId = songwriterId;
     }
 
     #endregion
@@ -45,7 +46,6 @@ public class Movie
     #region --Methods--
 
     public static Result<Movie> Create(
-        SongwriterId songwriterId,
         string title, 
         string productionYear, 
         string productionCountry)
@@ -59,7 +59,7 @@ public class Movie
 
         return prodInfoResult.IsFailure ? Result.Failure<Movie>(prodInfoResult.Error)
             :
-            new Movie(songwriterId)
+            new Movie()
             {
                 Title = title,
                 ProductionInfo = prodInfoResult.Value
@@ -67,13 +67,12 @@ public class Movie
     }
 
     public static Result<Movie> Create(
-        SongwriterId songwriterId,
         string title, 
         string productionYear, 
         string productionCountry, 
         string directoryFullPath)
     {
-        var creationResult = Create(songwriterId, title, productionYear, productionCountry);
+        var creationResult = Create(title, productionYear, productionCountry);
         if (creationResult.IsFailure)
         {
             return creationResult;
@@ -111,6 +110,16 @@ public class Movie
         }
 
         return Result.Failure(result.Error);
+    }
+
+    public void AddDisc(Disc disc)
+    {
+        _discs.Add(disc);
+    }
+
+    public void AddSongwriter(Songwriter songwriter)
+    {
+        _songwriters.Add(songwriter);
     }
 
     #endregion
