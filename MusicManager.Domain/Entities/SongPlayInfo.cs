@@ -9,6 +9,14 @@ namespace MusicManager.Domain.Entities;
 
 public class SongPlayInfo
 {
+    #region --Fields--
+
+
+
+    #endregion
+
+    #region --Properties--
+
     public SongId SongId { get; private set; }
 
     public string ExecutableFileName { get; }
@@ -21,6 +29,10 @@ public class SongPlayInfo
 
     public TimeSpan SongDuration { get; init; }
 
+    #endregion
+
+    #region --Constructors--
+
     protected SongPlayInfo() { } // for EF core
 
     private SongPlayInfo(string fullPath, SongId songId)
@@ -29,6 +41,10 @@ public class SongPlayInfo
         ExecutableFileName = Path.GetFileName(ExecutableFileFullPath);
         SongId = songId;
     }
+
+    #endregion
+
+    #region --Methods--
 
     internal static Result<SongPlayInfo> Create(
         string fullPath,
@@ -62,7 +78,16 @@ public class SongPlayInfo
                 SongDuration = duration,
                 ExecutableType = SongFileType.WV,
             },
-            _ => Result.Failure<SongPlayInfo>(new Error("Song file extension is not supported.")),
+            DomainConstants.ApeExtension => new SongPlayInfo(fullPath, songId)
+            {
+                SongDuration = duration,
+                ExecutableType = SongFileType.Ape,
+            },
+            _ => new SongPlayInfo(fullPath, songId)
+            {
+                SongDuration = duration,
+                ExecutableType = SongFileType.Unknown,
+            }
         };
     }
 
@@ -93,6 +118,8 @@ public class SongPlayInfo
         songPlayInfo.CueFilePath = cueFileFullPath;
         return songPlayInfo;
     }
+
+    #endregion
 }
 
 
