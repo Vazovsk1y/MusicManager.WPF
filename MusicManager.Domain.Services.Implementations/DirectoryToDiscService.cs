@@ -3,15 +3,13 @@ using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Helpers;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
-using MusicManager.Domain.Services.Implementations.Extensions;
 using MusicManager.Domain.Shared;
-using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MusicManager.Domain.Services
 {
-    public class DirectoryToDiscService : IPathToDiscService
+    public partial class DirectoryToDiscService : IPathToDiscService
     {
-        private readonly char _diskProductionInfoSeparator = '-';
         private readonly string _bootLegKeyWord = "Bootleg";
 
         public Task<Result<Disc>> GetEntityAsync(string discPath, SongwriterId parent)
@@ -33,29 +31,28 @@ namespace MusicManager.Domain.Services
             }
         }
 
-        private Result<DirectoryInfo> isAbleToMoveNext(string path)
+        private Result<DirectoryInfo> isAbleToMoveNext(string discPath)
         {
-            if (!PathValidator.IsValid(path))
+            if (!PathValidator.IsValid(discPath))
             {
-                return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryPathIsInvalid(path));
+                return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryPathIsInvalid(discPath));
             }
 
-            var directoryInfo = new DirectoryInfo(path);
+            var directoryInfo = new DirectoryInfo(discPath);
             if (!directoryInfo.Exists)
             {
-                return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryIsNotExists(path));
+                return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryIsNotExists(discPath));
             }
             return directoryInfo;
         }
 
-        private Result<Disc> CreateBootLeg(DirectoryInfo disc, SongwriterId parent)
+        private Result<Disc> CreateBootLeg(DirectoryInfo discDirectoryInfo, SongwriterId parent)
         {
-            string identifier = disc.Name.Trim(_bootLegKeyWord.ToCharArray());
             var diskCreationResult = Disc.Create(
                 parent,
                 DiscType.Bootleg,
-                identifier.Length > 0 ? identifier : DiscType.Bootleg.MapToString(),
-                disc.FullName);
+                discDirectoryInfo.Name,
+                discDirectoryInfo.FullName);
 
             if (diskCreationResult.IsFailure)
             {
@@ -65,30 +62,22 @@ namespace MusicManager.Domain.Services
             return diskCreationResult.Value;
         }
 
-        private Result<Disc> CreateDisc(DirectoryInfo disc, SongwriterId parent)
+        private Result<Disc> CreateDisc(DirectoryInfo discDirectoryInfo, SongwriterId parent)
         {
-            var diskTypeRow = disc.Name[..disc.Name.IndexOf(' ')];
-            var indetificator = GetIndetificator(disc.Name, diskTypeRow.Length);
-            var (isSuccess, year, country) = GetProductionInfoComponents(disc.Name, indetificator.Length, diskTypeRow.Length);
+            var gettingComponentsResult = GetDiscComponents(discDirectoryInfo.Name);
 
-            if (!isSuccess)
+            if (gettingComponentsResult.IsFailure)
             {
-                return Result.Failure<Disc>(new Error("Error occured when tried to get production inforamation."));
-            }
-
-            var creationDiskTypeResult = diskTypeRow.CreateDiscType();
-            if (creationDiskTypeResult.IsFailure)
-            {
-                return Result.Failure<Disc>(creationDiskTypeResult.Error);
+                return Result.Failure<Disc>(gettingComponentsResult.Error);
             }
 
             var creationDiscResult = Disc.Create(
                 parent,
-                creationDiskTypeResult.Value,
-                indetificator.RemoveAllSpaces(),
-                disc.FullName,
-                year!,
-                country!);
+                gettingComponentsResult.Value.discType,
+                gettingComponentsResult.Value.discIndetificator,
+                discDirectoryInfo.FullName,
+                gettingComponentsResult.Value.year,
+                gettingComponentsResult.Value.country);
 
             if (creationDiscResult.IsFailure)
             {
@@ -98,33 +87,25 @@ namespace MusicManager.Domain.Services
             return Result.Success(creationDiscResult.Value);
         }
 
-        private (bool isSuccess, string? year, string? country) GetProductionInfoComponents(string directoryName, int indetificatorLength, int diskTypeRowLength)
+        private Result<(DiscType discType, string discIndetificator, string country, string year)> GetDiscComponents(string discDirectoryName)
         {
-            var productionComponents = new string(directoryName.Skip(indetificatorLength + diskTypeRowLength).ToArray())
-                .Split(_diskProductionInfoSeparator, StringSplitOptions.RemoveEmptyEntries)
-                .Select(i => i.TrimStart().TrimEnd())
-                .ToList();
-
-            if (productionComponents.Count < 2)
+            var match = FindAllDiscComponents().Match(discDirectoryName);
+            if (match.Success)
             {
-                return (false, null, null);
+                var discTypeCreationResult = match.Groups[1].Value.CreateDiscType();
+                if (discTypeCreationResult.IsFailure)
+                {
+                    return Result.Failure<(DiscType, string, string, string)>(discTypeCreationResult.Error);
+                }
+
+                return (discTypeCreationResult.Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value);
             }
 
-            return (true, productionComponents[1], productionComponents[0]);
+            return Result.Failure<(DiscType, string, string, string)>(new Error($"Unable to get some of the required components from disc directory name [{discDirectoryName}]."));
         }
 
-        private string GetIndetificator(string directoryName, int diskTypeRowLength)
-        {
-            StringBuilder indetificator = new();
-            for (int i = diskTypeRowLength; i < directoryName.Length; i++)
-            {
-                if (directoryName[i] == '-')
-                    break;
-                indetificator.Append(directoryName[i]);
-            }
-
-            return indetificator.ToString();
-        }
+        [GeneratedRegex(@"^(.*?)\s(.*?)\s-\s(.*?)\s-\s(\d{4})")]
+        private partial Regex FindAllDiscComponents();
     }
 }
 
