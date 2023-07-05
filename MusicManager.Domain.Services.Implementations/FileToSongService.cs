@@ -49,7 +49,7 @@ namespace MusicManager.Domain.Services.Implementations
                     Song.Create(
                     parentId,
                     songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
-                    TrimDiscNumber(discNumberMatch.Groups[0].Value),
+                    GetRowFromBrackets(fileName),
                     songFilePath,
                     songInfo.Properties.Duration
                     ));
@@ -98,7 +98,7 @@ namespace MusicManager.Domain.Services.Implementations
                     songFilePath, 
                     cueFilePath, 
                     allSongFileDuration,
-                    TrimDiscNumber(discNumberMatch.Groups[0].Value));
+                    GetRowFromBrackets(fileName));
             }
 
             return ParseCueFileTracksToSongs(
@@ -198,9 +198,19 @@ namespace MusicManager.Domain.Services.Implementations
             return Result.Failure<IEnumerable<Song>>(lastSongCreationResult.Error);
         }
 
-        private string TrimDiscNumber(string untrimedDiscNumberRow) => untrimedDiscNumberRow
-            .Replace("(", string.Empty)
-            .Replace(")", string.Empty);
+        private string GetRowFromBrackets(string rowWithBrackets)
+        {
+            int firstBracketIndex = rowWithBrackets.IndexOf('(');
+            if (firstBracketIndex != -1)
+            {
+                int secondBracketIndex = rowWithBrackets.IndexOf(')', firstBracketIndex + 1);
+                if (secondBracketIndex != -1)
+                {
+                    return rowWithBrackets.Substring(firstBracketIndex + 1, secondBracketIndex - firstBracketIndex - 1);
+                }
+            }
+            return string.Empty;
+        }
 
         #endregion
 
