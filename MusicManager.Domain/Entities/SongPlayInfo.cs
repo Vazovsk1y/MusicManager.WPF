@@ -1,7 +1,6 @@
 ﻿using MusicManager.Domain.Constants;
 using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
-using MusicManager.Domain.Helpers;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
 
@@ -56,12 +55,8 @@ public class SongPlayInfo
             return Result.Failure<SongPlayInfo>(DomainErrors.NullOrEmptyStringPassedError());
         }
 
-        if (!PathValidator.IsValid(fullPath))
-        {
-            return Result.Failure<SongPlayInfo>(new Error($"The passed path {fullPath} wasn't a file path."));
-        }
-
-        return Path.GetExtension(fullPath) switch
+        string fileExtension = Path.GetExtension(fullPath);
+        return fileExtension switch
         {
             DomainConstants.FlacExtension => new SongPlayInfo(fullPath, songId)
             {
@@ -83,11 +78,7 @@ public class SongPlayInfo
                 SongDuration = duration,
                 ExecutableType = SongFileType.Ape,
             },
-            _ => new SongPlayInfo(fullPath, songId)
-            {
-                SongDuration = duration,
-                ExecutableType = SongFileType.Unknown,
-            }
+            _ => Result.Failure<SongPlayInfo>(DomainErrors.SongPlayInfo.UndefinedExecutableTypePassed(fileExtension))
         };
     }
 
@@ -109,9 +100,9 @@ public class SongPlayInfo
             return Result.Failure<SongPlayInfo>(DomainErrors.NullOrEmptyStringPassedError(nameof(cueFileFullPath)));
         }
 
-        if (!PathValidator.IsValid(cueFileFullPath) || !cueFileFullPath.EndsWith(DomainConstants.CueExtension))
+        if (!cueFileFullPath.EndsWith(DomainConstants.CueExtension))
         {
-            return Result.Failure<SongPlayInfo>(new Error($"Incorrect cue path was passed {cueFileFullPath}."));
+            return Result.Failure<SongPlayInfo>(DomainErrors.SongPlayInfo.IncorrectCuePathPassed(cueFileFullPath));
         }
 
         var songPlayInfo = creationResult.Value;

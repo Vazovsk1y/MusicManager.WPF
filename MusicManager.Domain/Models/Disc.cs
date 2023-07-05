@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Entities;
 using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
@@ -13,6 +14,8 @@ public class Disc : IAggregateRoot
     private readonly List<Song> _songs = new();
 
     private readonly List<Movie> _movies = new();
+
+    private readonly List<Cover> _covers = new();
 
     #endregion
 
@@ -33,6 +36,8 @@ public class Disc : IAggregateRoot
     public IReadOnlyCollection<Song> Songs => _songs.ToList();
     
     public IReadOnlyCollection<Movie> Movies => _movies.ToList();
+
+    public IReadOnlyCollection<Cover> Covers => _covers.ToList();
 
     #endregion
 
@@ -147,6 +152,17 @@ public class Disc : IAggregateRoot
     public void AddMovie(Movie movie)
     {
         _movies.Add(movie);
+    }
+
+    public Result AddCover(string coverPath)
+    {
+        var coverCreationResult = Cover.Create(Id, coverPath);
+        if (coverCreationResult.IsSuccess)
+        {
+            _covers.Add(coverCreationResult.Value);
+            return Result.Success();
+        }
+        return Result.Failure(coverCreationResult.Error);
     }
 
     #endregion

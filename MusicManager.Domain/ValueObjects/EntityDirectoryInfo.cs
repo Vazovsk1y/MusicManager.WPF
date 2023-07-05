@@ -1,6 +1,5 @@
 ﻿using MusicManager.Domain.Common;
 using MusicManager.Domain.Errors;
-using MusicManager.Domain.Helpers;
 using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.ValueObjects;
@@ -22,11 +21,6 @@ public class EntityDirectoryInfo : ValueObject<EntityDirectoryInfo>
         if (string.IsNullOrWhiteSpace(fullPath))
         {
             return Result.Failure<EntityDirectoryInfo>(DomainErrors.NullOrEmptyStringPassedError(nameof(fullPath)));
-        }
-
-        if (!PathValidator.IsValid(fullPath))
-        {
-            return Result.Failure<EntityDirectoryInfo>(DomainErrors.EntityDirectoryInfo.InvalidPathPassed(fullPath));
         }
 
         return new EntityDirectoryInfo(fullPath);

@@ -17,6 +17,13 @@ internal static class DomainErrors
         public static Error InvalidPathPassed(string path) => new($"The passed path [{path}] wasn't a directory path.");
     }
 
+    internal static class SongPlayInfo
+    {
+        public static Error UndefinedExecutableTypePassed(string extension) => new($"Passed executable song file type [{extension}] is not support.");
+
+        public static Error IncorrectCuePathPassed(string cuePath) => new($"Passed cue file path [{cuePath}] isn't correct.");
+    }
+
     #endregion
 
     #region --Base domain errors--
