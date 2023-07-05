@@ -120,19 +120,13 @@ public partial class CueFileInteractor : ICueFileInteractor
         {
             if (row.Contains(TitleKeyWord))
             {
-                track.Title = row
-                    .TrimStart()
-                    .TrimStart(TitleKeyWord.ToArray())
-                    .Replace("\"", "");
+                track.Title = GetRowFromQuotes(row) ?? "Undefined";
                 continue;
             }
 
             if (row.Contains(PerformerKeyWord))
             {
-                track.Performer = row
-                  .RemoveAllSpaces()
-                  .Trim(PerformerKeyWord.ToArray())
-                  .Replace("\"", "");
+                track.Performer = GetRowFromQuotes(row) ?? "Undefined";
                 continue;
             }
 
@@ -146,13 +140,21 @@ public partial class CueFileInteractor : ICueFileInteractor
 
             if (row.Contains(Index00KeyWord))
             {
-                track.Index00 = ParseToTimeSpan(GetTimeSpanRowFromLine().Match(row).Value);
+                var match = GetTimeSpanRowFromLine().Match(row);
+                if (match.Success)
+                {
+                    track.Index00 = ParseToTimeSpan(match.Value);
+                }
                 continue;
             }
 
             if (row.Contains(Index01KeyWord))
             {
-                track.Index01 = ParseToTimeSpan(GetTimeSpanRowFromLine().Match(row).Value);
+                var match = GetTimeSpanRowFromLine().Match(row);
+                if (match.Success)
+                {
+                    track.Index01 = ParseToTimeSpan(match.Value);
+                }
                 break;
             }
         }
@@ -180,6 +182,20 @@ public partial class CueFileInteractor : ICueFileInteractor
         }
 
         return new TimeSpan(0, 0, minutes, seconds, milliseconds);
+    }
+
+    private string? GetRowFromQuotes(string rowWithQuotes)
+    {
+        int firstQuoteIndex = rowWithQuotes.IndexOf('"');
+        if (firstQuoteIndex != -1)
+        {
+            int secondQuoteIndex = rowWithQuotes.IndexOf('"', firstQuoteIndex + 1);
+            if (secondQuoteIndex != -1)
+            {
+               return rowWithQuotes.Substring(firstQuoteIndex + 1, secondQuoteIndex - firstQuoteIndex - 1);
+            }
+        }
+        return null; 
     }
 
     #endregion
