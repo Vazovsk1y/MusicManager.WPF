@@ -9,9 +9,7 @@ public class Movie : IAggregateRoot
 {
     #region --Fields--
 
-    private readonly List<Songwriter> _songwriters = new();
-
-    private readonly List<Disc> _discs = new();
+    private readonly List<MovieRelease> _movieReleases = new();
 
     #endregion
 
@@ -19,26 +17,25 @@ public class Movie : IAggregateRoot
 
     public MovieId Id { get; private set; }
 
+    public SongwriterId SongwriterId { get; private set; }
+
     public ProductionInfo ProductionInfo { get; private set; }
 
-    public DirectorInfo DirectorInfo { get; private set; }
+    public DirectorInfo DirectorInfo { get; private set; } 
 
     public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
 
     public string Title { get; private set; } = string.Empty;
 
-    public IReadOnlyCollection<Disc> Discs => _discs.ToList();
-
-    public IReadOnlyCollection<Songwriter> Songwriters => _songwriters.ToList();
+    public IReadOnlyCollection<MovieRelease> Releases => _movieReleases.ToList();
 
     #endregion
 
     #region --Constructors--
 
-    private Movie() 
-    { 
-        ProductionInfo = ProductionInfo.Undefined;
-        DirectorInfo = DirectorInfo.Undefined;
+    private Movie(SongwriterId songwriterId) 
+    {
+        SongwriterId = songwriterId;
         Id = MovieId.Create();
     }
 
@@ -47,33 +44,36 @@ public class Movie : IAggregateRoot
     #region --Methods--
 
     public static Result<Movie> Create(
+        SongwriterId songwriterId,
         string title, 
         string productionYear, 
         string productionCountry)
     {
         if (string.IsNullOrWhiteSpace(title))
         {
-            return Result.Failure<Movie>(DomainErrors.NullOrEmptyStringPassedError(nameof(title)));
+            return Result.Failure<Movie>(DomainErrors.NullOrEmptyStringPassed(nameof(title)));
         }
 
         var prodInfoResult = ProductionInfo.Create(productionCountry, productionYear);
 
         return prodInfoResult.IsFailure ? Result.Failure<Movie>(prodInfoResult.Error)
             :
-            new Movie()
+            new Movie(songwriterId)
             {
                 Title = title,
-                ProductionInfo = prodInfoResult.Value
+                ProductionInfo = prodInfoResult.Value,
+                DirectorInfo = DirectorInfo.Undefined,
             };
     }
 
     public static Result<Movie> Create(
+        SongwriterId songwriterId,
         string title, 
         string productionYear, 
         string productionCountry, 
         string directoryFullPath)
     {
-        var creationResult = Create(title, productionYear, productionCountry);
+        var creationResult = Create(songwriterId, title, productionYear, productionCountry);
         if (creationResult.IsFailure)
         {
             return creationResult;
@@ -113,14 +113,26 @@ public class Movie : IAggregateRoot
         return Result.Failure(result.Error);
     }
 
-    public void AddDisc(Disc disc)
+    public Result AddRelease(MovieRelease release)
     {
-        _discs.Add(disc);
-    }
+        if (release is null)
+        {
+            return Result.Failure(DomainErrors.NullEntityPassed(nameof(release)));
+        }
 
-    public void AddSongwriter(Songwriter songwriter)
-    {
-        _songwriters.Add(songwriter);
+        if (_movieReleases.SingleOrDefault(i => i.Id == release.Id) is not null)
+        {
+            return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(release)));
+        }
+
+        var addingDiscResult = release.AddMovie(this);
+        if (addingDiscResult.IsFailure)
+        {
+            return Result.Failure(addingDiscResult.Error);
+        }
+
+        _movieReleases.Add(release);
+        return Result.Success();
     }
 
     #endregion

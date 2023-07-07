@@ -36,7 +36,7 @@ public class ProductionInfo : ValueObject<ProductionInfo>
     {
         if (string.IsNullOrWhiteSpace(country) || string.IsNullOrWhiteSpace(year))
         {
-            return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassedError());
+            return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassed());
         }
 
         if (int.TryParse(year, out int result) && IsYearCorrect(result))
@@ -51,7 +51,7 @@ public class ProductionInfo : ValueObject<ProductionInfo>
     {
         if (string.IsNullOrWhiteSpace(country))
         {
-            return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassedError(nameof(country)));
+            return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassed(nameof(country)));
         }
 
         if (IsYearCorrect(year))

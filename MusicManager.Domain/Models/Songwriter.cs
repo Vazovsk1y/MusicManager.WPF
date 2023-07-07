@@ -11,7 +11,7 @@ public class Songwriter : IAggregateRoot
 
     private readonly List<Movie> _movies = new();
 
-    private readonly List<Disc> _discs = new();
+    private readonly List<Compilation> _compilations = new();
 
     #endregion
 
@@ -25,9 +25,9 @@ public class Songwriter : IAggregateRoot
 
     public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
 
-    public IReadOnlyCollection<Movie> Movies => _movies.ToList();
+    public IReadOnlyCollection<Compilation> Compilations => _compilations.ToList();
 
-    public IReadOnlyCollection<Disc> Discs => _discs.ToList();
+    public IReadOnlyCollection<Movie> Movies => _movies.ToList(); 
 
     #endregion
 
@@ -48,7 +48,7 @@ public class Songwriter : IAggregateRoot
     {
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(surname)) 
         {
-            return Result.Failure<Songwriter>(DomainErrors.NullOrEmptyStringPassedError());
+            return Result.Failure<Songwriter>(DomainErrors.NullOrEmptyStringPassed());
         }
 
         return new Songwriter
@@ -91,14 +91,36 @@ public class Songwriter : IAggregateRoot
         return Result.Success();
     }
 
-    public void AddMovie(Movie movie)
+    public Result AddMovie(Movie movie)
     {
+        if (movie is null)
+        {
+            return Result.Failure(DomainErrors.NullEntityPassed(nameof(movie)));
+        }
+
+        if (_movies.SingleOrDefault(i => i.Id == movie.Id) is not null)
+        {
+            return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(movie)));
+        }
+
         _movies.Add(movie);
+        return Result.Success();
     }
 
-    public void AddDisc(Disc disc)
+    public Result AddCompilation(Compilation disc)
     {
-        _discs.Add(disc);
+        if (disc is null)
+        {
+            return Result.Failure(DomainErrors.NullEntityPassed(nameof(disc)));
+        }
+
+        if (_compilations.SingleOrDefault(i => i.Id == disc.Id) is not null)
+        {
+            return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(disc)));
+        }
+
+        _compilations.Add(disc);
+        return Result.Success();
     }
 
     #endregion

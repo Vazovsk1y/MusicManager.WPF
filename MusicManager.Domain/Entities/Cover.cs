@@ -1,5 +1,5 @@
-﻿using MusicManager.Domain.Errors;
-using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.Entities;
@@ -16,7 +16,7 @@ public class Cover
     {
         if (string.IsNullOrWhiteSpace(fullPath))
         {
-            return Result.Failure<Cover>(DomainErrors.NullOrEmptyStringPassedError(nameof(fullPath)));
+            return Result.Failure<Cover>(DomainErrors.NullOrEmptyStringPassed(nameof(fullPath)));
         }
 
         return new Cover() 

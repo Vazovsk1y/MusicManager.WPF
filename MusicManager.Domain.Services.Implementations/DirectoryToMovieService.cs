@@ -9,7 +9,7 @@ public class DirectoryToMovieService : IPathToMovieService
 {
     private readonly char _separator = '-';
 
-    public Task<Result<Movie>> GetEntityAsync(string moviePath)
+    public Task<Result<Movie>> GetEntityAsync(string moviePath, SongwriterId songwriterId)
     {
         var isAbleToMoveNext = IsAbleToMoveNext(moviePath);
         if (isAbleToMoveNext.IsFailure)
@@ -25,6 +25,7 @@ public class DirectoryToMovieService : IPathToMovieService
         }
 
         var movieCreationResult = Movie.Create(
+            songwriterId,
             title!,
             year!,
             "Undefined",

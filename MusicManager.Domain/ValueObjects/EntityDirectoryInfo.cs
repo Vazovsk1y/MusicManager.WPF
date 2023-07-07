@@ -20,7 +20,7 @@ public class EntityDirectoryInfo : ValueObject<EntityDirectoryInfo>
     {
         if (string.IsNullOrWhiteSpace(fullPath))
         {
-            return Result.Failure<EntityDirectoryInfo>(DomainErrors.NullOrEmptyStringPassedError(nameof(fullPath)));
+            return Result.Failure<EntityDirectoryInfo>(DomainErrors.NullOrEmptyStringPassed(nameof(fullPath)));
         }
 
         return new EntityDirectoryInfo(fullPath);

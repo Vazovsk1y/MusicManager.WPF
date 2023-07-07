@@ -6,7 +6,7 @@ using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.Entities;
 
-public class SongPlayInfo
+public class PlaybackInfo
 {
     #region --Fields--
 
@@ -32,9 +32,9 @@ public class SongPlayInfo
 
     #region --Constructors--
 
-    protected SongPlayInfo() { } // for EF core
+    protected PlaybackInfo() { } // for EF core
 
-    private SongPlayInfo(string fullPath, SongId songId)
+    private PlaybackInfo(string fullPath, SongId songId)
     {
         ExecutableFileFullPath = fullPath;
         ExecutableFileName = Path.GetFileName(ExecutableFileFullPath);
@@ -45,44 +45,44 @@ public class SongPlayInfo
 
     #region --Methods--
 
-    internal static Result<SongPlayInfo> Create(
+    internal static Result<PlaybackInfo> Create(
         string fullPath,
         SongId songId,
         TimeSpan duration)
     {
         if (string.IsNullOrWhiteSpace(fullPath))
         {
-            return Result.Failure<SongPlayInfo>(DomainErrors.NullOrEmptyStringPassedError());
+            return Result.Failure<PlaybackInfo>(DomainErrors.NullOrEmptyStringPassed());
         }
 
         string fileExtension = Path.GetExtension(fullPath);
         return fileExtension switch
         {
-            DomainConstants.FlacExtension => new SongPlayInfo(fullPath, songId)
+            DomainConstants.FlacExtension => new PlaybackInfo(fullPath, songId)
             {
                 SongDuration = duration,
                 ExecutableType = SongFileType.Flac,
             },
-            DomainConstants.Mp3Extension => new SongPlayInfo(fullPath, songId)
+            DomainConstants.Mp3Extension => new PlaybackInfo(fullPath, songId)
             {
                 SongDuration = duration,
                 ExecutableType = SongFileType.Mp3,
             },
-            DomainConstants.WVExtension => new SongPlayInfo(fullPath, songId)
+            DomainConstants.WVExtension => new PlaybackInfo(fullPath, songId)
             {
                 SongDuration = duration,
                 ExecutableType = SongFileType.WV,
             },
-            DomainConstants.ApeExtension => new SongPlayInfo(fullPath, songId)
+            DomainConstants.ApeExtension => new PlaybackInfo(fullPath, songId)
             {
                 SongDuration = duration,
                 ExecutableType = SongFileType.Ape,
             },
-            _ => Result.Failure<SongPlayInfo>(DomainErrors.SongPlayInfo.UndefinedExecutableTypePassed(fileExtension))
+            _ => Result.Failure<PlaybackInfo>(DomainErrors.SongPlayInfo.UndefinedExecutableTypePassed(fileExtension))
         };
     }
 
-    internal static Result<SongPlayInfo> Create(
+    internal static Result<PlaybackInfo> Create(
         string fullPath,
         SongId songId,
         TimeSpan duration,
@@ -97,12 +97,12 @@ public class SongPlayInfo
 
         if (string.IsNullOrWhiteSpace(cueFileFullPath))
         {
-            return Result.Failure<SongPlayInfo>(DomainErrors.NullOrEmptyStringPassedError(nameof(cueFileFullPath)));
+            return Result.Failure<PlaybackInfo>(DomainErrors.NullOrEmptyStringPassed(nameof(cueFileFullPath)));
         }
 
         if (!cueFileFullPath.EndsWith(DomainConstants.CueExtension))
         {
-            return Result.Failure<SongPlayInfo>(DomainErrors.SongPlayInfo.IncorrectCuePathPassed(cueFileFullPath));
+            return Result.Failure<PlaybackInfo>(DomainErrors.SongPlayInfo.IncorrectCuePathPassed(cueFileFullPath));
         }
 
         var songPlayInfo = creationResult.Value;

@@ -7,46 +7,24 @@ using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Models;
 
-public class Disc : IAggregateRoot
+public class MovieRelease : Disc, IAggregateRoot 
 {
     #region --Fields--
 
-    private readonly List<Song> _songs = new();
-
     private readonly List<Movie> _movies = new();
-
-    private readonly List<Cover> _covers = new();
 
     #endregion
 
     #region --Properties--
 
-    public DiscId Id { get; private set; }
-
-    public SongwriterId SongwriterId { get; private set; }
-
-    public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
-
-    public ProductionInfo ProductionInfo { get; private set; }
-
-    public DiscType Type { get; private set; }
-
-    public string Identifier { get; private set; } = string.Empty;
-
-    public IReadOnlyCollection<Song> Songs => _songs.ToList();
-    
     public IReadOnlyCollection<Movie> Movies => _movies.ToList();
-
-    public IReadOnlyCollection<Cover> Covers => _covers.ToList();
 
     #endregion
 
     #region --Constructors--
 
-    private Disc(SongwriterId songwriterId) 
+    private MovieRelease() : base()
     {
-        SongwriterId = songwriterId; 
-        Id = DiscId.Create();
         ProductionInfo = ProductionInfo.Undefined;
     }
 
@@ -54,30 +32,28 @@ public class Disc : IAggregateRoot
 
     #region --Methods--
 
-    public static Result<Disc> Create(
-        SongwriterId songwriterId,
+    public static Result<MovieRelease> Create(
         DiscType discType, 
         string identifier)
     {
         if (string.IsNullOrWhiteSpace(identifier))
         {
-            return Result.Failure<Disc>(DomainErrors.NullOrEmptyStringPassedError(nameof(identifier)));
+            return Result.Failure<MovieRelease>(DomainErrors.NullOrEmptyStringPassed(nameof(identifier)));
         }
 
-        return new Disc(songwriterId) 
+        return new MovieRelease() 
         {
             Type = discType, 
             Identifier = identifier 
         };
     }
 
-    public static Result<Disc> Create(
-        SongwriterId songwriterId,
+    public static Result<MovieRelease> Create(
         DiscType discType,
         string identifier,
         string directoryFullPath)
     {
-        var creationResult = Create(songwriterId, discType, identifier);
+        var creationResult = Create(discType, identifier);
 
         if (creationResult.IsFailure)
         {
@@ -87,18 +63,17 @@ public class Disc : IAggregateRoot
         var settingDirectoryInfoResult = creationResult.Value.SetDirectoryInfo(directoryFullPath);
 
         return settingDirectoryInfoResult.IsFailure ? 
-            Result.Failure<Disc>(settingDirectoryInfoResult.Error) : creationResult.Value;
+            Result.Failure<MovieRelease>(settingDirectoryInfoResult.Error) : creationResult.Value;
     }
 
-    public static Result<Disc> Create(
-        SongwriterId songwriterId,
+    public static Result<MovieRelease> Create(
         DiscType discType,
         string identifier,
         string directoryFullPath,
         string productionYear,
         string productionCountry)
     {
-        var diskCreationResult = Create(songwriterId, discType, identifier);
+        var diskCreationResult = Create(discType, identifier);
 
         if (diskCreationResult.IsFailure)
         {
@@ -109,13 +84,13 @@ public class Disc : IAggregateRoot
 
         if (settingDirectoryInfoResutlt.IsFailure)
         {
-            Result.Failure<Disc>(settingDirectoryInfoResutlt.Error);
+            Result.Failure<MovieRelease>(settingDirectoryInfoResutlt.Error);
         }
 
         var settingProdInfoResult = diskCreationResult.Value.SetProductionInfo(productionCountry, productionYear);
 
         return settingProdInfoResult.IsSuccess ?
-            diskCreationResult.Value : Result.Failure<Disc>(settingProdInfoResult.Error);
+            diskCreationResult.Value : Result.Failure<MovieRelease>(settingProdInfoResult.Error);
     }
 
     public Result SetDirectoryInfo(string fullPath)
@@ -144,14 +119,20 @@ public class Disc : IAggregateRoot
         return Result.Failure(result.Error);
     }
 
-    public void AddSong(Song song)
+    public Result AddSong(Song song)
     {
-        _songs.Add(song);
-    }
+        if (song is null)
+        {
+            return Result.Failure(DomainErrors.NullEntityPassed(nameof(song)));
+        }
 
-    public void AddMovie(Movie movie)
-    {
-        _movies.Add(movie);
+        if (_songs.SingleOrDefault(i => i.Id == song.Id) is not null)
+        {
+            return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(song)));
+        }
+
+        _songs.Add(song);
+        return Result.Success();
     }
 
     public Result AddCover(string coverPath)
@@ -165,10 +146,17 @@ public class Disc : IAggregateRoot
         return Result.Failure(coverCreationResult.Error);
     }
 
+    internal Result AddMovie(Movie movie)
+    {
+        if (_movies.SingleOrDefault(i => i.Id == movie.Id) is not null)
+        {
+            return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(movie)));
+        }
+
+        _movies.Add(movie);
+        return Result.Success();
+    }
+
     #endregion
 }
 
-public record DiscId(Guid Value)
-{
-    public static DiscId Create() => new(Guid.NewGuid());
-}

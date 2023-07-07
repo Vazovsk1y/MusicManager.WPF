@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.Services;

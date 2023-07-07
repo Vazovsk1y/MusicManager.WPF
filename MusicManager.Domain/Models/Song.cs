@@ -21,7 +21,7 @@ public class Song : IAggregateRoot
 
     public string? DiscNumber { get; private set; }
 
-    public SongPlayInfo? SongPlayInfo { get; private set; }
+    public PlaybackInfo? PlaybackInfo { get; private set; }
 
     public string Name { get; private set; } = string.Empty;
 
@@ -46,7 +46,7 @@ public class Song : IAggregateRoot
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return Result.Failure<Song>(DomainErrors.NullOrEmptyStringPassedError(nameof(name)));
+            return Result.Failure<Song>(DomainErrors.NullOrEmptyStringPassed(nameof(name)));
         }
 
         return new Song(name, discId);
@@ -59,7 +59,7 @@ public class Song : IAggregateRoot
     {
         if (string.IsNullOrEmpty(discNumber))
         {
-            return Result.Failure<Song>(DomainErrors.NullOrEmptyStringPassedError(nameof(discNumber)));
+            return Result.Failure<Song>(DomainErrors.NullOrEmptyStringPassed(nameof(discNumber)));
         }
 
         var songCreationResult = Create(discId, name);
@@ -175,26 +175,26 @@ public class Song : IAggregateRoot
 
     public Result SetSongPlayInfo(string fullPath, TimeSpan duration)
     {
-        var settingSongFileInfoResult = SongPlayInfo.Create(fullPath, Id, duration);
+        var settingSongFileInfoResult = PlaybackInfo.Create(fullPath, Id, duration);
 
         if (settingSongFileInfoResult.IsFailure)
         {
             return Result.Failure(settingSongFileInfoResult.Error);
         }
 
-        SongPlayInfo = settingSongFileInfoResult.Value;
+        PlaybackInfo = settingSongFileInfoResult.Value;
         return Result.Success();
     }
 
     public Result SetSongPlayInfo(string fullPath, TimeSpan duration, string cueFileFullPath)
     {
-        var settingSongFileInfoResult = SongPlayInfo.Create(fullPath, Id, duration, cueFileFullPath);
+        var settingSongFileInfoResult = PlaybackInfo.Create(fullPath, Id, duration, cueFileFullPath);
 
         if (settingSongFileInfoResult.IsFailure)
         {
             return Result.Failure(settingSongFileInfoResult.Error);
         }
-        SongPlayInfo = settingSongFileInfoResult.Value;
+        PlaybackInfo = settingSongFileInfoResult.Value;
         return Result.Success();
     }
 
