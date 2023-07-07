@@ -9,7 +9,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestPlace", "TestPlace\Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicManager.Domain.Services.Implementations", "MusicManager.Domain.Services.Implementations\MusicManager.Domain.Services.Implementations.csproj", "{04E4ABFB-0C07-4B93-89C1-3EDC9228B353}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TEsts", "TEsts\TEsts.csproj", "{FBFD1C93-1099-41B9-9A90-3504FF868A6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TEsts", "TEsts\TEsts.csproj", "{FBFD1C93-1099-41B9-9A90-3504FF868A6C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{FAE1C9BA-098F-4BF8-99A2-0C9223CC4E21}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{81B5D219-07A4-4A5F-988E-12E35BF632A5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{8FFB0159-79D5-452F-B4C8-32A0F42CDFC8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{C6842CC8-66EE-4061-A269-3A478F16C7AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +44,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4957EE8E-942E-40B9-9E4B-58132FA5CBB7} = {FAE1C9BA-098F-4BF8-99A2-0C9223CC4E21}
+		{04E4ABFB-0C07-4B93-89C1-3EDC9228B353} = {81B5D219-07A4-4A5F-988E-12E35BF632A5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BC04A83A-0DBB-45F1-B5E7-C921197DCF8B}
