@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentatio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicManager.WPF", "Presentation\MusicManager.WPF\MusicManager.WPF.csproj", "{756E07C2-3479-4BBA-9187-9E5DEF519ADC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicManager.Services.Implementations", "Infrastructure\MusicManager.Services.Implementations\MusicManager.Services.Implementations.csproj", "{CC2F0DA3-A2AC-42AC-8EF8-40C320A884A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{756E07C2-3479-4BBA-9187-9E5DEF519ADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{756E07C2-3479-4BBA-9187-9E5DEF519ADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{756E07C2-3479-4BBA-9187-9E5DEF519ADC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC2F0DA3-A2AC-42AC-8EF8-40C320A884A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC2F0DA3-A2AC-42AC-8EF8-40C320A884A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC2F0DA3-A2AC-42AC-8EF8-40C320A884A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC2F0DA3-A2AC-42AC-8EF8-40C320A884A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,6 +68,7 @@ Global
 		{7A046F03-2EB4-4514-B986-053958DC2412} = {30E9E9F3-36A5-4F84-AC6F-1C2FC0D24C44}
 		{BAA6B8E9-D670-4613-8E8A-5CAC736458AA} = {861389F7-5978-485F-B5EC-A2D3B0139FED}
 		{756E07C2-3479-4BBA-9187-9E5DEF519ADC} = {3BC38C3A-F37E-4719-84F6-D2A1CB17CA22}
+		{CC2F0DA3-A2AC-42AC-8EF8-40C320A884A8} = {30E9E9F3-36A5-4F84-AC6F-1C2FC0D24C44}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BC04A83A-0DBB-45F1-B5E7-C921197DCF8B}
