@@ -370,3 +370,5 @@ FodyWeavers.xsd
 /TestPlace/TestContextS.cs
 /TestPlace/TestContextFactory.cs
 /TestPlace/Migrations
+/TestPlace/SongwriterDTO.cs
+/TestPlace
