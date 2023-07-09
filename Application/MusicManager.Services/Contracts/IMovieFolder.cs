@@ -4,6 +4,6 @@
     {
         string Path { get; }
 
-        IEnumerable<IMovieReleaseFolder> MoviesReleasesFolders { get; }
+        IReadOnlyCollection<IMovieReleaseFolder> MoviesReleasesFolders { get; }
     }
 }

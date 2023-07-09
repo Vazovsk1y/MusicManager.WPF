@@ -4,7 +4,7 @@ public interface IDiscFolder
 {
     string Path { get; }
 
-    IEnumerable<ISongFile> Songs { get; }
+    IReadOnlyCollection<ISongFile> Songs { get; }
 
-    IEnumerable<string> CoversPaths { get; }
+    IReadOnlyCollection<string> CoversPaths { get; }
 }

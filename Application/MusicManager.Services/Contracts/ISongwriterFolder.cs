@@ -4,7 +4,7 @@ public interface ISongwriterFolder
 {
     string Path { get; }
 
-    IEnumerable<IMovieFolder> MoviesFolders { get; }
+    IReadOnlyCollection<IMovieFolder> MoviesFolders { get; }
 
-    IEnumerable<ICompilationFolder> CompilationsFolders { get; }
+    IReadOnlyCollection<ICompilationFolder> CompilationsFolders { get; }
 }
