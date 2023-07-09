@@ -1,9 +1,11 @@
-﻿namespace MusicManager.Services.Contracts
+﻿using MusicManager.Services.Contracts.Base;
+
+namespace MusicManager.Services.Contracts
 {
     public interface IMovieFolder
     {
         string Path { get; }
 
-        IReadOnlyCollection<IMovieReleaseFolder> MoviesReleasesFolders { get; }
+        IReadOnlyCollection<IDiscFolder> MoviesReleasesFolders { get; }
     }
 }

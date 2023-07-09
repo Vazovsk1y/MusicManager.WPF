@@ -1,11 +1,11 @@
 ﻿using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
-using MusicManager.Services.Contracts;
+using MusicManager.Services.Contracts.Base;
 
 namespace MusicManager.Services
 {
     public interface IMovieReleaseService
     {
-        Task<Result> SaveFromFolderAsync(IMovieReleaseFolder movieReleaseFolder, MovieId movieId, CancellationToken cancellationToken = default);
+        Task<Result> SaveFromFolderAsync(IDiscFolder movieReleaseFolder, MovieId movieId, CancellationToken cancellationToken = default);
     }
 }
