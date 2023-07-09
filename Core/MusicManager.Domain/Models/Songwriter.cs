@@ -91,7 +91,7 @@ public class Songwriter : IAggregateRoot
         return Result.Success();
     }
 
-    public Result AddMovie(Movie movie)
+    public Result AddMovie(Movie movie, bool checkDirectoryInfo = false)
     {
         if (movie is null)
         {
@@ -103,11 +103,19 @@ public class Songwriter : IAggregateRoot
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(movie)));
         }
 
+        if (checkDirectoryInfo)
+        {
+            if (_movies.SingleOrDefault(m => m.EntityDirectoryInfo == movie.EntityDirectoryInfo) is not null)
+            {
+                return Result.Failure(new Error("Movie with passed directory info is already exists."));
+            }
+        }
+
         _movies.Add(movie);
         return Result.Success();
     }
 
-    public Result AddCompilation(Compilation disc)
+    public Result AddCompilation(Compilation disc, bool checkDirectoryInfo = false)
     {
         if (disc is null)
         {
@@ -117,6 +125,14 @@ public class Songwriter : IAggregateRoot
         if (_compilations.SingleOrDefault(i => i.Id == disc.Id) is not null)
         {
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(disc)));
+        }
+
+        if (checkDirectoryInfo)
+        {
+            if (_movies.SingleOrDefault(m => m.EntityDirectoryInfo == disc.EntityDirectoryInfo) is not null)
+            {
+                return Result.Failure(new Error($"Compilation with passed directory info is already exists."));
+            }
         }
 
         _compilations.Add(disc);

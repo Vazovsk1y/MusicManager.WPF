@@ -115,7 +115,7 @@ public class Movie : IAggregateRoot
         return Result.Failure(result.Error);
     }
 
-    public Result AddRelease(MovieRelease release)
+    public Result AddRelease(MovieRelease release, bool checkDirectoryInfo = false)
     {
         if (release is null)
         {
@@ -131,6 +131,14 @@ public class Movie : IAggregateRoot
         if (addingDiscResult.IsFailure)
         {
             return Result.Failure(addingDiscResult.Error);
+        }
+
+        if (checkDirectoryInfo)
+        {
+            if (_movieReleases.SingleOrDefault(m => m.EntityDirectoryInfo == release.EntityDirectoryInfo) is not null)
+            {
+                return Result.Failure(new Error($"MovieRelease with passed directory info is already exists."));
+            }
         }
 
         _movieReleases.Add(release);

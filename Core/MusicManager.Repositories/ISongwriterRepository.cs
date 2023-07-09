@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Models;
+using MusicManager.Domain.ValueObjects;
 using MusicManager.Repositories.Common;
 
 namespace MusicManager.Repositories;
@@ -6,6 +7,8 @@ namespace MusicManager.Repositories;
 public interface ISongwriterRepository : IRepository<Songwriter>
 {
     Task<Songwriter?> GetByIdAsync(SongwriterId id, CancellationToken cancellationToken = default);
+
+    Task<bool> IsExistsWithPassedDirectoryInfo(EntityDirectoryInfo directoryInfo, CancellationToken cancellationToken = default);
 
     Task<Songwriter?> GetByIdWithMoviesAsync(SongwriterId id, CancellationToken cancellation = default);
 
