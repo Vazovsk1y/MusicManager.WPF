@@ -7,7 +7,7 @@ using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Models;
 
-public class Compilation : Disc, IAggregateRoot
+public class Compilation : Disc
 {
     #region --Fields--
 

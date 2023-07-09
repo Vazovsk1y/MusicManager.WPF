@@ -33,6 +33,8 @@ public class Movie : IAggregateRoot
 
     #region --Constructors--
 
+    protected Movie() { } // for EF
+
     private Movie(SongwriterId songwriterId) 
     {
         SongwriterId = songwriterId;
