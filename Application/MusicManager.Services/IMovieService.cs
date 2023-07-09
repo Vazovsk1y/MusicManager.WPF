@@ -6,6 +6,6 @@ namespace MusicManager.Services
 {
     public interface IMovieService
     {
-        Task<Result> SaveFromFolder(IMovieFolder movieFolder, SongwriterId songwriterId);
+        Task<Result> SaveFromFolderAsync(IMovieFolder movieFolder, SongwriterId songwriterId, CancellationToken cancellationToken = default);
     }
 }

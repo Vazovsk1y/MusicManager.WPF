@@ -6,6 +6,6 @@ namespace MusicManager.Services
 {
     public interface ICompilationService
     {
-        Task<Result> SaveFromFolder(ICompilationFolder compilationFolder, SongwriterId songwriterId);
+        Task<Result> SaveFromFolderAsync(ICompilationFolder compilationFolder, SongwriterId songwriterId, CancellationToken cancellationToken = default);
     }
 }

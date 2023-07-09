@@ -5,6 +5,6 @@ namespace MusicManager.Services
 {
     public interface ISongwriterService
     {
-        Task<Result> SaveFromFolder(ISongwriterFolder songwriterFolder);
+        Task<Result> SaveFromFolderAsync(ISongwriterFolder songwriterFolder, CancellationToken cancellationToken = default);
     }
 }
