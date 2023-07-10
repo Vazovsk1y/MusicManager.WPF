@@ -9,5 +9,5 @@ public interface ISongRepository : IRepository<Song>
 
     Task<Song?> GetByIdWithPlaybackInfoAsync(SongId id, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<Song>> GetAllAsync();
+    Task<IEnumerable<Song>> GetAllAsync(CancellationToken cancellation = default);
 }
