@@ -2,4 +2,4 @@
 
 namespace MusicManager.Services.Contracts;
 
-public record MovieFolder(string Path, IReadOnlyCollection<DiscFolder> MovieReleaseFolders);
+public record MovieFolder(string Path, IReadOnlyCollection<DiscFolder> MoviesReleasesFolders);

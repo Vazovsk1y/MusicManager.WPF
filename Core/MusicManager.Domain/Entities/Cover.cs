@@ -6,11 +6,16 @@ namespace MusicManager.Domain.Entities;
 
 public class Cover
 {
+    public CoverId Id { get; private set; }
+
     public DiscId DiscId { get; private set; }
 
     public string FullPath { get; private set; }
 
-    private Cover() { }
+    private Cover() 
+    {
+        Id = CoverId.Create();
+    }
 
     internal static Result<Cover> Create(DiscId parent, string fullPath)
     {
@@ -25,4 +30,9 @@ public class Cover
             DiscId = parent
         };
     }
+}
+
+public record CoverId(Guid Value)
+{
+    public static CoverId Create() => new CoverId(Guid.NewGuid());
 }
