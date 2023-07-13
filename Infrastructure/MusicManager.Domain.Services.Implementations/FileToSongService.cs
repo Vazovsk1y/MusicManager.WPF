@@ -127,7 +127,7 @@ namespace MusicManager.Domain.Services.Implementations
             }
             catch (Exception e)
             {
-                return Result.Failure<TagLib.File>(new Error(e.Message));
+                return Result.Failure<TagLib.File>(new Error(e.GetType().Name + '\n' + e.Message));
             }
             return songInfo;
         }

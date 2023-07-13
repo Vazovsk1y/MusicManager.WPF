@@ -21,7 +21,7 @@ public class Movie : IAggregateRoot
 
     public ProductionInfo ProductionInfo { get; private set; }
 
-    public DirectorInfo DirectorInfo { get; private set; } 
+    public DirectorInfo? DirectorInfo { get; private set; } 
 
     public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
 
@@ -64,7 +64,6 @@ public class Movie : IAggregateRoot
             {
                 Title = title,
                 ProductionInfo = prodInfoResult.Value,
-                DirectorInfo = DirectorInfo.Undefined,
             };
     }
 
