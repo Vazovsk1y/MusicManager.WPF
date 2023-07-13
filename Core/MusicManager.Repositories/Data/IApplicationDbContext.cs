@@ -29,4 +29,6 @@ public interface IApplicationDbContext
         | DynamicallyAccessedMemberTypes.NonPublicProperties 
         | DynamicallyAccessedMemberTypes.Interfaces)] TEntity>()
         where TEntity : class;
+
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
