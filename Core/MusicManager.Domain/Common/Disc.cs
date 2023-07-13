@@ -51,6 +51,11 @@ public abstract class Disc : IAggregateRoot
         var coverCreationResult = Cover.Create(Id, coverPath);
         if (coverCreationResult.IsSuccess)
         {
+            if (_covers.SingleOrDefault(e => e.Id == coverCreationResult.Value.Id) is not null)
+            {
+                return Result.Failure(new Error("Cover with passed path is already exists."));
+            }
+
             _covers.Add(coverCreationResult.Value);
             return Result.Success();
         }
