@@ -2,15 +2,14 @@
 using System.Windows;
 using System;
 using MusicManager.WPF.ViewModels.Base;
+using MusicManager.WPF.ViewModels;
 
 namespace MusicManager.WPF;
 
 internal static class Registrator
 {
-    public static void AddWPF(this IServiceCollection services)
-    {
-
-    }
+    public static void AddWPF(this IServiceCollection services) => services
+        .AddWindowSingleton<MainWindow, MainWindowViewModel>();
 }
 
 internal static class GenericWindowRegistrator
