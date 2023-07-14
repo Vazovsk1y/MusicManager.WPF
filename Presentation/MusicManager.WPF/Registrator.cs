@@ -5,6 +5,6 @@ namespace MusicManager.WPF;
 
 internal static class Registrator
 {
-    public static void AddWPF(this IServiceCollection services) => services
+    public static IServiceCollection AddWPF(this IServiceCollection services) => services
         .AddWindowWithViewModelSingleton<MainWindow, MainWindowViewModel>();
 }

@@ -14,4 +14,10 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructure\MusicManager.DAL\MusicManager.DAL.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\MusicManager.Domain.Services.Implementations\MusicManager.Domain.Services.Implementations.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\MusicManager.Services.Implementations\MusicManager.Services.Implementations.csproj" />
+  </ItemGroup>
+
 </Project>

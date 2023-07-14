@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MusicManager.DAL;
+using MusicManager.Domain.Services.Implementations;
+using MusicManager.Services.Implementations;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -36,7 +39,11 @@ public partial class App : Application
     #region --Methods--
 
     internal static void ConfigureServices(HostBuilderContext host, IServiceCollection services) => services
-        .AddWPF();
+        .AddWPF()
+        .AddDAL()
+        .AddDomainServices()
+        .AddAppServices()
+        ;
 
     protected override async void OnStartup(StartupEventArgs e)
     {

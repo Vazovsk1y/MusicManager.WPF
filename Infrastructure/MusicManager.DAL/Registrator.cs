@@ -7,7 +7,7 @@ namespace MusicManager.DAL;
 
 public static class Registrator
 {
-    public static void AddDAL(this IServiceCollection services) => services
+    public static IServiceCollection AddDAL(this IServiceCollection services) => services
         .AddScoped<ISongwriterRepository, SongwriterRepository>()
         .AddScoped<IMovieRepository, MovieRepository>()
         .AddScoped<ICompilationRepository, CompilationRepository>()
