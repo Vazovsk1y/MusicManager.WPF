@@ -12,7 +12,7 @@ public class MovieReleaseRepository : BaseDiscRepository<MovieRelease>, IMovieRe
     {
     }
 
-    public async Task<MovieRelease?> GetReleaseWithMoviesAsync(DiscId id, CancellationToken cancellation = default)
+    public async Task<MovieRelease?> GetWithMoviesAsync(DiscId id, CancellationToken cancellation = default)
         => await _dbContext.MovieReleases
         .Include(e => e.Movies)
         .SingleOrDefaultAsync(e => e.Id == id, cancellation);
