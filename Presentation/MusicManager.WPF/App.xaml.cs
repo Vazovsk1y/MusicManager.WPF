@@ -38,9 +38,9 @@ public partial class App : Application
 
     #region --Methods--
 
-    internal static void ConfigureServices(HostBuilderContext host, IServiceCollection services) => services
+    internal static void ConfigureServices(HostBuilderContext hostBuilder, IServiceCollection services) => services
         .AddWPF()
-        .AddDAL()
+        .AddDAL(hostBuilder.Configuration.GetSection("Database"))
         .AddDomainServices()
         .AddAppServices()
         ;
