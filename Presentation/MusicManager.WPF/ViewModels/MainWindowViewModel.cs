@@ -18,7 +18,10 @@ internal class MainWindowViewModel : TitledViewModel
 
     #region --Constructors--
 
-
+    public MainWindowViewModel()
+    {
+        Title = App.WorkingDirectory;
+    }
 
     #endregion
 

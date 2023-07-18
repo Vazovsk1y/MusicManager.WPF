@@ -9,6 +9,6 @@
         Title="{Binding Title}" Height="450" Width="800"
         d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel, IsDesignTimeCreatable=True}">
     <Grid>
-
+        
     </Grid>
 </Window>

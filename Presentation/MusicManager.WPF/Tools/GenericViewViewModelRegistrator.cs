@@ -3,7 +3,7 @@ using System.Windows;
 using System;
 using MusicManager.WPF.ViewModels.Base;
 
-namespace MusicManager.WPF;
+namespace MusicManager.WPF.Tools;
 
 internal static class GenericViewViewModelRegistrator
 {

@@ -16,13 +16,15 @@ public partial class App : Application
 
     private static IHost? _host;
 
+    public const string Name = "MusicManager";
+
     #endregion
 
     #region --Properties--
 
-    public static string WorkingDirectory => IsDesignMode ? Path.GetDirectoryName(GetSourceCodePath())! : Environment.CurrentDirectory;
+    public static string WorkingDirectory => IsInDesignMode ? Path.GetDirectoryName(GetSourceCodePath())! : Environment.CurrentDirectory;
 
-    public static bool IsDesignMode { get; private set; } = true;
+    public static bool IsInDesignMode { get; private set; } = true;
 
     public static IServiceProvider Services => Host.Services;
 
@@ -48,7 +50,7 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        IsDesignMode = false;
+        IsInDesignMode = false;
         await Host.StartAsync();
         Services.GetRequiredService<MainWindow>().Show();
     }
@@ -56,8 +58,8 @@ public partial class App : Application
     protected override async void OnExit(ExitEventArgs e)
     {
         base.OnExit(e);
-        await Host.StopAsync();
-        Host.Dispose();
+        using var host = Host;
+        await host.StopAsync();
     }
 
     private static string GetSourceCodePath([CallerFilePath] string path = null) => string.IsNullOrWhiteSpace(path) ?
