@@ -1,14 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System;
-using MusicManager.WPF.ViewModels.Base;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MusicManager.WPF.Tools;
 
 internal static class GenericViewViewModelRegistrator
 {
     public static IServiceCollection AddWindowWithViewModelTransient<TWindow, TViewModel>(this IServiceCollection services)
-            where TViewModel : ViewModel
+            where TViewModel : ObservableObject
             where TWindow : Window
             => services
         .AddTransient<TViewModel>()
@@ -21,7 +21,7 @@ internal static class GenericViewViewModelRegistrator
             });
 
     public static IServiceCollection AddWindowWithViewModelSingleton<TWindow, TViewModel>(this IServiceCollection services)
-            where TViewModel : ViewModel
+            where TViewModel : ObservableObject
             where TWindow : Window
             => services
         .AddSingleton<TViewModel>()
