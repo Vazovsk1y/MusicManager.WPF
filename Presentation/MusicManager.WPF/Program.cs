@@ -20,13 +20,17 @@ internal class Program
         app.Run();
     }
 
-    public static IHostBuilder CreateHostBuilder(string[] args) => Host
+    public static IHostBuilder CreateHostBuilder(string[] args)
+    {
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", IsInDebug ? "Development" : "Production");
+
+        return Host
             .CreateDefaultBuilder(args)
             .ConfigureAppConfiguration((appConfig, _) =>
             {
                 appConfig.HostingEnvironment.ApplicationName = App.Name;
                 appConfig.HostingEnvironment.ContentRootPath = App.WorkingDirectory;
-                appConfig.HostingEnvironment.EnvironmentName = IsInDebug ? "Development" : "Production";
             })
             .ConfigureServices(App.ConfigureServices);
+    }
 }
