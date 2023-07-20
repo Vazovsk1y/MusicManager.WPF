@@ -9,10 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Application\MusicManager.Services\MusicManager.Services.csproj" />
     <ProjectReference Include="..\..\Core\MusicManager.Repositories\MusicManager.Repositories.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Contracts\" />
+    <ProjectReference Include="..\MusicManager.Domain.Services.Implementations\MusicManager.Domain.Services.Implementations.csproj" />
   </ItemGroup>
 
 </Project>
