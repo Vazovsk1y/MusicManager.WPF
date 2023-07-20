@@ -5,7 +5,7 @@ namespace MusicManager.Services.Contracts.Factories;
 
 public interface IDiscFolderFactory
 {
-    Result<DiscFolder> Create(string discFolderPath);
+    Result<DiscFolder> Create(DirectoryInfo discDirectory);
 }
 
 

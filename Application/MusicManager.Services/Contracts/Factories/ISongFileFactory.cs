@@ -4,7 +4,7 @@ namespace MusicManager.Services.Contracts.Factories;
 
 public interface ISongFileFactory
 {
-    Result<SongFile> Create(string songFilePath, string? cueFilePath = null);
+    Result<SongFile> Create(FileInfo songFilePath, FileInfo? cueFilePath = null);
 }
 
 
