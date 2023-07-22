@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MusicManager.Domain.Common;
+using MusicManager.Domain.Extensions;
 using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.DAL.Configurations.Base;
@@ -26,7 +27,11 @@ internal class DiscConfiguration : IEntityTypeConfiguration<Disc>
             e => e != null ? EntityDirectoryInfo.Create(e).Value : null)
         .IsRequired(false);
 
-        entityBuilder.Property(e => e.Type).IsRequired();
+        entityBuilder.Property(e => e.Type)
+               .HasConversion(
+            e => e.MapToString(),
+            e => e.CreateDiscType().Value)
+               .IsRequired();
 
         entityBuilder.Property(e => e.Identifier).IsRequired();
 

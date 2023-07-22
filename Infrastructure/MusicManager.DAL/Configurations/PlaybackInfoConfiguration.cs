@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MusicManager.Domain.Entities;
+using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 
 namespace MusicManager.DAL.Configurations;
@@ -16,7 +17,11 @@ internal class PlaybackInfoConfiguration : IEntityTypeConfiguration<PlaybackInfo
         .WithOne(e => e.PlaybackInfo)
         .HasForeignKey<PlaybackInfo>(e => e.SongId);
 
-        entityBuilder.Property(e => e.ExecutableType).IsRequired();
+        entityBuilder.Property(e => e.ExecutableType)
+            .HasConversion(
+            e => e.ToString(),
+            e => e.CreateSongFileType().Value
+            ).IsRequired();
 
         entityBuilder.Property(e => e.ExecutableFileFullPath).IsRequired();
 
