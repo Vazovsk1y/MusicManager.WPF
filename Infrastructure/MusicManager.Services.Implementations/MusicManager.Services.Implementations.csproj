@@ -12,4 +12,10 @@
     <ProjectReference Include="..\MusicManager.Domain.Services.Implementations\MusicManager.Domain.Services.Implementations.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms">
+      <HintPath>C:\Users\andrey\Downloads\system.windows.forms\System.Windows.Forms.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
