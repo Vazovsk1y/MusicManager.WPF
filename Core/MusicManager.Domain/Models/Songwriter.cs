@@ -129,7 +129,7 @@ public class Songwriter : IAggregateRoot
 
         if (checkDirectoryInfo)
         {
-            if (_movies.SingleOrDefault(m => m.EntityDirectoryInfo == disc.EntityDirectoryInfo) is not null)
+            if (_compilations.SingleOrDefault(m => m.EntityDirectoryInfo == disc.EntityDirectoryInfo) is not null)
             {
                 return Result.Failure(new Error($"Compilation with passed directory info is already exists."));
             }

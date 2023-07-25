@@ -51,18 +51,19 @@ public class Disc : IAggregateRoot
         var coverCreationResult = Cover.Create(Id, coverPath);
         if (coverCreationResult.IsSuccess)
         {
-            if (_covers.SingleOrDefault(e => e.Id == coverCreationResult.Value.Id) is not null)
-            {
-                return Result.Failure(new Error("Cover with passed path is already exists."));
-            }
-
-            _covers.Add(coverCreationResult.Value);
-            return Result.Success();
+            return Result.Failure(coverCreationResult.Error);
         }
-        return Result.Failure(coverCreationResult.Error);
+
+        if (_covers.SingleOrDefault(e => e.FullPath == coverCreationResult.Value.FullPath) is not null)
+        {
+            return Result.Failure(new Error("Cover with passed path is already exists."));
+        }
+
+        _covers.Add(coverCreationResult.Value);
+        return Result.Success();
     }
 
-    public virtual Result AddSong(Song song)
+    public virtual Result AddSong(Song song, bool checkPlaybackInfo = false)
     {
         if (song is null)
         {
@@ -72,6 +73,14 @@ public class Disc : IAggregateRoot
         if (_songs.SingleOrDefault(i => i.Id == song.Id) is not null)
         {
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(song)));
+        }
+
+        if (checkPlaybackInfo)
+        {
+            if (_songs.SingleOrDefault(e => e.PlaybackInfo == song.PlaybackInfo) is not null)
+            {
+                return Result.Failure(new Error("Movie with passed directory info is already exists."));
+            }
         }
 
         _songs.Add(song);

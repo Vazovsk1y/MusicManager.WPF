@@ -17,7 +17,7 @@ public class Cover
         Id = CoverId.Create();
     }
 
-    internal static Result<Cover> Create(DiscId parent, string fullPath)
+    internal static Result<Cover> Create(DiscId parentId, string fullPath)
     {
         if (string.IsNullOrWhiteSpace(fullPath))
         {
@@ -27,7 +27,7 @@ public class Cover
         return new Cover() 
         {
             FullPath = fullPath,
-            DiscId = parent
+            DiscId = parentId
         };
     }
 }
