@@ -3,7 +3,7 @@ using MusicManager.Services.Contracts.Dtos;
 
 namespace MusicManager.Services.Mappers;
 
-internal static class MappingExtensions
+public static class MappingExtensions
 {
     public static SongwriterDTO ToDTO(this Songwriter songwriter)
     {
