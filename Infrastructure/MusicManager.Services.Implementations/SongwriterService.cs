@@ -3,6 +3,8 @@ using MusicManager.Domain.Shared;
 using MusicManager.Repositories;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts;
+using MusicManager.Services.Contracts.Dtos;
+using MusicManager.Services.Mappers;
 
 namespace MusicManager.Services.Implementations;
 
@@ -26,6 +28,35 @@ public class SongwriterService : ISongwriterService
         _pathToSongwriterService = pathToSongwriterService;
         _movieService = movieService;
         _compilationService = compilationService;
+    }
+
+    public async Task<Result<IEnumerable<SongwriterDTO>>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        var result = new List<SongwriterDTO>();
+        var songwriters = await _songwriterRepository.LoadAllAsync(cancellationToken);
+
+        foreach (var songwriter in songwriters)
+        {
+            var moviesResult = await _movieService.GetAllAsync(songwriter.Id, cancellationToken);
+            if (moviesResult.IsFailure)
+            {
+                return Result.Failure<IEnumerable<SongwriterDTO>>(moviesResult.Error);
+            }
+
+            var compilationsResult = await _compilationService.GetAllAsync(songwriter.Id, cancellationToken);
+            if (compilationsResult.IsFailure)
+            {
+                return Result.Failure<IEnumerable<SongwriterDTO>>(compilationsResult.Error);
+            }
+
+            result.Add(songwriter.ToDTO() with
+            {
+                MovieDTOs = moviesResult.Value,
+                CompilationDTOs = compilationsResult.Value
+            });
+        }
+
+        return result;
     }
 
     public async Task<Result> SaveFromFolderAsync(SongwriterFolder songwriterFolder, CancellationToken cancellationToken = default)

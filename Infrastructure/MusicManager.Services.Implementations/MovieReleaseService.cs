@@ -4,6 +4,8 @@ using MusicManager.Domain.Shared;
 using MusicManager.Repositories;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts.Base;
+using MusicManager.Services.Contracts.Dtos;
+using MusicManager.Services.Mappers;
 
 namespace MusicManager.Services.Implementations;
 
@@ -26,6 +28,33 @@ public class MovieReleaseService : IMovieReleaseService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<Result<IEnumerable<MovieReleaseDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default)
+    {
+        var result = new List<MovieReleaseDTO>();
+        var movie = await _movieRepository.LoadByIdWithMoviesReleasesAsync(movieId, cancellationToken);
+        if (movie is null)
+        {
+            return Result.Failure<IEnumerable<MovieReleaseDTO>>(new Error("Songwriter with passed id is not exists in database."));
+        }
+
+        var moviesReleases = movie.Releases;
+        foreach (var movieRelease in moviesReleases)
+        {
+            var songsResult = await _songService.GetAllAsync(movieRelease.Id, cancellationToken);
+            if (songsResult.IsFailure)
+            {
+                return Result.Failure<IEnumerable<MovieReleaseDTO>>(songsResult.Error);
+            }
+
+            result.Add(movieRelease.ToDTO() with
+            {
+                SongDTOs = songsResult.Value
+            });
+        }
+
+        return result;
+    }
+
     public async Task<Result> SaveFromFolderAsync(DiscFolder movieReleaseFolder, MovieId movieId, CancellationToken cancellationToken = default)
     {
         var movieReleaseResult = await _pathToMovieReleaseService
@@ -38,7 +67,7 @@ public class MovieReleaseService : IMovieReleaseService
         }
 
         var movieRelease = movieReleaseResult.Value;
-        var movie = await _movieRepository.GetByIdWithMoviesReleasesAsync(movieId, cancellationToken);
+        var movie = await _movieRepository.LoadByIdWithMoviesReleasesAsync(movieId, cancellationToken);
         if (movie is null)
         {
             return Result.Failure(new Error("Movie with passed id is not exists in database."));
@@ -59,7 +88,7 @@ public class MovieReleaseService : IMovieReleaseService
 
         foreach (var songFile in movieReleaseFolder.Songs)
         {
-            var result = await _songService.SaveFromFileInMovieReleaseAsync(songFile, movieRelease.Id, cancellationToken);
+            var result = await _songService.SaveFromFileAsync(songFile, movieRelease.Id, cancellationToken);
 
             if (result.IsFailure)
             {

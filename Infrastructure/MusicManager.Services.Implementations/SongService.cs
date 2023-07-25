@@ -1,57 +1,52 @@
 ﻿using MusicManager.Domain.Common;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
-using MusicManager.Repositories;
+using MusicManager.Repositories.Common;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts;
+using MusicManager.Services.Contracts.Dtos;
+using MusicManager.Services.Mappers;
 
 namespace MusicManager.Services.Implementations;
 
 public class SongService : ISongService
 {
-    private readonly ICompilationRepository _compilationRepository;
-    private readonly IMovieReleaseRepository _movieReleaseRepository;
+    private readonly IBaseDiscRepository<Disc> _discRepository;
     private readonly IPathToSongService _pathToSongService;
     private readonly IUnitOfWork _unitOfWork;
 
     public SongService(
-        ICompilationRepository compilationRepository,
-        IMovieReleaseRepository movieReleaseRepository,
         IUnitOfWork unitOfWork,
-        IPathToSongService pathToSongService)
+        IPathToSongService pathToSongService,
+        IBaseDiscRepository<Disc> discRepository)
     {
-        _compilationRepository = compilationRepository;
-        _movieReleaseRepository = movieReleaseRepository;
         _unitOfWork = unitOfWork;
         _pathToSongService = pathToSongService;
+        _discRepository = discRepository;
     }
 
-    public async Task<Result> SaveFromFileInCompilationAsync(SongFile songFile, DiscId discId, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<SongDTO>>> GetAllAsync(DiscId discId, CancellationToken cancellationToken = default)
     {
-        var compilation = await _compilationRepository.GetByIdAsync(discId, cancellationToken);
-        if (compilation is null) 
-        {
-            return Result.Failure(new Error("Compilation with passed id is not exists in database."));
-        }
+        var disc = await _discRepository.LoadByIdWithSongsAsync(discId, cancellationToken);
 
-        return songFile.CueFilePath is null ? 
-            await SaveFromSingeFile(songFile.SongFilePath, compilation, cancellationToken)
+        return disc is null ?
+            Result.Failure<IEnumerable<SongDTO>>(new Error("Disc with passed id is not exists."))
             :
-            await SaveFromCue(songFile.SongFilePath, songFile.CueFilePath, compilation, cancellationToken);
+            disc.Songs.Select(e => e.ToDTO()).ToList();
     }
 
-    public async Task<Result> SaveFromFileInMovieReleaseAsync(SongFile songFile, DiscId discId, CancellationToken cancellationToken = default)
+    public async Task<Result> SaveFromFileAsync(SongFile songFile, DiscId discId, CancellationToken cancellationToken = default)
     {
-        var movieRelease = await _movieReleaseRepository.GetByIdAsync(discId, cancellationToken);
-        if (movieRelease is null)
+        var disc = await _discRepository.LoadByIdWithSongsAsync(discId, cancellationToken);
+        if (disc is null)
         {
-            return Result.Failure(new Error("MovieRelease with passed id is not exists in database."));
+            return Result.Failure(new Error("Disc with passed id is not exists in database."));
         }
 
         return songFile.CueFilePath is null ?
-            await SaveFromSingeFile(songFile.SongFilePath, movieRelease, cancellationToken)
+            await SaveFromSingeFile(songFile.SongFilePath, disc, cancellationToken)
             :
-            await SaveFromCue(songFile.SongFilePath, songFile.CueFilePath, movieRelease, cancellationToken);
+            await SaveFromCue(songFile.SongFilePath, songFile.CueFilePath, disc, cancellationToken);
     }
 
     private async Task<Result> SaveFromCue(string songFilePath, string cueFilePath, Disc disc, CancellationToken cancellationToken)
