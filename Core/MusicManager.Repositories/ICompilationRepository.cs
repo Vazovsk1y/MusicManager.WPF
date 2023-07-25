@@ -3,7 +3,7 @@ using MusicManager.Repositories.Common;
 
 namespace MusicManager.Repositories;
 
-public interface ICompilationRepository : IDiscRepository<Compilation>
+public interface ICompilationRepository : IBaseDiscRepository<Compilation>
 {
 }
 

@@ -2,7 +2,7 @@
 
 namespace MusicManager.Repositories.Common;
 
-public interface IDiscRepository<T> : IRepository<T> where T : Disc
+public interface IBaseDiscRepository<T> : IRepository<T> where T : Disc
 {
     Task<T?> GetByIdAsync(DiscId id, CancellationToken cancellationToken = default);
 

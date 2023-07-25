@@ -5,7 +5,7 @@ using MusicManager.Repositories.Data;
 
 namespace MusicManager.DAL.Repositories;
 
-public abstract class BaseDiscRepository<TDisc> : IDiscRepository<TDisc> where TDisc : Disc
+public abstract class BaseDiscRepository<TDisc> : IBaseDiscRepository<TDisc> where TDisc : Disc
 {
     protected readonly IApplicationDbContext _dbContext;
 
@@ -31,10 +31,12 @@ public abstract class BaseDiscRepository<TDisc> : IDiscRepository<TDisc> where T
         => await _dbContext.Set<TDisc>()
         .Include(e => e.Covers)
         .Include(e => e.Songs)
+        .ThenInclude(e => e.PlaybackInfo)
         .SingleOrDefaultAsync(e => e.Id == id, cancellation);
 
     public async Task<TDisc?> GetByIdWithSongsAsync(DiscId id, CancellationToken cancellation = default)
         => await _dbContext.Set<TDisc>()
         .Include(e => e.Songs)
+        .ThenInclude(e => e.PlaybackInfo)
         .SingleOrDefaultAsync(e => e.Id == id, cancellation);
 }

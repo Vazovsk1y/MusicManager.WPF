@@ -16,7 +16,7 @@ public interface ISongwriterRepository : IRepository<Songwriter>
 
     Task<Songwriter?> GetByIdWithMoviesAndCompilationsAsync(SongwriterId id, CancellationToken cancellation = default);
 
-    Task<IEnumerable<Songwriter>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<Songwriter>> LoadAllAsync(CancellationToken cancellationToken = default);
 
     Task<bool> InsertAsync(Songwriter songwriter, CancellationToken cancellationToken = default);
 

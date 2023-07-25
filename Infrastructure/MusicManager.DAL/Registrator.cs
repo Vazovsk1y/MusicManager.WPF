@@ -2,7 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MusicManager.DAL.Repositories;
+using MusicManager.Domain.Common;
 using MusicManager.Repositories;
+using MusicManager.Repositories.Common;
 using MusicManager.Repositories.Data;
 
 namespace MusicManager.DAL;
@@ -16,6 +18,7 @@ public static class Registrator
         .AddScoped<IMovieReleaseRepository, MovieReleaseRepository>()
         .AddScoped<ISongRepository, SongRepository>()
         .AddScoped<IUnitOfWork, UnitOfWork>()
+        .AddScoped<IBaseDiscRepository<Disc>, DiscRepository>()
         .AddDbContext<IApplicationDbContext, MusicManagerDbContext>(options =>
         {
             var dbType = configuration["Type"];

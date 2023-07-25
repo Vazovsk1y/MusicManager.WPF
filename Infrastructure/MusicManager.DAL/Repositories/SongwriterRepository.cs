@@ -26,7 +26,7 @@ public class SongwriterRepository : ISongwriterRepository
         return false;
     }
 
-    public async Task<IEnumerable<Songwriter>> GetAllAsync(CancellationToken cancellationToken = default) 
+    public async Task<IEnumerable<Songwriter>> LoadAllAsync(CancellationToken cancellationToken = default) 
         => await _dbContext.Songwriters
         .ToListAsync(cancellationToken);
 
