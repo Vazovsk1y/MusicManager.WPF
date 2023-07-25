@@ -14,15 +14,15 @@ public class SongRepository : ISongRepository
         _dbContext = dbContext;
     }
 
-    public async Task<IEnumerable<Song>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Song>> LoadAllAsync(CancellationToken cancellationToken = default)
         => await _dbContext.Songs
         .ToListAsync(cancellationToken);
 
-    public async Task<Song?> GetByIdAsync(SongId id, CancellationToken cancellationToken = default)
+    public async Task<Song?> LoadByIdAsync(SongId id, CancellationToken cancellationToken = default)
         => await _dbContext.Songs
         .SingleOrDefaultAsync(e => e.Id == id, cancellationToken);
 
-    public async Task<Song?> GetByIdWithPlaybackInfoAsync(SongId id, CancellationToken cancellationToken = default)
+    public async Task<Song?> LoadByIdWithPlaybackInfoAsync(SongId id, CancellationToken cancellationToken = default)
         => await _dbContext.Songs
         .Include(e => e.PlaybackInfo)
         .SingleOrDefaultAsync(e => e.Id == id, cancellationToken);

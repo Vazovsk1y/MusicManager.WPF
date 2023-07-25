@@ -14,15 +14,15 @@ public class MovieRepository : IMovieRepository
         _dbContext = dbContext;
     }
 
-    public async Task<IEnumerable<Movie>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Movie>> LoadAllAsync(CancellationToken cancellationToken = default)
         => await _dbContext.Movies
         .ToListAsync(cancellationToken);
 
-    public async Task<Movie?> GetByIdAsync(MovieId id, CancellationToken cancellationToken = default)
+    public async Task<Movie?> LoadByIdAsync(MovieId id, CancellationToken cancellationToken = default)
         => await _dbContext.Movies
         .SingleOrDefaultAsync(e => e.Id == id, cancellationToken);
 
-    public async Task<Movie?> GetByIdWithMoviesReleasesAsync(MovieId id, CancellationToken cancellation = default)
+    public async Task<Movie?> LoadByIdWithMoviesReleasesAsync(MovieId id, CancellationToken cancellation = default)
         => await _dbContext.Movies
         .Include(e => e.Releases)
         .SingleOrDefaultAsync(e => e.Id == id, cancellation);

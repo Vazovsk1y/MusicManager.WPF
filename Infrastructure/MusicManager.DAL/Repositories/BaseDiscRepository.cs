@@ -14,27 +14,27 @@ public abstract class BaseDiscRepository<TDisc> : IBaseDiscRepository<TDisc> whe
         _dbContext = dbContext;
     }
 
-    public async Task<IEnumerable<TDisc>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TDisc>> LoadAllAsync(CancellationToken cancellationToken = default)
         => await _dbContext.Set<TDisc>()
         .ToListAsync();
 
-    public async Task<TDisc?> GetByIdAsync(DiscId id, CancellationToken cancellationToken = default) 
+    public async Task<TDisc?> LoadByIdAsync(DiscId id, CancellationToken cancellationToken = default) 
         => await _dbContext.Set<TDisc>()
         .SingleOrDefaultAsync(e => e.Id == id, cancellationToken);
 
-    public async Task<TDisc?> GetByIdWithCoversAsync(DiscId id, CancellationToken cancellation = default)
+    public async Task<TDisc?> LoadByIdWithCoversAsync(DiscId id, CancellationToken cancellation = default)
         => await _dbContext.Set<TDisc>()
         .Include(e => e.Covers)
         .SingleOrDefaultAsync(e => e.Id == id, cancellation);
 
-    public async Task<TDisc?> GetByIdWithSongsAndCoversAsync(DiscId id, CancellationToken cancellation = default)
+    public async Task<TDisc?> LoadByIdWithSongsAndCoversAsync(DiscId id, CancellationToken cancellation = default)
         => await _dbContext.Set<TDisc>()
         .Include(e => e.Covers)
         .Include(e => e.Songs)
         .ThenInclude(e => e.PlaybackInfo)
         .SingleOrDefaultAsync(e => e.Id == id, cancellation);
 
-    public async Task<TDisc?> GetByIdWithSongsAsync(DiscId id, CancellationToken cancellation = default)
+    public async Task<TDisc?> LoadByIdWithSongsAsync(DiscId id, CancellationToken cancellation = default)
         => await _dbContext.Set<TDisc>()
         .Include(e => e.Songs)
         .ThenInclude(e => e.PlaybackInfo)

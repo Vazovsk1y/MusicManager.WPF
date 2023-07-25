@@ -6,5 +6,5 @@ namespace MusicManager.Repositories;
 
 public interface IMovieReleaseRepository : IBaseDiscRepository<MovieRelease>
 {
-    Task<MovieRelease?> GetWithMoviesAsync(DiscId id, CancellationToken cancellation = default);
+    Task<MovieRelease?> LoadWithMoviesAsync(DiscId id, CancellationToken cancellation = default);
 }

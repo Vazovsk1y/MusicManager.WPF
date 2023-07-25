@@ -5,9 +5,9 @@ namespace MusicManager.Repositories;
 
 public interface ISongRepository : IRepository<Song>
 {
-    Task<Song?> GetByIdAsync(SongId id, CancellationToken cancellationToken = default);
+    Task<Song?> LoadByIdAsync(SongId id, CancellationToken cancellationToken = default);
 
-    Task<Song?> GetByIdWithPlaybackInfoAsync(SongId id, CancellationToken cancellationToken = default);
+    Task<Song?> LoadByIdWithPlaybackInfoAsync(SongId id, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<Song>> GetAllAsync(CancellationToken cancellation = default);
+    Task<IEnumerable<Song>> LoadAllAsync(CancellationToken cancellation = default);
 }

@@ -6,15 +6,15 @@ namespace MusicManager.Repositories;
 
 public interface ISongwriterRepository : IRepository<Songwriter>
 {
-    Task<Songwriter?> GetByIdAsync(SongwriterId id, CancellationToken cancellationToken = default);
+    Task<Songwriter?> LoadByIdAsync(SongwriterId id, CancellationToken cancellationToken = default);
 
     Task<bool> IsExistsWithPassedDirectoryInfo(EntityDirectoryInfo directoryInfo, CancellationToken cancellationToken = default);
 
-    Task<Songwriter?> GetByIdWithMoviesAsync(SongwriterId id, CancellationToken cancellation = default);
+    Task<Songwriter?> LoadByIdWithMoviesAsync(SongwriterId id, CancellationToken cancellation = default);
 
-    Task<Songwriter?> GetByIdWithCompilationsAsync(SongwriterId id, CancellationToken cancellation = default);
+    Task<Songwriter?> LoadByIdWithCompilationsAsync(SongwriterId id, CancellationToken cancellation = default);
 
-    Task<Songwriter?> GetByIdWithMoviesAndCompilationsAsync(SongwriterId id, CancellationToken cancellation = default);
+    Task<Songwriter?> LoadByIdWithMoviesAndCompilationsAsync(SongwriterId id, CancellationToken cancellation = default);
 
     Task<IEnumerable<Songwriter>> LoadAllAsync(CancellationToken cancellationToken = default);
 

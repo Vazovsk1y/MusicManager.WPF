@@ -30,22 +30,22 @@ public class SongwriterRepository : ISongwriterRepository
         => await _dbContext.Songwriters
         .ToListAsync(cancellationToken);
 
-    public async Task<Songwriter?> GetByIdAsync(SongwriterId id, CancellationToken cancellationToken = default)
+    public async Task<Songwriter?> LoadByIdAsync(SongwriterId id, CancellationToken cancellationToken = default)
         => await _dbContext.Songwriters
         .SingleOrDefaultAsync(e => e.Id == id, cancellationToken);
 
-    public async Task<Songwriter?> GetByIdWithCompilationsAsync(SongwriterId id, CancellationToken cancellation = default) 
+    public async Task<Songwriter?> LoadByIdWithCompilationsAsync(SongwriterId id, CancellationToken cancellation = default) 
         => await _dbContext.Songwriters
         .Include(e => e.Compilations)
         .SingleOrDefaultAsync(e => e.Id == id, cancellation);
 
-    public async Task<Songwriter?> GetByIdWithMoviesAndCompilationsAsync(SongwriterId id, CancellationToken cancellation = default)
+    public async Task<Songwriter?> LoadByIdWithMoviesAndCompilationsAsync(SongwriterId id, CancellationToken cancellation = default)
         => await _dbContext.Songwriters
         .Include(e => e.Compilations)
         .Include(e => e.Movies)
         .SingleOrDefaultAsync(e => e.Id == id, cancellation);
 
-    public async Task<Songwriter?> GetByIdWithMoviesAsync(SongwriterId id, CancellationToken cancellation = default)
+    public async Task<Songwriter?> LoadByIdWithMoviesAsync(SongwriterId id, CancellationToken cancellation = default)
         => await _dbContext.Songwriters
         .Include(e => e.Movies)
         .SingleOrDefaultAsync(e => e.Id == id, cancellation);
