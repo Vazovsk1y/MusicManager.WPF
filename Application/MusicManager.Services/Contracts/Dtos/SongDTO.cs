@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Enums;
 using MusicManager.Domain.Models;
 
 namespace MusicManager.Services.Contracts.Dtos
@@ -7,6 +8,7 @@ namespace MusicManager.Services.Contracts.Dtos
         SongId Id, 
         DiscId DiscId,
         string Name,
+        SongFileType? ExecutableType,
         string? DiscNumber,
         TimeSpan? Duration
         );
