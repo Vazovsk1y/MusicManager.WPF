@@ -10,9 +10,7 @@ internal class SongwriterViewModel : ObservableObject
 
 	private ObservableCollection<MovieViewModel>? _movies;
 
-	private string _name = string.Empty;
-
-	private string _surname = string.Empty;
+	private string? _fullName;
 
 	public required SongwriterId SongwriterId { get; init; }
 
@@ -28,17 +26,9 @@ internal class SongwriterViewModel : ObservableObject
 		init => SetProperty(ref _movies, value); 
 	}
 
-    public string Name
-    {
-        get => _name;
-        set => SetProperty(ref _name, value);
-    }
-
-    public string Surname
-    {
-        get => _surname;
-        set => SetProperty(ref _surname, value);
-    }
-
-	public string FullName => $"{Name} {Surname}";
+	public string? FullName
+	{
+		get => _fullName;
+		set => SetProperty(ref _fullName, value);
+	}
 }

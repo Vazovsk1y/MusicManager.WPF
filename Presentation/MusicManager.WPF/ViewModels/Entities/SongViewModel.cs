@@ -10,7 +10,7 @@ internal class SongViewModel : ObservableObject
 
     private string _title = string.Empty;
 
-    private string _type = string.Empty;
+	private string? _type;
 
     public required SongId SongId { get; init; }
 
@@ -28,7 +28,7 @@ internal class SongViewModel : ObservableObject
 		set => SetProperty(ref _title, value);
 	}
 			
-	public string Type
+	public string? ExecutableType
 	{
 		get => _type;
 		set => SetProperty(ref _type, value);

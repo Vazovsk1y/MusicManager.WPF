@@ -8,15 +8,17 @@ internal class MovieViewModel : ObservableObject
 {
     private string _title = string.Empty;
 
-    private string _productionCountry = string.Empty;
+    private string? _productionCountry;
 
-    private string _directorFullName = string.Empty;
+    private string? _directorFullName;
 
-    private int _productionYear;
+    private string? _productionYear;
 
     private ObservableCollection<MovieReleaseViewModel>? _moviesReleasesViewsModels;
 
     public required MovieId MovieId { get; init; }
+
+    public required SongwriterId SongwriterId { get; init; }    
 
     public ObservableCollection<MovieReleaseViewModel> MoviesReleases
     {
@@ -30,19 +32,19 @@ internal class MovieViewModel : ObservableObject
         set => SetProperty(ref _title, value);
     }
 
-    public int ProductionYear
+    public string? ProductionYear
     {
         get => _productionYear;
         set => SetProperty(ref _productionYear, value);
     }
 
-    public string ProductionCountry
+    public string? ProductionCountry
     {
         get => _productionCountry;
         set => SetProperty(ref _productionCountry, value);
     }
 
-    public string DirectorFullName
+    public string? DirectorFullName
     {
         get => _directorFullName;
         set => SetProperty(ref _directorFullName, value);
