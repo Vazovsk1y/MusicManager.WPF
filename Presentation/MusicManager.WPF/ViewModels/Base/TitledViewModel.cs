@@ -4,11 +4,11 @@ namespace MusicManager.WPF.ViewModels.Base;
 
 internal class TitledViewModel : ObservableObject
 {
-    private string? _title = "Undefined";
+    private string? _controlTitle = "Undefined";
 
-    public string? Title 
+    public string? ControlTitle 
     {
-        get => _title;
-        set => SetProperty(ref _title, value);
+        get => _controlTitle;
+        set => SetProperty(ref _controlTitle, value);
     }
 }

@@ -12,7 +12,13 @@ internal class MainWindowViewModel : TitledViewModel
 
     #region --Properties--
 
+    public SongwirtersPanelViewModel SongwirtersPanelViewModel { get; }
 
+    public MoviesPanelViewModel MoviesPanelViewModel { get; }
+
+    public DiscsPanelViewModel DiscsPanelViewModel { get; }
+
+    public SongsPanelViewModel SongsPanelViewModel { get; }
 
     #endregion
 
@@ -20,7 +26,22 @@ internal class MainWindowViewModel : TitledViewModel
 
     public MainWindowViewModel()
     {
-        Title = App.WorkingDirectory;
+
+    }
+
+    public MainWindowViewModel(
+        SongwirtersPanelViewModel songwirtersPanelViewModel, 
+        MoviesPanelViewModel moviesPanelViewModel, 
+        DiscsPanelViewModel discsPanelViewModel, 
+        SongsPanelViewModel songsPanelViewModel) 
+    {
+        SongwirtersPanelViewModel = songwirtersPanelViewModel;
+        MoviesPanelViewModel = moviesPanelViewModel;
+        DiscsPanelViewModel = discsPanelViewModel;
+        SongsPanelViewModel = songsPanelViewModel;
+        ControlTitle = App.Name;
+
+        SongwirtersPanelViewModel.IsActive = true;
     }
 
     #endregion
