@@ -65,9 +65,8 @@ public class DiscFolderFactory : IDiscFolderFactory
         {
             foreach (var cueFile in cueFiles)
             {
-                var executableFileForCue = cueFiles
-                    .Where(e => e.Name.Contains(Path.GetFileNameWithoutExtension(cueFile.Name)))
-                    .FirstOrDefault(e => _allowedFilesExtensions.Contains(e.Extension));
+                var executableFileForCue = allSongsFiles
+                    .FirstOrDefault(e => e.Name.Contains(Path.GetFileNameWithoutExtension(cueFile.Name)) && e.Extension != DomainConstants.CueExtension);
 
                 if (executableFileForCue is null)
                 {

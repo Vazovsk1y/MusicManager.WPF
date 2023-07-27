@@ -5,7 +5,7 @@ namespace MusicManager.Services.Implementations;
 
 public class FileManagerInteractor : IFileManagerInteractor
 {
-    public Result<DirectoryInfo> GetSelectedDirectory(string description = "Select a directory:")
+    public Result<DirectoryInfo> SelectDirectory(string description = "Select a directory:")
     {
         using var folderBrowserDialog = new FolderBrowserDialog()
         {
@@ -22,7 +22,7 @@ public class FileManagerInteractor : IFileManagerInteractor
         return Result.Failure<DirectoryInfo>(new Error("No directory was selected."));
     }
 
-    public Result<FileInfo> GetSelectedFile()
+    public Result<FileInfo> SelectFile()
     {
         throw new NotImplementedException();
     }
