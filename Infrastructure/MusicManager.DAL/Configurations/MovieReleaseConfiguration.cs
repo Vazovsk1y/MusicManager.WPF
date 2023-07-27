@@ -8,6 +8,8 @@ internal class MovieReleaseConfiguration : IEntityTypeConfiguration<MovieRelease
 {
     public void Configure(EntityTypeBuilder<MovieRelease> entityBuilder)
     {
+        entityBuilder.ToTable(MusicManagerDbContext.MOVIES_RELEASES_TABLE_NAME);
+
         entityBuilder.UseTptMappingStrategy();
     }
 }

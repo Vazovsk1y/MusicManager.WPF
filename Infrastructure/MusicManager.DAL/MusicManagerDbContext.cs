@@ -1,14 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MusicManager.DAL.Configurations.Base;
 using MusicManager.Domain.Common;
 using MusicManager.Domain.Entities;
 using MusicManager.Domain.Models;
 using MusicManager.Repositories.Data;
-using System.Reflection;
 
 namespace MusicManager.DAL;
 
 public class MusicManagerDbContext : DbContext, IApplicationDbContext
 {
+    internal const string DISCS_TABLE_NAME = "discs";
+
+    internal const string COMPILATIONS_TABLE_NAME = "compilations";
+
+    internal const string MOVIES_RELEASES_TABLE_NAME = "movies_releases";
+
     public DbSet<Songwriter> Songwriters { get; set; }
 
     public DbSet<Movie> Movies { get; set; }
@@ -31,6 +37,7 @@ public class MusicManagerDbContext : DbContext, IApplicationDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(DiscConfiguration).Assembly);
+        base.OnModelCreating(modelBuilder);
     }
 }

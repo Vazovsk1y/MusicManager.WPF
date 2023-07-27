@@ -10,6 +10,8 @@ internal class DiscConfiguration : IEntityTypeConfiguration<Disc>
 {
     public void Configure(EntityTypeBuilder<Disc> entityBuilder)
     {
+        entityBuilder.ToTable(MusicManagerDbContext.DISCS_TABLE_NAME);
+
         entityBuilder.UseTptMappingStrategy();
 
         entityBuilder.HasKey(e => e.Id);

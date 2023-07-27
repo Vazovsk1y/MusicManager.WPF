@@ -49,14 +49,14 @@ public class Disc : IAggregateRoot
     public virtual Result AddCover(string coverPath)
     {
         var coverCreationResult = Cover.Create(Id, coverPath);
-        if (coverCreationResult.IsSuccess)
+        if (coverCreationResult.IsFailure)
         {
-            return Result.Failure(coverCreationResult.Error);
+            return Result.Failure(new (coverCreationResult.Error));
         }
 
         if (_covers.SingleOrDefault(e => e.FullPath == coverCreationResult.Value.FullPath) is not null)
         {
-            return Result.Failure(new Error("Cover with passed path is already exists."));
+            return Result.Failure(new Error($"Cover with passed path [{coverPath}] is already exists."));
         }
 
         _covers.Add(coverCreationResult.Value);

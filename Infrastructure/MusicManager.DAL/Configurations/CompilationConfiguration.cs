@@ -8,6 +8,8 @@ internal class CompilationConfiguration : IEntityTypeConfiguration<Compilation>
 {
     public void Configure(EntityTypeBuilder<Compilation> entityBuilder)
     {
+        entityBuilder.ToTable(MusicManagerDbContext.COMPILATIONS_TABLE_NAME);
+
         entityBuilder.UseTptMappingStrategy();
     }
 }
