@@ -20,6 +20,11 @@ internal class DiscsPanelViewModel : ObservableObject
 
     private DiscViewModel? _selectedDisc;
 
+    public DiscsPanelViewModel()
+    {
+        InvalidOperationExceptionHelper.ThrowIfTrue(!App.IsInDesignMode, "Parametrless ctor is only for design time.");
+    }
+
     public DiscsPanelViewModel(
         SongwirtersPanelViewModel songwritersPanelViewModel,
         MoviesPanelViewModel moviesPanelViewModel)

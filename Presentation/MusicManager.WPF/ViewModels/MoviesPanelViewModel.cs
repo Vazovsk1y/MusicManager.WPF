@@ -14,6 +14,11 @@ internal class MoviesPanelViewModel : ObservableObject
 
     public IReadOnlyCollection<MovieViewModel> Movies => new ObservableCollection<MovieViewModel>(SongwritersPanelViewModel.Songwriters.SelectMany(s => s.Movies));
 
+    public MoviesPanelViewModel()
+    {
+        InvalidOperationExceptionHelper.ThrowIfTrue(!App.IsInDesignMode, "Parametrless ctor is only for design time.");
+    }
+
     public MoviesPanelViewModel(SongwirtersPanelViewModel songwritersPanelViewModel)
     {
         SongwritersPanelViewModel = songwritersPanelViewModel;
