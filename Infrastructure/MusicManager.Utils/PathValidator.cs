@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace MusicManager.Domain.Helpers;
+namespace MusicManager.Utils;
 
 public static partial class PathValidator
 {

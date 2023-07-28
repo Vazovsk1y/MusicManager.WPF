@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using MusicManager.Utils;
 using MusicManager.WPF.ViewModels.Entities;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -33,18 +33,6 @@ internal class SongsPanelViewModel : ObservableObject
     {
         get => _selectedSong;
         set => SetProperty(ref _selectedSong, value);
-    }
-}
-
-
-public static class InvalidOperationExceptionHelper
-{
-    public static void ThrowIfTrue(bool condition, string exceptionText)
-    {
-        if (condition)
-        {
-            throw new InvalidOperationException(exceptionText);
-        }
     }
 }
 

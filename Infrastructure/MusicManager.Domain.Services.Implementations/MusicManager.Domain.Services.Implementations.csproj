@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\MusicManager.Domain\MusicManager.Domain.csproj" />
+    <ProjectReference Include="..\MusicManager.Utils\MusicManager.Utils.csproj" />
   </ItemGroup>
 
 </Project>

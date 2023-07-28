@@ -1,7 +1,7 @@
-﻿using MusicManager.Domain.Helpers;
-using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
+using MusicManager.Utils;
 
 namespace MusicManager.Domain.Services.Implementations;
 

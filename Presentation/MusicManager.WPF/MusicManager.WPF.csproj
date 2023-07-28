@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\Infrastructure\MusicManager.DAL\MusicManager.DAL.csproj" />
     <ProjectReference Include="..\..\Infrastructure\MusicManager.Domain.Services.Implementations\MusicManager.Domain.Services.Implementations.csproj" />
     <ProjectReference Include="..\..\Infrastructure\MusicManager.Services.Implementations\MusicManager.Services.Implementations.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\MusicManager.Utils\MusicManager.Utils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

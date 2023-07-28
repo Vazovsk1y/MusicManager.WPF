@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using MusicManager.Services;
 using MusicManager.Services.Contracts.Factories;
+using MusicManager.Utils;
 using MusicManager.WPF.Tools;
 using MusicManager.WPF.ViewModels.Entities;
 using System.Collections.ObjectModel;
