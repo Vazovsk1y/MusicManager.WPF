@@ -2,6 +2,7 @@
 using MusicManager.Domain.Shared;
 using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Factories;
+using System.IO;
 
 namespace MusicManager.Services.Implementations.Contracts.Factories;
 

@@ -1,9 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<UseWindowsForms>true</UseWindowsForms>
+	<UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,14 +13,4 @@
     <ProjectReference Include="..\..\Core\MusicManager.Repositories\MusicManager.Repositories.csproj" />
     <ProjectReference Include="..\MusicManager.Domain.Services.Implementations\MusicManager.Domain.Services.Implementations.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="PresentationFramework">
-      <HintPath>C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\7.0.1\ref\net7.0\PresentationFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Windows.Forms">
-      <HintPath>C:\Users\andrey\Downloads\system.windows.forms\System.Windows.Forms.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
