@@ -19,7 +19,7 @@ internal class PlaybackInfoConfiguration : IEntityTypeConfiguration<PlaybackInfo
 
         entityBuilder.Property(e => e.ExecutableType)
             .HasConversion(
-            e => e.ToString(),
+            e => e.MapToString(),
             e => e.CreateSongFileType().Value
             ).IsRequired();
 

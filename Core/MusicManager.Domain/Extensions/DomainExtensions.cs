@@ -8,6 +8,10 @@ public static class DomainExtensions
     private const string CD_Row = "CD";
     private const string LP_Row = "LP";
     private const string BOOTLEG_Row = "Bootleg";
+    private const string FLAC_ROW = "Flac";
+    private const string APE_ROW = "Ape";
+    private const string WV_ROW = "WV";
+    private const string MP3_ROW = "MP3";
 
     public static Result<DiscType> CreateDiscType(this string discTypeRow) => discTypeRow switch
     {
@@ -21,10 +25,10 @@ public static class DomainExtensions
 
     public static Result<SongFileType> CreateSongFileType(this string executableTypeRow) => executableTypeRow switch
     {
-        "Flac" => SongFileType.Flac,
-        "Ape" => SongFileType.Ape,
-        "WV" => SongFileType.WV,
-        "MP3" => SongFileType.Mp3,
+        FLAC_ROW => SongFileType.Flac,
+        APE_ROW => SongFileType.Ape,
+        WV_ROW => SongFileType.WV,
+        MP3_ROW => SongFileType.Mp3,
         _ => Result.Failure<SongFileType>(new Error($"Unable to create song file type from {executableTypeRow}."))
     };
 
@@ -35,6 +39,15 @@ public static class DomainExtensions
         DiscType.Bootleg => BOOTLEG_Row,
         DiscType.TwoCD => "2CD",
         DiscType.ThreeeCD => "3CD",
+        _ => throw new KeyNotFoundException()
+    };
+
+    public static string MapToString(this SongFileType songFileType) => songFileType switch
+    {
+        SongFileType.Mp3 => MP3_ROW,
+        SongFileType.Flac => FLAC_ROW,
+        SongFileType.WV => WV_ROW,
+        SongFileType.Ape => APE_ROW,
         _ => throw new KeyNotFoundException()
     };
 }
