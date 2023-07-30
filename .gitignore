@@ -372,3 +372,4 @@ FodyWeavers.xsd
 /TestPlace/Migrations
 /TestPlace/SongwriterDTO.cs
 /TestPlace
+/Presentation/MusicManager.WPF/musicManagerDb.db
