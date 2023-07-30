@@ -31,6 +31,13 @@ public static class Registrator
                         .UseSnakeCaseNamingConvention();
                         return;
                     }
+                case "SQLITE":
+                    {
+                        options
+                        .UseSqlite(configuration.GetConnectionString(dbType))
+                        .UseSnakeCaseNamingConvention();
+                        return;
+                    }
 
                 case null: throw new InvalidOperationException("Undefined database type.");
                 default: throw new InvalidOperationException($"Database [{dbType}] is not supported.");

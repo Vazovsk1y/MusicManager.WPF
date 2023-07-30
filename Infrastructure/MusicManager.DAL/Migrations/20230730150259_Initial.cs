@@ -15,12 +15,12 @@ namespace MusicManager.DAL.Migrations
                 name: "discs",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    entity_directory_info = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    production_info_country = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    production_info_year = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    identifier = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    entity_directory_info = table.Column<string>(type: "TEXT", nullable: true),
+                    production_info_country = table.Column<string>(type: "TEXT", nullable: false),
+                    production_info_year = table.Column<string>(type: "TEXT", nullable: false),
+                    type = table.Column<string>(type: "TEXT", nullable: false),
+                    identifier = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,10 +31,10 @@ namespace MusicManager.DAL.Migrations
                 name: "songwriters",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    surname = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    entity_directory_info = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    name = table.Column<string>(type: "TEXT", nullable: false),
+                    surname = table.Column<string>(type: "TEXT", nullable: false),
+                    entity_directory_info = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -45,9 +45,9 @@ namespace MusicManager.DAL.Migrations
                 name: "covers",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    disc_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    full_path = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    disc_id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    full_path = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -64,7 +64,7 @@ namespace MusicManager.DAL.Migrations
                 name: "movies_releases",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    id = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -81,10 +81,10 @@ namespace MusicManager.DAL.Migrations
                 name: "songs",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    disc_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    disc_number = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    disc_id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    disc_number = table.Column<string>(type: "TEXT", nullable: true),
+                    name = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -101,8 +101,8 @@ namespace MusicManager.DAL.Migrations
                 name: "compilations",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    songwriter_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    songwriter_id = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -125,14 +125,14 @@ namespace MusicManager.DAL.Migrations
                 name: "movies",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    songwriter_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    production_info_country = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    production_info_year = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    director_info_surname = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    director_info_name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    entity_directory_info = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    title = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    songwriter_id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    production_info_country = table.Column<string>(type: "TEXT", nullable: false),
+                    production_info_year = table.Column<string>(type: "TEXT", nullable: false),
+                    director_info_surname = table.Column<string>(type: "TEXT", nullable: true),
+                    director_info_name = table.Column<string>(type: "TEXT", nullable: true),
+                    entity_directory_info = table.Column<string>(type: "TEXT", nullable: true),
+                    title = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -149,11 +149,11 @@ namespace MusicManager.DAL.Migrations
                 name: "playback_infos",
                 columns: table => new
                 {
-                    song_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    executable_file_full_path = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    cue_file_path = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    executable_type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    song_duration = table.Column<TimeSpan>(type: "time", nullable: false)
+                    song_id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    executable_file_full_path = table.Column<string>(type: "TEXT", nullable: false),
+                    cue_file_path = table.Column<string>(type: "TEXT", nullable: true),
+                    executable_type = table.Column<string>(type: "TEXT", nullable: false),
+                    song_duration = table.Column<TimeSpan>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -170,8 +170,8 @@ namespace MusicManager.DAL.Migrations
                 name: "movie_movie_release",
                 columns: table => new
                 {
-                    movies_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    releases_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    movies_id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    releases_id = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
