@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using MusicManager.DAL;
 using MusicManager.Domain.Services.Implementations;
+using MusicManager.Repositories.Data;
 using MusicManager.Services.Implementations;
 using System;
 using System.IO;
@@ -52,6 +53,11 @@ public partial class App : Application
         base.OnStartup(e);
         IsInDesignMode = false;
         await Host.StartAsync();
+
+        using var scope = Services.CreateScope();
+        var databaseInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        await databaseInitializer.InitializeAsync();
+
         Services.GetRequiredService<MainWindow>().Show();
     }
 

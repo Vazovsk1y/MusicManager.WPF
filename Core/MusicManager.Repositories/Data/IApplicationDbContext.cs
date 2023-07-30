@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using MusicManager.Domain.Common;
 using MusicManager.Domain.Entities;
 using MusicManager.Domain.Models;
@@ -9,6 +10,8 @@ namespace MusicManager.Repositories.Data;
 public interface IApplicationDbContext
 {
     public DbSet<Disc> Discs { get; set; }
+
+    public DatabaseFacade Database { get; }
 
     public DbSet<Songwriter> Songwriters { get; set; }
 

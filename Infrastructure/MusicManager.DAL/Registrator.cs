@@ -19,6 +19,7 @@ public static class Registrator
         .AddScoped<ISongRepository, SongRepository>()
         .AddScoped<IUnitOfWork, UnitOfWork>()
         .AddScoped<IBaseDiscRepository<Disc>, DiscRepository>()
+        .AddScoped<IDbInitializer, DbInitializer>()
         .AddDbContext<IApplicationDbContext, MusicManagerDbContext>(options =>
         {
             var dbType = configuration["Type"];
