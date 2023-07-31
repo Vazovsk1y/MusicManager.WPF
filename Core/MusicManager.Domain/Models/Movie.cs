@@ -9,7 +9,7 @@ public class Movie : IAggregateRoot
 {
     #region --Fields--
 
-    private readonly List<MovieRelease> _movieReleases = new();
+    private readonly List<MovieRelease> _releases = new();
 
     #endregion
 
@@ -27,7 +27,7 @@ public class Movie : IAggregateRoot
 
     public string Title { get; private set; } = string.Empty;
 
-    public IReadOnlyCollection<MovieRelease> Releases => _movieReleases.ToList();
+    public IReadOnlyCollection<MovieRelease> Releases => _releases.ToList();
 
     #endregion
 
@@ -121,7 +121,7 @@ public class Movie : IAggregateRoot
             return Result.Failure(DomainErrors.NullEntityPassed(nameof(release)));
         }
 
-        if (_movieReleases.SingleOrDefault(i => i.Id == release.Id) is not null)
+        if (_releases.SingleOrDefault(i => i.Id == release.Id) is not null)
         {
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(release)));
         }
@@ -134,13 +134,13 @@ public class Movie : IAggregateRoot
 
         if (checkDirectoryInfo)
         {
-            if (_movieReleases.SingleOrDefault(m => m.EntityDirectoryInfo == release.EntityDirectoryInfo) is not null)
+            if (_releases.SingleOrDefault(m => m.EntityDirectoryInfo == release.EntityDirectoryInfo) is not null)
             {
                 return Result.Failure(new Error($"MovieRelease with passed directory info is already exists."));
             }
         }
 
-        _movieReleases.Add(release);
+        _releases.Add(release);
         return Result.Success();
     }
 

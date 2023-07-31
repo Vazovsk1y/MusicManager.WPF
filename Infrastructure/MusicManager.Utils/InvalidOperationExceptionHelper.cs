@@ -2,11 +2,11 @@
 
 public static class InvalidOperationExceptionHelper
 {
-    public static void ThrowIfTrue(bool condition, string exceptionText)
+    public static void ThrowIfTrue(bool condition, string? exceptionText = null)
     {
         if (condition)
         {
-            throw new InvalidOperationException(exceptionText);
+            throw new InvalidOperationException(exceptionText ?? string.Empty);
         }
     }
 }
