@@ -78,6 +78,8 @@ internal class SongwirtersPanelViewModel : ObservableRecipient
             MessageBox.Show(addingResult.Error);
             return;
         }
+
+        MessageBox.Show("Success");
     }
 
     #endregion

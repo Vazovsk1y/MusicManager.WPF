@@ -9,6 +9,16 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
+        <DataGrid ItemsSource="{Binding DiscsPanelViewModel.SelectedDisc.Songs}"
+                      SelectedItem="{Binding SelectedSong}"
+                  AutoGenerateColumns="False">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}"/>
+                <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
+                <DataGridTextColumn Header="SongType" Binding="{Binding ExecutableType}"/>
+            </DataGrid.Columns>
             
+        </DataGrid>
     </Grid>
 </UserControl>

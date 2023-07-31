@@ -9,10 +9,31 @@
         mc:Ignorable="d"
         Title="{Binding ControlTitle}" Height="450" Width="800"
         d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel, IsDesignTimeCreatable=True}">
-    <Grid>
+    <DockPanel>
+        <views:SongwritersPanelControl 
+                DockPanel.Dock="Top"
+                DataContext="{Binding SongwirtersPanelViewModel}"/>
 
 
-        <views:SongwritersPanelControl Margin="40" DataContext="{Binding SongwirtersPanelViewModel}"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-    </Grid>
+
+            <views:MoviePanelControl
+                Grid.Column="0"
+                DataContext="{Binding MoviesPanelViewModel}"/>
+
+            <views:DiscsPanelControl
+                Grid.Column="1"
+                DataContext="{Binding DiscsPanelViewModel}"/>
+
+            <views:SongsPanelControl 
+                Grid.Column="2"
+                DataContext="{Binding SongsPanelViewModel}"/>
+        </Grid>
+    </DockPanel>
 </Window>
