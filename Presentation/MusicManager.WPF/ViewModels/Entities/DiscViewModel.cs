@@ -14,6 +14,7 @@ internal abstract class DiscViewModel : ObservableObject
 
     private string _type = string.Empty;
 
+	private string _identificator = string.Empty;
 	public required DiscId DiscId { get; init; }
 
     public string? ProductionYear
@@ -39,4 +40,10 @@ internal abstract class DiscViewModel : ObservableObject
         get => _songs ??= new();
         init => SetProperty(ref _songs, value);
     }
+
+	public string Identificator
+	{
+		get => _identificator;
+		set => SetProperty(ref _identificator, value);
+	}
 }

@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Enums;
+using MusicManager.Domain.Extensions;
 using MusicManager.Services.Contracts.Dtos;
 using MusicManager.WPF.ViewModels.Entities;
 using System.Linq;
@@ -37,10 +38,11 @@ internal static class MappingExtensions
         return new CompilationViewModel()
         {
             DiscId = compilationDTO.Id,
+            Identificator = compilationDTO.Identifier,
             SongwriterId = compilationDTO.SongwriterId,
             ProductionCountry = compilationDTO.ProductionCountry,
             ProductionYear = compilationDTO.ProductionYear,
-            DiscType = compilationDTO.DiscType.ToString(),
+            DiscType = compilationDTO.DiscType.MapToString(),
             Songs = new(compilationDTO.SongDTOs.Select(e => e.ToViewModel())),
         };
     }
@@ -50,9 +52,10 @@ internal static class MappingExtensions
         return new MovieReleaseViewModel()
         {
             DiscId = movieReleaseDTO.Id,
+            Identificator = movieReleaseDTO.Identifier,
             ProductionCountry = movieReleaseDTO.ProductionCountry,
             ProductionYear = movieReleaseDTO.ProductionYear,
-            DiscType = movieReleaseDTO.DiscType.ToString(),
+            DiscType = movieReleaseDTO.DiscType.MapToString(),
             Songs = new (movieReleaseDTO.SongDTOs.Select(e => e.ToViewModel())),
         };
     }
