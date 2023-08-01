@@ -35,12 +35,12 @@ public class SongService : ISongService
             disc.Songs.Select(e => e.ToDTO()).ToList();
     }
 
-    public async Task<Result> SaveFromFileAsync(SongFile songFile, DiscId discId, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<SongDTO>>> SaveFromFileAsync(SongFile songFile, DiscId discId, CancellationToken cancellationToken = default)
     {
         var disc = await _discRepository.LoadByIdWithSongsAsync(discId, cancellationToken);
         if (disc is null)
         {
-            return Result.Failure(new Error("Disc with passed id is not exists in database."));
+            return Result.Failure<IEnumerable<SongDTO>>(new Error("Disc with passed id is not exists in database."));
         }
 
         return songFile.CueFilePath is null ?
@@ -49,44 +49,50 @@ public class SongService : ISongService
             await SaveFromCue(songFile.SongFilePath, songFile.CueFilePath, disc, cancellationToken);
     }
 
-    private async Task<Result> SaveFromCue(string songFilePath, string cueFilePath, Disc disc, CancellationToken cancellationToken)
+    private async Task<Result<IEnumerable<SongDTO>>> SaveFromCue(string songFilePath, string cueFilePath, Disc disc, CancellationToken cancellationToken)
     {
         var songsResult = await _pathToSongService.GetEntitiesFromCueFileAsync(songFilePath, cueFilePath, disc.Id);
 
         if (songsResult.IsFailure)
         {
-            return songsResult;
+            return Result.Failure<IEnumerable<SongDTO>>(songsResult.Error);
         }
 
-        foreach(var song in songsResult.Value)
+        var songs = songsResult.Value;
+        foreach (var song in songs)
         {
             var result = disc.AddSong(song);
             if (result.IsFailure)
             {
-                return result;
+                return Result.Failure<IEnumerable<SongDTO>>(result.Error);
             }
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result.Success();
+        return songs.Select(s => s.ToDTO()).ToList();
     }
 
-    private async Task<Result> SaveFromSingeFile(string songFilePath, Disc disc, CancellationToken cancellationToken)
+    private async Task<Result<IEnumerable<SongDTO>>> SaveFromSingeFile(string songFilePath, Disc disc, CancellationToken cancellationToken)
     {
         var songResult = await _pathToSongService.GetEntityAsync(songFilePath, disc.Id);
 
         if (songResult.IsFailure)
         {
-            return songResult;
+            return Result.Failure<IEnumerable<SongDTO>>(songResult.Error);
         }
 
+        var song = songResult.Value;
         var result = disc.AddSong(songResult.Value);
         if (result.IsFailure)
         {
-            return result;
+            return Result.Failure<IEnumerable<SongDTO>>(result.Error);
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result.Success();
+
+        return new List<SongDTO>()
+        {
+            song.ToDTO(),
+        };
     }
 }

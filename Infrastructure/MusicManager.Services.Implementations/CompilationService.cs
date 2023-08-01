@@ -55,7 +55,7 @@ public class CompilationService : ICompilationService
         return result;
     }
 
-    public async Task<Result> SaveFromFolderAsync(DiscFolder compilationFolder, SongwriterId songwriterId, CancellationToken cancellationToken = default)
+    public async Task<Result<CompilationDTO>> SaveFromFolderAsync(DiscFolder compilationFolder, SongwriterId songwriterId, CancellationToken cancellationToken = default)
     {
         var compilationResult = await _pathToCompilationService
             .GetEntityAsync(compilationFolder.Path, songwriterId)
@@ -63,20 +63,20 @@ public class CompilationService : ICompilationService
 
         if (compilationResult.IsFailure)
         {
-            return compilationResult;
+            return Result.Failure<CompilationDTO>(compilationResult.Error);
         }
 
         var compilation = compilationResult.Value;
         var songwriter = await _songwriterRepository.LoadByIdWithCompilationsAsync(songwriterId, cancellationToken);
         if (songwriter is null) 
         {
-            return Result.Failure(new Error("Songwriter with passed id is not exists in database."));
+            return Result.Failure<CompilationDTO>(new Error("Songwriter with passed id is not exists in database."));
         }
 
         var addingResult = songwriter.AddCompilation(compilation, true);
         if (addingResult.IsFailure)
         {
-            return addingResult;
+            return Result.Failure<CompilationDTO>(addingResult.Error);
         }
 
         foreach (var coverPath in compilationFolder.CoversPaths)
@@ -86,15 +86,21 @@ public class CompilationService : ICompilationService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        var songsDtos = new List<SongDTO>();
         foreach (var song in compilationFolder.Songs)
         {
             var result = await _songService.SaveFromFileAsync(song, compilation.Id, cancellationToken);
             if (result.IsFailure)
             {
-                return result;
+                return Result.Failure<CompilationDTO>(result.Error);
             }
+
+            songsDtos.AddRange(result.Value);
         }
 
-        return Result.Success();
+        return compilation.ToDTO() with
+        {
+            SongDTOs = songsDtos,
+        };
     }
 }

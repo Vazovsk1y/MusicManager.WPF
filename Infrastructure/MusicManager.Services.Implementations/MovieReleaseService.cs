@@ -55,7 +55,7 @@ public class MovieReleaseService : IMovieReleaseService
         return result;
     }
 
-    public async Task<Result> SaveFromFolderAsync(DiscFolder movieReleaseFolder, MovieId movieId, CancellationToken cancellationToken = default)
+    public async Task<Result<MovieReleaseDTO>> SaveFromFolderAsync(DiscFolder movieReleaseFolder, MovieId movieId, CancellationToken cancellationToken = default)
     {
         var movieReleaseResult = await _pathToMovieReleaseService
             .GetEntityAsync(movieReleaseFolder.Path)
@@ -63,20 +63,20 @@ public class MovieReleaseService : IMovieReleaseService
 
         if (movieReleaseResult.IsFailure)
         {
-            return movieReleaseResult;
+            return Result.Failure<MovieReleaseDTO>(movieReleaseResult.Error);
         }
 
         var movieRelease = movieReleaseResult.Value;
         var movie = await _movieRepository.LoadByIdWithMoviesReleasesAsync(movieId, cancellationToken);
         if (movie is null)
         {
-            return Result.Failure(new Error("Movie with passed id is not exists in database."));
+            return Result.Failure<MovieReleaseDTO>(new Error("Movie with passed id is not exists in database."));
         }
 
         var addingResult = movie.AddRelease(movieRelease);
         if (addingResult.IsFailure)
         {
-            return addingResult;
+            return Result.Failure<MovieReleaseDTO>(addingResult.Error);
         }
 
         foreach (var coverPath in movieReleaseFolder.CoversPaths)
@@ -86,16 +86,22 @@ public class MovieReleaseService : IMovieReleaseService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        var songsDtos = new List<SongDTO>();    
         foreach (var songFile in movieReleaseFolder.Songs)
         {
             var result = await _songService.SaveFromFileAsync(songFile, movieRelease.Id, cancellationToken);
 
             if (result.IsFailure)
             {
-                return Result.Failure(result.Error);
+                return Result.Failure<MovieReleaseDTO>(result.Error);
             }
+
+            songsDtos.AddRange(result.Value);
         }
 
-        return Result.Success();
+        return movieRelease.ToDTO() with
+        {
+            SongDTOs = songsDtos,
+        };
     }
 }

@@ -59,7 +59,7 @@ public class SongwriterService : ISongwriterService
         return result;
     }
 
-    public async Task<Result> SaveFromFolderAsync(SongwriterFolder songwriterFolder, CancellationToken cancellationToken = default)
+    public async Task<Result<SongwriterDTO>> SaveFromFolderAsync(SongwriterFolder songwriterFolder, CancellationToken cancellationToken = default)
     {
         var songWriterResult = await _pathToSongwriterService
             .GetEntityAsync(songwriterFolder.Path)
@@ -67,17 +67,20 @@ public class SongwriterService : ISongwriterService
 
         if (songWriterResult.IsFailure)
         {
-            return songWriterResult;
+            return Result.Failure<SongwriterDTO>(songWriterResult.Error);
         }
 
         var songwriter = songWriterResult.Value;
         if (await _songwriterRepository.IsExistsWithPassedDirectoryInfo(songwriter.EntityDirectoryInfo!))
         {
-            return Result.Failure(new Error("Songwriter with passed directory path is already exists."));
+            return Result.Failure<SongwriterDTO>(new Error("Songwriter with passed directory path is already exists."));
         }
 
         await _songwriterRepository.InsertAsync(songwriter, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var moviesDtos = new List<MovieDTO>();
+        var compilationsDtos = new List<CompilationDTO>();
 
         foreach (var movieFolder in songwriterFolder.MoviesFolders)
         {
@@ -85,8 +88,10 @@ public class SongwriterService : ISongwriterService
 
             if (movieResult.IsFailure)
             {
-                return movieResult;
+                return Result.Failure<SongwriterDTO>(movieResult.Error);
             }
+
+            moviesDtos.Add(movieResult.Value);
         }
 
         foreach (var compilationFolder in songwriterFolder.CompilationsFolders)
@@ -95,11 +100,17 @@ public class SongwriterService : ISongwriterService
 
             if (compilationResult.IsFailure)
             {
-                return compilationResult;
+                return Result.Failure<SongwriterDTO>(compilationResult.Error);
             }
+
+            compilationsDtos.Add(compilationResult.Value);
         }
 
-        return Result.Success();
+        return songwriter.ToDTO() with
+        {
+            CompilationDTOs = compilationsDtos,
+            MovieDTOs = moviesDtos,
+        };
     }
 }
 

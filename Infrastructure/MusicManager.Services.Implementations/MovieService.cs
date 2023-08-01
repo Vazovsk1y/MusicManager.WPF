@@ -56,7 +56,7 @@ public class MovieService : IMovieService
         return result;
     }
 
-    public async Task<Result> SaveFromFolderAsync(MovieFolder movieFolder, SongwriterId songwriterId, CancellationToken cancellationToken = default)
+    public async Task<Result<MovieDTO>> SaveFromFolderAsync(MovieFolder movieFolder, SongwriterId songwriterId, CancellationToken cancellationToken = default)
     {
         var movieResult = await _pathToMovieService
             .GetEntityAsync(movieFolder.Path, songwriterId)
@@ -64,7 +64,7 @@ public class MovieService : IMovieService
 
         if (movieResult.IsFailure)
         {
-            return movieResult;
+            return Result.Failure<MovieDTO>(movieResult.Error);
         }
 
         var movie = movieResult.Value;
@@ -72,26 +72,32 @@ public class MovieService : IMovieService
 
         if (songwriter is null)
         {
-            return Result.Failure(new Error($"Songwriter with passed id is not exists in database."));
+            return Result.Failure<MovieDTO>(new Error($"Songwriter with passed id is not exists in database."));
         }
 
         var addingResult = songwriter.AddMovie(movie, true);
         if (addingResult.IsFailure)
         {
-            return addingResult;
+            return Result.Failure<MovieDTO>(addingResult.Error);
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        var moviesReleasesDtos = new List<MovieReleaseDTO>();
         foreach (var movieReleaseFolder in movieFolder.MoviesReleasesFolders)
         {
             var result = await _movieReleaseService.SaveFromFolderAsync(movieReleaseFolder, movie.Id, cancellationToken);
             if (result.IsFailure)
             {
-                return result;
+                return Result.Failure<MovieDTO>(result.Error);
             }
+
+            moviesReleasesDtos.Add(result.Value);
         }
 
-        return Result.Success();
+        return movie.ToDTO() with
+        {
+            MovieReleasesDTOs = moviesReleasesDtos,
+        };
     }
 }
