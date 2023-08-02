@@ -14,6 +14,7 @@
                   AutoGenerateColumns="False">
 
             <DataGrid.Columns>
+                <DataGridTextColumn Header="SongNumber" Binding="{Binding Number}"/>
                 <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}"/>
                 <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
                 <DataGridTextColumn Header="SongType" Binding="{Binding ExecutableType}"/>

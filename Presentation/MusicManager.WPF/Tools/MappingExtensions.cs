@@ -65,7 +65,8 @@ internal static class MappingExtensions
         return new SongViewModel() 
         { 
             SongId = songDTO.Id,
-            DiscId= songDTO.DiscId, 
+            DiscId= songDTO.DiscId,
+            Number = songDTO.SongNumber,
             DiscNumber = songDTO.DiscNumber,
             Title = songDTO.Name,
             ExecutableType = songDTO.ExecutableType is null ? 

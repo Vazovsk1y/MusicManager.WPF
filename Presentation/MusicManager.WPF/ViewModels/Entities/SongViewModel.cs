@@ -12,6 +12,8 @@ internal class SongViewModel : ObservableObject
 
 	private string? _type;
 
+	private int _number;
+
     public required SongId SongId { get; init; }
 
     public required DiscId DiscId { get; init; }
@@ -32,5 +34,11 @@ internal class SongViewModel : ObservableObject
 	{
 		get => _type;
 		set => SetProperty(ref _type, value);
+	}
+
+	public int Number
+	{
+		get => _number;
+		set => SetProperty(ref _number, value);
 	}
 }

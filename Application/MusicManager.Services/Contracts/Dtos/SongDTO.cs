@@ -8,6 +8,7 @@ namespace MusicManager.Services.Contracts.Dtos
         SongId Id, 
         DiscId DiscId,
         string Name,
+        int SongNumber,
         SongFileType? ExecutableType,
         string? DiscNumber,
         TimeSpan? Duration

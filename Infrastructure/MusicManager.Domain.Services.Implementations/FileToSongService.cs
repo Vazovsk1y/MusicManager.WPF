@@ -15,6 +15,9 @@ namespace MusicManager.Domain.Services.Implementations
         [GeneratedRegex("^\\d+")]
         private static partial Regex GetSongNumberFromRow();
 
+        [GeneratedRegex(@"^CD(\d+)")]
+        private static partial Regex IsDiscNumber();
+
         #endregion
 
         #region --Properties--
@@ -44,9 +47,11 @@ namespace MusicManager.Domain.Services.Implementations
                 return Task.FromResult(Result.Failure<Song>(songInfoResult.Error));
             }
 
-            var songInfo = songInfoResult.Value;
+            using var songInfo = songInfoResult.Value;
             var fileName = Path.GetFileName(songInfo.Name);
-            var discNumberMatch = FindDiscNumber().Match(fileName);
+
+            var parentDirectoryName = new FileInfo(songInfo.Name).Directory?.Name ?? string.Empty;
+            var discNumberMatch = IsDiscNumber().Match(parentDirectoryName);
 
             if (discNumberMatch.Success)
             {
@@ -55,7 +60,7 @@ namespace MusicManager.Domain.Services.Implementations
                     parentId,
                     songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
                     songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
-                    GetRowFromBrackets(fileName),
+                    discNumberMatch.Value,
                     songFilePath,
                     songInfo.Properties.Duration
                     ));
@@ -85,12 +90,14 @@ namespace MusicManager.Domain.Services.Implementations
                 return Result.Failure<IEnumerable<Song>>(songInfoResult.Error);
             }
 
-            var songFileInfo = songInfoResult.Value;
+            using var songFileInfo = songInfoResult.Value;
             TimeSpan allSongFileDuration = songFileInfo.Properties.Duration;
             var fileName = Path.GetFileName(songFileInfo.Name);
-            var discNumberMatch = FindDiscNumber().Match(fileName);
 
+            var parentDirectoryName = new FileInfo(songFileInfo.Name).Directory?.Name ?? string.Empty;
+            var discNumberMatch = IsDiscNumber().Match(parentDirectoryName);
             var cueFileTracksGettingResult = await _cueFileInteractor.GetTracksAsync(cueFilePath);
+
             if (cueFileTracksGettingResult.IsFailure)
             {
                 return Result.Failure<IEnumerable<Song>>(cueFileTracksGettingResult.Error);
@@ -105,7 +112,7 @@ namespace MusicManager.Domain.Services.Implementations
                     songFilePath, 
                     cueFilePath, 
                     allSongFileDuration,
-                    GetRowFromBrackets(fileName));
+                    discNumberMatch.Value);
             }
 
             return ParseCueFileTracksToSongs(
@@ -119,9 +126,6 @@ namespace MusicManager.Domain.Services.Implementations
         #endregion
 
         #region __Private__
-
-        [GeneratedRegex(@"\((CD\d)\)")]
-        private static partial Regex FindDiscNumber();
 
         private Result<TagLib.File> GetSongFileInfo(string songPath)
         {
@@ -215,20 +219,6 @@ namespace MusicManager.Domain.Services.Implementations
             }
 
             return Result.Failure<IEnumerable<Song>>(lastSongCreationResult.Error);
-        }
-
-        private string GetRowFromBrackets(string rowWithBrackets)
-        {
-            int firstBracketIndex = rowWithBrackets.IndexOf('(');
-            if (firstBracketIndex != -1)
-            {
-                int secondBracketIndex = rowWithBrackets.IndexOf(')', firstBracketIndex + 1);
-                if (secondBracketIndex != -1)
-                {
-                    return rowWithBrackets.Substring(firstBracketIndex + 1, secondBracketIndex - firstBracketIndex - 1);
-                }
-            }
-            return string.Empty;
         }
 
         private int GetSongNumberFromFileName(string fileName)
