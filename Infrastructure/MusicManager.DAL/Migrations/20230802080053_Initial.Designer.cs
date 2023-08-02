@@ -11,7 +11,7 @@ using MusicManager.DAL;
 namespace MusicManager.DAL.Migrations
 {
     [DbContext(typeof(MusicManagerDbContext))]
-    [Migration("20230731154331_Initial")]
+    [Migration("20230802080053_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -95,10 +95,6 @@ namespace MusicManager.DAL.Migrations
                     b.Property<Guid>("SongId")
                         .HasColumnType("TEXT")
                         .HasColumnName("song_id");
-
-                    b.Property<string>("CueFilePath")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("cue_file_path");
 
                     b.Property<string>("ExecutableFileFullPath")
                         .IsRequired()
@@ -289,6 +285,36 @@ namespace MusicManager.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_playback_infos_songs_song_id");
+
+                    b.OwnsOne("MusicManager.Domain.Entities.CueInfo", "CueInfo", b1 =>
+                        {
+                            b1.Property<Guid>("PlaybackInfoSongId")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("song_id");
+
+                            b1.Property<string>("CueFilePath")
+                                .IsRequired()
+                                .HasColumnType("TEXT")
+                                .HasColumnName("cue_info_cue_file_path");
+
+                            b1.Property<TimeSpan>("Index00")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("cue_info_index00");
+
+                            b1.Property<TimeSpan>("Index01")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("cue_info_index01");
+
+                            b1.HasKey("PlaybackInfoSongId");
+
+                            b1.ToTable("playback_infos");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PlaybackInfoSongId")
+                                .HasConstraintName("fk_playback_infos_playback_infos_song_id");
+                        });
+
+                    b.Navigation("CueInfo");
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Models.Movie", b =>

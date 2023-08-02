@@ -25,7 +25,7 @@ internal class PlaybackInfoConfiguration : IEntityTypeConfiguration<PlaybackInfo
 
         entityBuilder.Property(e => e.ExecutableFileFullPath).IsRequired();
 
-        entityBuilder.Property(e => e.CueFilePath).IsRequired(false);
+        entityBuilder.OwnsOne(e => e.CueInfo);
 
         entityBuilder.Property(e => e.SongDuration).IsRequired();
     }

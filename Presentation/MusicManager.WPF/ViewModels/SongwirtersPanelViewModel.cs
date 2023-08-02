@@ -79,6 +79,10 @@ internal class SongwirtersPanelViewModel : ObservableRecipient
             return;
         }
 
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            Songwriters.Add(addingResult.Value.ToViewModel());
+        });
         MessageBox.Show("Success");
     }
 

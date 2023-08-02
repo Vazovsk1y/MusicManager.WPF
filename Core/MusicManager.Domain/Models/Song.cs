@@ -88,7 +88,7 @@ public class Song : IAggregateRoot
         }
 
         var song = songCreationResult.Value;
-        var settingInfoResult = song.SetSongPlayInfo(songFileFullPath, songDuration);
+        var settingInfoResult = song.SetPlaybackInfo(songFileFullPath, songDuration);
 
         if (settingInfoResult.IsFailure)
         {
@@ -112,7 +112,7 @@ public class Song : IAggregateRoot
         }
 
         var song = songCreationResult.Value;
-        var settingInfoResult = song.SetSongPlayInfo(songFileFullPath, songDuration);
+        var settingInfoResult = song.SetPlaybackInfo(songFileFullPath, songDuration);
 
         if (settingInfoResult.IsFailure)
         {
@@ -128,7 +128,9 @@ public class Song : IAggregateRoot
         string discNumber,
         string songFileFullPath,
         TimeSpan songDuration,
-        string cueFileFullPath)
+        string cueFileFullPath,
+        TimeSpan index00,
+        TimeSpan index01)
     {
         var songCreationResult = Create(discId, name, discNumber);
 
@@ -138,7 +140,7 @@ public class Song : IAggregateRoot
         }
 
         var song = songCreationResult.Value;
-        var settingPlayInfoResult = song.SetSongPlayInfo(songFileFullPath, songDuration, cueFileFullPath);
+        var settingPlayInfoResult = song.SetPlaybackInfo(songFileFullPath, songDuration, cueFileFullPath, index00, index01);
 
         if (settingPlayInfoResult.IsFailure)
         {
@@ -153,7 +155,9 @@ public class Song : IAggregateRoot
         string name,
         string songFileFullPath,
         TimeSpan songDuration,
-        string cueFileFullPath)
+        string cueFileFullPath,
+        TimeSpan index00,
+        TimeSpan index01)
     {
         var songCreationResult = Create(discId, name);
 
@@ -163,7 +167,7 @@ public class Song : IAggregateRoot
         }
 
         var song = songCreationResult.Value;
-        var settingPlayInfoResult = song.SetSongPlayInfo(songFileFullPath, songDuration, cueFileFullPath);
+        var settingPlayInfoResult = song.SetPlaybackInfo(songFileFullPath, songDuration, cueFileFullPath, index00, index01);
 
         if (settingPlayInfoResult.IsFailure)
         {
@@ -173,7 +177,9 @@ public class Song : IAggregateRoot
         return song;
     }
 
-    public Result SetSongPlayInfo(string fullPath, TimeSpan duration)
+    public Result SetPlaybackInfo(
+        string fullPath, 
+        TimeSpan duration)
     {
         var settingSongFileInfoResult = PlaybackInfo.Create(fullPath, Id, duration);
 
@@ -186,9 +192,14 @@ public class Song : IAggregateRoot
         return Result.Success();
     }
 
-    public Result SetSongPlayInfo(string fullPath, TimeSpan duration, string cueFileFullPath)
+    public Result SetPlaybackInfo(
+        string fullPath, 
+        TimeSpan duration, 
+        string cueFileFullPath,
+        TimeSpan index00,
+        TimeSpan index01)
     {
-        var settingSongFileInfoResult = PlaybackInfo.Create(fullPath, Id, duration, cueFileFullPath);
+        var settingSongFileInfoResult = PlaybackInfo.Create(fullPath, Id, duration, cueFileFullPath, index00, index01);
 
         if (settingSongFileInfoResult.IsFailure)
         {

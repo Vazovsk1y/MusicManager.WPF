@@ -3,6 +3,7 @@ using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Entities;
 
@@ -22,7 +23,7 @@ public class PlaybackInfo
 
     public string ExecutableFileFullPath { get; }
 
-    public string? CueFilePath { get; private set; }
+    public CueInfo? CueInfo { get; private set; }
 
     public SongFileType ExecutableType { get; init; }
 
@@ -86,7 +87,9 @@ public class PlaybackInfo
         string fullPath,
         SongId songId,
         TimeSpan duration,
-        string cueFileFullPath)
+        string cueFileFullPath,
+        TimeSpan index00,
+        TimeSpan index01)
     {
         var creationResult = Create(fullPath, songId, duration);
 
@@ -95,22 +98,17 @@ public class PlaybackInfo
             return creationResult;
         }
 
-        if (string.IsNullOrWhiteSpace(cueFileFullPath))
-        {
-            return Result.Failure<PlaybackInfo>(DomainErrors.NullOrEmptyStringPassed(nameof(cueFileFullPath)));
-        }
+        var cueInfoCreationResult = CueInfo.Create(cueFileFullPath, index00, index01);
 
-        if (!cueFileFullPath.EndsWith(DomainConstants.CueExtension))
+        if (cueInfoCreationResult.IsFailure)
         {
-            return Result.Failure<PlaybackInfo>(DomainErrors.SongPlayInfo.IncorrectCuePathPassed(cueFileFullPath));
+            return Result.Failure<PlaybackInfo>(cueInfoCreationResult.Error);
         }
 
         var songPlayInfo = creationResult.Value;
-        songPlayInfo.CueFilePath = cueFileFullPath;
+        songPlayInfo.CueInfo = cueInfoCreationResult.Value;
         return songPlayInfo;
     }
 
     #endregion
 }
-
-
