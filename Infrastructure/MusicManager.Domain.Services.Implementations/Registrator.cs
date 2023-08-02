@@ -8,8 +8,8 @@ namespace MusicManager.Domain.Services.Implementations
             .AddTransient<ICueFileInteractor, CueFileInteractor>()
             .AddTransient<IPathToSongwriterService, DirectoryToSongwriterService>()
             .AddTransient<IPathToMovieService, DirectoryToMovieService>()
-            .AddTransient<IPathToCompilationService, DirectoryToCompilationService>()
-            .AddTransient<IPathToMovieReleaseService, DirectoryToMovieReleaseService>()
+            .AddSingleton<IPathToCompilationService, DirectoryToCompilationService>()
+            .AddSingleton<IPathToMovieReleaseService, DirectoryToMovieReleaseService>()
             .AddTransient<IPathToSongService, FileToSongService>()
             ;
     }

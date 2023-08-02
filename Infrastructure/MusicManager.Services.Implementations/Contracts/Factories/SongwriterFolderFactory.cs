@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Services.Implementations.Errors;
+﻿using IWshRuntimeLibrary;
+using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Base;
@@ -53,7 +54,16 @@ public class SongwriterFolderFactory : ISongwriterFolderFactory
 
         if (compilationsDirectory is not null)
         {
-            var compilationsDirectories = compilationsDirectory.EnumerateDirectories();
+            var compilationsDirectories = new List<DirectoryInfo>(compilationsDirectory.EnumerateDirectories());
+            var linksFiles = compilationsDirectory.EnumerateFiles().Where(e => e.Extension == ".lnk");
+
+            foreach (var linkFile in linksFiles)
+            {
+                WshShell shell = new();
+                WshShortcut shortcut = (WshShortcut)shell.CreateShortcut(linkFile.FullName);
+                compilationsDirectories.Add(new DirectoryInfo(shortcut.TargetPath));
+            }
+
             foreach (var compilationFolder in compilationsDirectories)
             {
                 var result = _compilationFolderFactory.Create(compilationFolder);

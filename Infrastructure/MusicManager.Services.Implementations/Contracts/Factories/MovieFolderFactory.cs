@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Services.Implementations.Errors;
+﻿using IWshRuntimeLibrary;
+using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Base;
@@ -24,7 +25,15 @@ public class MovieFolderFactory : IMovieFolderFactory
         }
 
         List<DiscFolder> moviesReleasesFolders = new();
-        var moviesReleasesDirectories = movieDirectory.EnumerateDirectories();
+        var moviesReleasesDirectories = new List<DirectoryInfo>(movieDirectory.EnumerateDirectories());
+        var linksFiles = movieDirectory.EnumerateFiles().Where(e => e.Extension == ".lnk");
+
+        foreach (var linkFile in linksFiles)
+        {
+            WshShell shell = new();
+            WshShortcut shortcut = (WshShortcut)shell.CreateShortcut(linkFile.FullName);
+            moviesReleasesDirectories.Add(new DirectoryInfo(shortcut.TargetPath));
+        }
 
         foreach (var movieReleaseDirectory in moviesReleasesDirectories)
         {

@@ -4,6 +4,7 @@ using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Utils;
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
 namespace MusicManager.Domain.Services.Implementations;
@@ -11,6 +12,8 @@ namespace MusicManager.Domain.Services.Implementations;
 public partial class DirectoryToCompilationService : IPathToCompilationService
 {
     private readonly string _bootLegKeyWord = "Bootleg";
+
+    private readonly ConcurrentDictionary<string, Compilation> _cache = new();
 
     public Task<Result<Compilation>> GetEntityAsync(string compilationPath, SongwriterId parent)
     {
@@ -20,14 +23,33 @@ public partial class DirectoryToCompilationService : IPathToCompilationService
             return Task.FromResult(Result.Failure<Compilation>(result.Error));
         }
 
+        if (_cache.TryGetValue(compilationPath, out var value))
+        {
+            return Task.FromResult(Result.Success(value));
+        }
+
         var directoryInfo = result.Value;
         if (directoryInfo.Name.Contains(_bootLegKeyWord))
         {
-            return Task.FromResult(CreateBootLeg(directoryInfo, parent));
+            var compilationCreationResult = CreateBootLeg(directoryInfo, parent);
+            if (compilationCreationResult.IsFailure)
+            {
+                return Task.FromResult(Result.Failure<Compilation>(compilationCreationResult.Error));
+            }
+
+            _cache[compilationPath] = compilationCreationResult.Value;
+            return Task.FromResult(Result.Success(compilationCreationResult.Value));
         }
         else
         {
-            return Task.FromResult(CreateDisc(directoryInfo, parent));
+            var compilationCreationResult = CreateDisc(directoryInfo, parent);
+            if (compilationCreationResult.IsFailure)
+            {
+                return Task.FromResult(Result.Failure<Compilation>(compilationCreationResult.Error));
+            }
+
+            _cache[compilationPath] = compilationCreationResult.Value;
+            return Task.FromResult(Result.Success(compilationCreationResult.Value));
         }
     }
 

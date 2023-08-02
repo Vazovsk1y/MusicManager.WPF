@@ -4,6 +4,7 @@ using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Utils;
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
 namespace MusicManager.Domain.Services.Implementations;
@@ -11,6 +12,8 @@ namespace MusicManager.Domain.Services.Implementations;
 public partial class DirectoryToMovieReleaseService : IPathToMovieReleaseService
 {
     private readonly string _bootLegKeyWord = "Bootleg";
+
+    private readonly ConcurrentDictionary<string, MovieRelease> _cache = new();
 
     public Task<Result<MovieRelease>> GetEntityAsync(string compilationPath)
     {
@@ -20,14 +23,34 @@ public partial class DirectoryToMovieReleaseService : IPathToMovieReleaseService
             return Task.FromResult(Result.Failure<MovieRelease>(result.Error));
         }
 
+        if (_cache.TryGetValue(compilationPath, out var value))
+        {
+            return Task.FromResult(Result.Success(value));
+        }
+
         var directoryInfo = result.Value;
         if (directoryInfo.Name.Contains(_bootLegKeyWord))
         {
-            return Task.FromResult(CreateBootLeg(directoryInfo));
+            var movieReleaseCreationResult = CreateBootLeg(directoryInfo);
+            if (movieReleaseCreationResult.IsFailure)
+            {
+                return Task.FromResult(Result.Failure<MovieRelease>(movieReleaseCreationResult.Error));
+            }
+
+
+            _cache[compilationPath] = movieReleaseCreationResult.Value;
+            return Task.FromResult(Result.Success(movieReleaseCreationResult.Value));
         }
         else
         {
-            return Task.FromResult(CreateDisc(directoryInfo));
+            var movieReleaseCreationResult = CreateDisc(directoryInfo);
+            if (movieReleaseCreationResult.IsFailure)
+            {
+                return Task.FromResult(Result.Failure<MovieRelease>(movieReleaseCreationResult.Error));
+            }
+
+            _cache[compilationPath] = movieReleaseCreationResult.Value;
+            return Task.FromResult(Result.Success(movieReleaseCreationResult.Value));
         }
     }
 

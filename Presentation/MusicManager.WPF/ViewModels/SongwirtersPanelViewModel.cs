@@ -58,14 +58,14 @@ internal class SongwirtersPanelViewModel : ObservableRecipient
         var selectedFolderResult = _fileManagerInteractor.SelectDirectory();
         if (selectedFolderResult.IsFailure)
         {
-            MessageBox.Show(selectedFolderResult.Error);
+            MessageBox.Show(selectedFolderResult.Error.Message);
             return;
         }
 
         var creatingSongwriterFolderResult = _songwriterFolderFactory.Create(selectedFolderResult.Value);
         if (creatingSongwriterFolderResult.IsFailure)
         {
-            MessageBox.Show(selectedFolderResult.Error);
+            MessageBox.Show(creatingSongwriterFolderResult.Error.Message);
             return;
         }
 
@@ -75,7 +75,7 @@ internal class SongwirtersPanelViewModel : ObservableRecipient
         var addingResult = await songwriterService.SaveFromFolderAsync(creatingSongwriterFolderResult.Value);
         if (addingResult.IsFailure)
         {
-            MessageBox.Show(addingResult.Error);
+            MessageBox.Show(addingResult.Error.Message);
             return;
         }
 
