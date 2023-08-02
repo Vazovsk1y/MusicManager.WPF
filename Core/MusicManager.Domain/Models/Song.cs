@@ -25,6 +25,8 @@ public class Song : IAggregateRoot
 
     public string Name { get; private set; } = string.Empty;
 
+    public int Number { get; private set; }
+
     #endregion
 
     #region --Constructors--
@@ -42,19 +44,29 @@ public class Song : IAggregateRoot
 
     public static Result<Song> Create(
         DiscId discId,
-        string name)
+        string name,
+        int number)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
             return Result.Failure<Song>(DomainErrors.NullOrEmptyStringPassed(nameof(name)));
         }
 
-        return new Song(name, discId);
+        if (number < 0)
+        {
+            return Result.Failure<Song>(new("Song number must be non-negative number."));
+        }
+
+        return new Song(name, discId)
+        {
+            Number = number
+        };
     }
 
     public static Result<Song> Create(
         DiscId discId, 
-        string name, 
+        string name,
+        int number,
         string discNumber)
     {
         if (string.IsNullOrEmpty(discNumber))
@@ -62,7 +74,7 @@ public class Song : IAggregateRoot
             return Result.Failure<Song>(DomainErrors.NullOrEmptyStringPassed(nameof(discNumber)));
         }
 
-        var songCreationResult = Create(discId, name);
+        var songCreationResult = Create(discId, name, number);
         if (songCreationResult.IsFailure)
         {
             return songCreationResult;
@@ -75,12 +87,13 @@ public class Song : IAggregateRoot
 
     public static Result<Song> Create(
         DiscId discId, 
-        string name, 
+        string name,
+        int number,
         string discNumber, 
         string songFileFullPath,
         TimeSpan songDuration)
     {
-        var songCreationResult = Create(discId, name, discNumber);
+        var songCreationResult = Create(discId, name, number, discNumber);
 
         if (songCreationResult.IsFailure)
         {
@@ -101,10 +114,11 @@ public class Song : IAggregateRoot
     public static Result<Song> Create(
         DiscId discId,
         string name,
+        int number,
         string songFileFullPath,
         TimeSpan songDuration)
     {
-        var songCreationResult = Create(discId, name);
+        var songCreationResult = Create(discId, name, number);
 
         if (songCreationResult.IsFailure)
         {
@@ -125,6 +139,7 @@ public class Song : IAggregateRoot
     public static Result<Song> Create(
         DiscId discId, 
         string name,
+        int number,
         string discNumber,
         string songFileFullPath,
         TimeSpan songDuration,
@@ -132,7 +147,7 @@ public class Song : IAggregateRoot
         TimeSpan index00,
         TimeSpan index01)
     {
-        var songCreationResult = Create(discId, name, discNumber);
+        var songCreationResult = Create(discId, name, number, discNumber);
 
         if (songCreationResult.IsFailure)
         {
@@ -153,13 +168,14 @@ public class Song : IAggregateRoot
     public static Result<Song> Create(
         DiscId discId, 
         string name,
+        int number,
         string songFileFullPath,
         TimeSpan songDuration,
         string cueFileFullPath,
         TimeSpan index00,
         TimeSpan index01)
     {
-        var songCreationResult = Create(discId, name);
+        var songCreationResult = Create(discId, name, number);
 
         if (songCreationResult.IsFailure)
         {

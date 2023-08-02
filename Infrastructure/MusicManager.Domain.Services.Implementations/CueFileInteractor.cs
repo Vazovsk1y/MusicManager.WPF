@@ -3,6 +3,7 @@ using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Services.Implementations.Extensions;
 using MusicManager.Domain.Shared;
 using MusicManager.Utils;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MusicManager.Domain.Services.Implementations;
@@ -19,11 +20,15 @@ public partial class CueFileInteractor : ICueFileInteractor
     private const string ISRCKeyWord = "ISRC";
     private const string Index00KeyWord = "INDEX 00";
     private const string Index01KeyWord = "INDEX 01";
+    private const string AudioKeyWord = "AUDIO";
 
     #endregion
 
     [GeneratedRegex("\\d{2}:\\d{2}:\\d{2}")]
     private static partial Regex GetTimeSpanRowFromLine();
+
+    [GeneratedRegex("\\b\\d+\\b")]
+    private static partial Regex GetNumberFromTrackRow();
 
     private static readonly char[] _cueRowsSeparators = new char[]
     {
@@ -118,6 +123,12 @@ public partial class CueFileInteractor : ICueFileInteractor
 
         foreach (var row in trackSectionRows)
         {
+            if (row.Contains(AudioKeyWord))
+            {
+                track.TrackPosition = GetTrackPosition(row);
+                continue;
+            }
+
             if (row.Contains(TitleKeyWord))
             {
                 track.Title = GetRowFromQuotes(row) ?? "Undefined";
@@ -196,6 +207,19 @@ public partial class CueFileInteractor : ICueFileInteractor
             }
         }
         return null; 
+    }
+
+    private int GetTrackPosition(string rowWithPosition)
+    {
+        var match = GetNumberFromTrackRow().Match(rowWithPosition);
+
+        if (match.Success)
+        {
+            _ = int.TryParse(match.Value, out int result);
+            return result;
+        }
+
+        return 0;
     }
 
     #endregion

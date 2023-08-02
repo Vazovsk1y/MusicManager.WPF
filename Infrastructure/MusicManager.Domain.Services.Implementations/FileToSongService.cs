@@ -12,6 +12,9 @@ namespace MusicManager.Domain.Services.Implementations
 
         private readonly ICueFileInteractor _cueFileInteractor;
 
+        [GeneratedRegex("^\\d+")]
+        private static partial Regex GetSongNumberFromRow();
+
         #endregion
 
         #region --Properties--
@@ -51,6 +54,7 @@ namespace MusicManager.Domain.Services.Implementations
                     Song.Create(
                     parentId,
                     songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
+                    songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
                     GetRowFromBrackets(fileName),
                     songFilePath,
                     songInfo.Properties.Duration
@@ -60,6 +64,7 @@ namespace MusicManager.Domain.Services.Implementations
             var songCreationResult = Song.Create(
                 parentId,
                 songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
+                songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
                 songFilePath,
                 songInfo.Properties.Duration
                 );
@@ -152,21 +157,23 @@ namespace MusicManager.Domain.Services.Implementations
                     Song.Create(
                     parent,
                     previousTrack.Title,
+                    previousTrack.TrackPosition,
                     songFilePath,
                     currentTrack.Index01 - previousTrack.Index01,
                     cueFilePath,
-                    currentTrack.Index00,
-                    currentTrack.Index01)
+                    previousTrack.Index00,
+                    previousTrack.Index01)
                     :
                     Song.Create(
                     parent, 
                     previousTrack.Title,
+                    previousTrack.TrackPosition,
                     discNumber,
                     songFilePath,
                     currentTrack.Index01 - previousTrack.Index01,
                     cueFilePath,
-                    currentTrack.Index00,
-                    currentTrack.Index01
+                    previousTrack.Index00,
+                    previousTrack.Index01
                     );
 
                 if (songCreationResult.IsFailure)
@@ -182,6 +189,7 @@ namespace MusicManager.Domain.Services.Implementations
                     Song.Create(
                     parent,
                     lastTrack.Title,
+                    lastTrack.TrackPosition,
                     songFilePath,
                     allSongFileDuration - lastTrack.Index01,
                     cueFilePath,
@@ -191,6 +199,7 @@ namespace MusicManager.Domain.Services.Implementations
                     Song.Create(
                     parent,
                     lastTrack.Title,
+                    lastTrack.TrackPosition,
                     discNumber,
                     songFilePath,
                     allSongFileDuration - lastTrack.Index01,
@@ -220,6 +229,18 @@ namespace MusicManager.Domain.Services.Implementations
                 }
             }
             return string.Empty;
+        }
+
+        private int GetSongNumberFromFileName(string fileName)
+        {
+            var match = GetSongNumberFromRow().Match(fileName);
+            if (match.Success)
+            {
+                _ = int.TryParse(match.Value, out int result);
+                return result;
+            }
+
+            return 0;
         }
 
         #endregion

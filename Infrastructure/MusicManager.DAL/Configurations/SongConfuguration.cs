@@ -18,6 +18,8 @@ internal class SongConfuguration : IEntityTypeConfiguration<Song>
 
         entityBuilder.Property(e => e.DiscNumber).IsRequired(false);
 
+        entityBuilder.Property(e => e.Number).IsRequired();
+
         entityBuilder.Property(e => e.Name).IsRequired();
     }
 }
