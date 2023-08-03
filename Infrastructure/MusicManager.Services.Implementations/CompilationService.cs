@@ -34,7 +34,7 @@ public class CompilationService : ICompilationService
         var songwriter = await _songwriterRepository.LoadByIdWithCompilationsAsync(songwriterId, cancellation);
         if (songwriter is null)
         {
-            return Result.Failure<IEnumerable<CompilationDTO>>(new Error("Songwriter with passed id is not exists in database."));
+            return Result.Failure<IEnumerable<CompilationDTO>>(ServicesErrors.SongwriterWithPassedIdIsNotExists());
         }
 
         var compilations = songwriter.Compilations;
@@ -70,7 +70,7 @@ public class CompilationService : ICompilationService
         var songwriter = await _songwriterRepository.LoadByIdWithCompilationsAsync(songwriterId, cancellationToken);
         if (songwriter is null) 
         {
-            return Result.Failure<CompilationDTO>(new Error("Songwriter with passed id is not exists in database."));
+            return Result.Failure<CompilationDTO>(ServicesErrors.SongwriterWithPassedIdIsNotExists());
         }
 
         var addingResult = songwriter.AddCompilation(compilation, true);

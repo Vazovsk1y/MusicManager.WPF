@@ -34,7 +34,7 @@ public class MovieReleaseService : IMovieReleaseService
         var movie = await _movieRepository.LoadByIdWithMoviesReleasesAsync(movieId, cancellationToken);
         if (movie is null)
         {
-            return Result.Failure<IEnumerable<MovieReleaseDTO>>(new Error("Songwriter with passed id is not exists in database."));
+            return Result.Failure<IEnumerable<MovieReleaseDTO>>(ServicesErrors.MovieWithPassedIdIsNotExists());
         }
 
         var moviesReleases = movie.Releases;
@@ -70,7 +70,7 @@ public class MovieReleaseService : IMovieReleaseService
         var movie = await _movieRepository.LoadByIdWithMoviesReleasesAsync(movieId, cancellationToken);
         if (movie is null)
         {
-            return Result.Failure<MovieReleaseDTO>(new Error("Movie with passed id is not exists in database."));
+            return Result.Failure<MovieReleaseDTO>(ServicesErrors.MovieWithPassedIdIsNotExists());
         }
 
         var addingResult = movie.AddRelease(movieRelease);

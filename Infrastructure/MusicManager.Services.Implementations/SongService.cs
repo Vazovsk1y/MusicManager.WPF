@@ -30,7 +30,7 @@ public class SongService : ISongService
         var disc = await _discRepository.LoadByIdWithSongsAsync(discId, cancellationToken);
 
         return disc is null ?
-            Result.Failure<IEnumerable<SongDTO>>(new Error("Disc with passed id is not exists."))
+            Result.Failure<IEnumerable<SongDTO>>(ServicesErrors.DiscWithPassedIdIsNotExists())
             :
             disc.Songs.Select(e => e.ToDTO()).ToList();
     }
@@ -40,7 +40,7 @@ public class SongService : ISongService
         var disc = await _discRepository.LoadByIdWithSongsAsync(discId, cancellationToken);
         if (disc is null)
         {
-            return Result.Failure<IEnumerable<SongDTO>>(new Error("Disc with passed id is not exists in database."));
+            return Result.Failure<IEnumerable<SongDTO>>(ServicesErrors.DiscWithPassedIdIsNotExists());
         }
 
         return songFile.CueFilePath is null ?
