@@ -61,11 +61,7 @@ public class SongService : ISongService
         var songs = songsResult.Value;
         foreach (var song in songs)
         {
-            var result = disc.AddSong(song);
-            if (result.IsFailure)
-            {
-                return Result.Failure<IEnumerable<SongDTO>>(result.Error);
-            }
+            _ = disc.AddSong(song);
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -82,11 +78,7 @@ public class SongService : ISongService
         }
 
         var song = songResult.Value;
-        var result = disc.AddSong(songResult.Value);
-        if (result.IsFailure)
-        {
-            return Result.Failure<IEnumerable<SongDTO>>(result.Error);
-        }
+        _ = disc.AddSong(songResult.Value);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

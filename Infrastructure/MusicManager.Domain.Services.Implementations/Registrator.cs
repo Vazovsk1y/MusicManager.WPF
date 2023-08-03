@@ -10,7 +10,7 @@ namespace MusicManager.Domain.Services.Implementations
             .AddTransient<IPathToMovieService, DirectoryToMovieService>()
             .AddSingleton<IPathToCompilationService, DirectoryToCompilationService>()
             .AddSingleton<IPathToMovieReleaseService, DirectoryToMovieReleaseService>()
-            .AddTransient<IPathToSongService, FileToSongService>()
+            .AddSingleton<IPathToSongService, FileToSongService>()
             ;
     }
 }
