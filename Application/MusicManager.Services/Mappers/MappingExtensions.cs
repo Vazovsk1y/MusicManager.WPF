@@ -16,6 +16,14 @@ public static class MappingExtensions
             );
     }
 
+    public static SongwriterLookupDTO ToLookupDTO(this Songwriter songwriter)
+    {
+        return new SongwriterLookupDTO(
+            songwriter.Id,
+            $"{songwriter.Name} {songwriter.Surname}"
+            );
+    }
+
     public static MovieDTO ToDTO(this Movie movie)
     {
         return new MovieDTO(

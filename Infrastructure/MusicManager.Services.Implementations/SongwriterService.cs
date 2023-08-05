@@ -59,6 +59,12 @@ public class SongwriterService : ISongwriterService
         return result;
     }
 
+    public async Task<Result<IEnumerable<SongwriterLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken = default)
+    {
+        var songwriters = await _songwriterRepository.LoadAllAsync(cancellationToken);
+        return songwriters.Select(sngw => sngw.ToLookupDTO()).ToList();
+    }
+
     public async Task<Result<SongwriterDTO>> SaveFromFolderAsync(SongwriterFolder songwriterFolder, CancellationToken cancellationToken = default)
     {
         var songWriterResult = await _pathToSongwriterService
