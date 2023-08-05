@@ -56,6 +56,39 @@ public class MovieService : IMovieService
         return result;
     }
 
+    public async Task<Result> SaveAsync(MovieAddDTO movieAddDTO, CancellationToken cancellationToken = default)
+    {
+        var songwriter = await _songwriterRepository.LoadByIdWithMoviesAsync(movieAddDTO.SongwriterId, cancellationToken);
+
+        if (songwriter is null)
+        {
+            return Result.Failure(ServicesErrors.SongwriterWithPassedIdIsNotExists());
+        }
+
+        var movieCreationResult = Movie.Create(
+            movieAddDTO.SongwriterId,
+            movieAddDTO.Title,
+            movieAddDTO.ProductionYear,
+            movieAddDTO.ProductionCountry
+            );
+
+        if (movieCreationResult.IsFailure)
+        {
+            return Result.Failure(movieCreationResult.Error);
+        }
+
+        var movie = movieCreationResult.Value;
+        var addingResult = songwriter.AddMovie(movie, true);
+
+        if (addingResult.IsFailure)
+        {
+            return Result.Failure(addingResult.Error);
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
     public async Task<Result<MovieDTO>> SaveFromFolderAsync(MovieFolder movieFolder, SongwriterId songwriterId, CancellationToken cancellationToken = default)
     {
         var movieResult = await _pathToMovieService
