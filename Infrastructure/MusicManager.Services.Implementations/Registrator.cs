@@ -17,5 +17,6 @@ public static class Registrator
         .AddSingleton<IMovieFolderFactory, MovieFolderFactory>()
         .AddSingleton<IDiscFolderFactory, DiscFolderFactory>()
         .AddSingleton<ISongFileFactory, SongFileFactory>()
+        .AddSingleton(typeof(IUserDialogService<>), typeof(BaseUserDialogService<>))
         ;
 }
