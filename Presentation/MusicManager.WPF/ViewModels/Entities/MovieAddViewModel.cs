@@ -13,13 +13,12 @@ using System.Windows;
 
 namespace MusicManager.WPF.ViewModels.Entities;
 
-internal partial class MovieAddViewModel : ObservableRecipient
+internal partial class MovieAddViewModel : DialogViewModel<MovieAddWindow>
 {
     #region --Fields--
 
     private readonly ISongwriterService _songwriterService;
     private readonly IMovieService _movieService;
-    private readonly IUserDialogService<MovieAddWindow> _dialogService;
 
     #endregion
 
@@ -55,11 +54,10 @@ internal partial class MovieAddViewModel : ObservableRecipient
        IMovieService movieService,
        IUserDialogService<MovieAddWindow> dialogService,
        ICountriesHelper countryHelper,
-       IYearsHelper yearsHelper) : base()
+       IYearsHelper yearsHelper) : base(dialogService)
     {
         _songwriterService = songwriterService;
         _movieService = movieService;
-        _dialogService = dialogService;
 
         CountriesHelper = countryHelper;
         YearsHelper = yearsHelper;
@@ -69,8 +67,7 @@ internal partial class MovieAddViewModel : ObservableRecipient
 
     #region --Commands--
 
-    [RelayCommand(CanExecute = nameof(CanAccept))]
-    private async Task Accept()
+    protected override async Task Accept()
     {
         var dto = new MovieAddDTO(SelectedSongwriter!.Id, SelectedYear!, SelectedCountry!, Title);
         var saveResult = await _movieService.SaveAsync(dto);
@@ -97,10 +94,7 @@ internal partial class MovieAddViewModel : ObservableRecipient
         _dialogService.CloseDialog();
     }
 
-    private bool CanAccept() => NullValidator.IsAllNotNull(SelectedCountry, SelectedSongwriter, SelectedYear);
-
-    [RelayCommand]
-    private void Cancel() => _dialogService.CloseDialog();
+    protected override bool CanAccept() => NullValidator.IsAllNotNull(SelectedCountry, SelectedSongwriter, SelectedYear);
 
     #endregion
 
