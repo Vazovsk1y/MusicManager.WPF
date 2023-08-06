@@ -11,7 +11,7 @@ using MusicManager.DAL;
 namespace MusicManager.DAL.Migrations
 {
     [DbContext(typeof(MusicManagerDbContext))]
-    [Migration("20230806161731_Initial")]
+    [Migration("20230806165709_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -266,8 +266,7 @@ namespace MusicManager.DAL.Migrations
                                 .HasConstraintName("fk_discs_discs_id");
                         });
 
-                    b.Navigation("ProductionInfo")
-                        .IsRequired();
+                    b.Navigation("ProductionInfo");
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Entities.Cover", b =>
@@ -380,8 +379,7 @@ namespace MusicManager.DAL.Migrations
 
                     b.Navigation("DirectorInfo");
 
-                    b.Navigation("ProductionInfo")
-                        .IsRequired();
+                    b.Navigation("ProductionInfo");
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Models.Song", b =>

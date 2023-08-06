@@ -23,7 +23,7 @@ public class Disc : IAggregateRoot
 
     public EntityDirectoryInfo? EntityDirectoryInfo { get; protected set; }
 
-    public ProductionInfo ProductionInfo { get; protected set; }
+    public ProductionInfo? ProductionInfo { get; protected set; }
 
     public DiscType Type { get; protected set; }
 

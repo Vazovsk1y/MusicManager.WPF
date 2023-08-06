@@ -12,7 +12,7 @@ namespace MusicManager.Services.Contracts.Dtos
             DiscId Id,
             SongwriterId songwriterId,
             string Identifier, 
-            string ProductionCountry, 
+            string? ProductionCountry, 
             int? ProductionYear, 
             DiscType DiscType, 
             IEnumerable<SongDTO> SongDTOs

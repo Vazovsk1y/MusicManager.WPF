@@ -8,7 +8,7 @@ namespace MusicManager.Services.Contracts.Dtos
         public MovieReleaseDTO(
             DiscId Id, 
             string Identifier, 
-            string ProductionCountry, 
+            string? ProductionCountry, 
             int? ProductionYear, 
             DiscType DiscType, 
             IEnumerable<SongDTO> SongDTOs) : base(Id, Identifier, ProductionCountry, ProductionYear, DiscType, SongDTOs)

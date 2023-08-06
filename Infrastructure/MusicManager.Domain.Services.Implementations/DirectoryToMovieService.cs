@@ -1,6 +1,7 @@
 ﻿using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 using MusicManager.Utils;
 
 namespace MusicManager.Domain.Services.Implementations;
@@ -28,7 +29,7 @@ public class DirectoryToMovieService : IPathToMovieService
             songwriterId,
             title!,
             year,
-            "Undefined",
+            ProductionInfo.UndefinedCountry,
             directoryInfo.FullName);
 
         if (movieCreationResult.IsFailure)
@@ -46,8 +47,13 @@ public class DirectoryToMovieService : IPathToMovieService
             .Select(i => i.TrimEnd().TrimStart())
             .ToList();
 
+        if (info.Count < 2)
+        {
+            return (false, default, null);
+        }
+
         _ = int.TryParse(info[0], out int result);
-        return info.Count < 2 ? (false, result, null) : (true, result, info[1]);
+        return (true, result, info[1]);
     }
 
     private Result<DirectoryInfo> IsAbleToMoveNext(string moviePath)

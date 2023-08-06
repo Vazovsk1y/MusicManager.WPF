@@ -8,7 +8,7 @@ public class ProductionInfo : ValueObject<ProductionInfo>
 {
     #region --Fields--
 
-    public static readonly ProductionInfo Undefined = new("Undefined", default);
+    public const string UndefinedCountry = "Undefined";
 
     #endregion
 

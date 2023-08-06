@@ -24,7 +24,7 @@ public class MovieRelease : Disc
 
     private MovieRelease() : base()
     {
-        ProductionInfo = ProductionInfo.Undefined;
+
     }
 
     #endregion

@@ -19,7 +19,7 @@ public class Movie : IAggregateRoot
 
     public SongwriterId SongwriterId { get; private set; }
 
-    public ProductionInfo ProductionInfo { get; private set; }
+    public ProductionInfo? ProductionInfo { get; private set; }
 
     public DirectorInfo? DirectorInfo { get; private set; } 
 

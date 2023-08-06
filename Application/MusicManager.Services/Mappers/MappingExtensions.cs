@@ -30,8 +30,8 @@ public static class MappingExtensions
             movie.Id,
             movie.SongwriterId,
             movie.Title,
-            movie.ProductionInfo.Country,
-            movie.ProductionInfo.Year,
+            movie.ProductionInfo?.Country,
+            movie.ProductionInfo?.Year,
             movie.DirectorInfo?.Name,
             movie.DirectorInfo?.Surname,
             movie.Releases.Select(e => e.ToDTO())
@@ -44,8 +44,8 @@ public static class MappingExtensions
             compilation.Id,
             compilation.SongwriterId,
             compilation.Identifier,
-            compilation.ProductionInfo.Country,
-            compilation.ProductionInfo.Year,
+            compilation.ProductionInfo?.Country,
+            compilation.ProductionInfo?.Year,
             compilation.Type,
             compilation.Songs.Select(e => e.ToDTO())
             );
@@ -56,8 +56,8 @@ public static class MappingExtensions
         return new MovieReleaseDTO(
             movieRelease.Id,
             movieRelease.Identifier,
-            movieRelease.ProductionInfo.Country,
-            movieRelease.ProductionInfo.Year,
+            movieRelease.ProductionInfo?.Country,
+            movieRelease.ProductionInfo?.Year,
             movieRelease.Type,
             movieRelease.Songs.Select(e => e.ToDTO())
             );

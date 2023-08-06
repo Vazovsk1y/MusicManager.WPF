@@ -25,7 +25,6 @@ public class Compilation : Disc
     private Compilation(SongwriterId songwriterId) : base()
     {
         SongwriterId = songwriterId;
-        ProductionInfo = ProductionInfo.Undefined;
     }
 
     #endregion

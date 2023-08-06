@@ -6,7 +6,7 @@ namespace MusicManager.Services.Contracts.Dtos
         MovieId Id,
         SongwriterId SongwriterId,
         string Title,
-        string ProductionCountry,
+        string? ProductionCountry,
         int? ProductionYear,
         string? DirectorName,
         string? DirectorLastName,
