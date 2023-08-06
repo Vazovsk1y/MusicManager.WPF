@@ -8,6 +8,7 @@ using MusicManager.Utils;
 using MusicManager.WPF.Messages;
 using MusicManager.WPF.Tools;
 using MusicManager.WPF.ViewModels.Entities;
+using MusicManager.WPF.Views.Windows;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,29 +16,33 @@ using System.Windows;
 
 namespace MusicManager.WPF.ViewModels;
 
-internal class SongwirtersPanelViewModel : 
+internal partial class SongwirtersPanelViewModel : 
     ObservableRecipient, 
-    IRecipient<MovieAddedMessage>
+    IRecipient<MovieAddedMessage>,
+    IRecipient<SongwriterAddedMessage>
 {
     private readonly ObservableCollection<SongwriterViewModel> _songwriters = new();
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IFileManagerInteractor _fileManagerInteractor;
     private readonly ISongwriterFolderFactory _songwriterFolderFactory;
+    private readonly IUserDialogService<SongwriterAddWindow> _dialogService;
 
     public SongwirtersPanelViewModel() 
     {
         InvalidOperationExceptionHelper.ThrowIfTrue(!App.IsInDesignMode, "Parametrless ctor is only for design time.");
     }
-    
+
     public SongwirtersPanelViewModel(
         IServiceScopeFactory serviceScopeFactory,
         IFileManagerInteractor fileManagerInteractor,
-        ISongwriterFolderFactory songwriterFolderFactory) : base()
+        ISongwriterFolderFactory songwriterFolderFactory,
+        IUserDialogService<SongwriterAddWindow> dialogService) : base()
     {
 
         _serviceScopeFactory = serviceScopeFactory;
         _fileManagerInteractor = fileManagerInteractor;
         _songwriterFolderFactory = songwriterFolderFactory;
+        _dialogService = dialogService;
     }
 
     private SongwriterViewModel? _selectedSongwriter;
@@ -62,14 +67,14 @@ internal class SongwirtersPanelViewModel :
         var selectedFolderResult = _fileManagerInteractor.SelectDirectory();
         if (selectedFolderResult.IsFailure)
         {
-            MessageBox.Show(selectedFolderResult.Error.Message);
+            MessageBoxHelper.ShowErrorBox(selectedFolderResult.Error.Message);
             return;
         }
 
         var creatingSongwriterFolderResult = _songwriterFolderFactory.Create(selectedFolderResult.Value);
         if (creatingSongwriterFolderResult.IsFailure)
         {
-            MessageBox.Show(creatingSongwriterFolderResult.Error.Message);
+            MessageBoxHelper.ShowErrorBox(creatingSongwriterFolderResult.Error.Message);
             return;
         }
 
@@ -79,7 +84,7 @@ internal class SongwirtersPanelViewModel :
         var addingResult = await songwriterService.SaveFromFolderAsync(creatingSongwriterFolderResult.Value);
         if (addingResult.IsFailure)
         {
-            MessageBox.Show(addingResult.Error.Message);
+            MessageBoxHelper.ShowErrorBox(addingResult.Error.Message);
             return;
         }
 
@@ -87,8 +92,11 @@ internal class SongwirtersPanelViewModel :
         {
             Songwriters.Add(addingResult.Value.ToViewModel());
         });
-        MessageBox.Show("Success");
+        MessageBoxHelper.ShowInfoBox("Success");
     }
+
+    [RelayCommand]
+    private void AddSongwriter() => _dialogService.ShowDialog();
 
     #endregion
 
@@ -115,6 +123,14 @@ internal class SongwirtersPanelViewModel :
         {
             var songwriter = Songwriters.FirstOrDefault(e => e.SongwriterId == message.MovieViewModel.SongwriterId);
             songwriter?.Movies.Add(message.MovieViewModel);
+        });
+    }
+
+    public async void Receive(SongwriterAddedMessage message)
+    {
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            Songwriters.Add(message.SongwriterViewModel);
         });
     }
 }

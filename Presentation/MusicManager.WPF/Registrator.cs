@@ -12,6 +12,7 @@ internal static class Registrator
     public static IServiceCollection AddWPF(this IServiceCollection services) => services
         .AddWindowWithViewModelSingleton<MainWindow, MainWindowViewModel>()
         .AddWindowWithViewModelTransient<MovieAddWindow, MovieAddViewModel>()
+        .AddWindowWithViewModelTransient<SongwriterAddWindow, SongwriterAddViewModel>()
         .AddSingleton<SongwirtersPanelViewModel>()
         .AddSingleton<MoviesPanelViewModel>()
         .AddSingleton<DiscsPanelViewModel>()
