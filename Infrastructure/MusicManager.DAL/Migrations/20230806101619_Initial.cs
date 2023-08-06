@@ -42,7 +42,7 @@ namespace MusicManager.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "covers",
+                name: "cover",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -51,9 +51,9 @@ namespace MusicManager.DAL.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_covers", x => x.id);
+                    table.PrimaryKey("pk_cover", x => x.id);
                     table.ForeignKey(
-                        name: "fk_covers_discs_disc_temp_id",
+                        name: "fk_cover_discs_disc_temp_id",
                         column: x => x.disc_id,
                         principalTable: "discs",
                         principalColumn: "id",
@@ -84,7 +84,8 @@ namespace MusicManager.DAL.Migrations
                     id = table.Column<Guid>(type: "TEXT", nullable: false),
                     disc_id = table.Column<Guid>(type: "TEXT", nullable: false),
                     disc_number = table.Column<string>(type: "TEXT", nullable: true),
-                    name = table.Column<string>(type: "TEXT", nullable: false)
+                    name = table.Column<string>(type: "TEXT", nullable: false),
+                    number = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -146,7 +147,7 @@ namespace MusicManager.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "playback_infos",
+                name: "playback_info",
                 columns: table => new
                 {
                     song_id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -159,9 +160,9 @@ namespace MusicManager.DAL.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_playback_infos", x => x.song_id);
+                    table.PrimaryKey("pk_playback_info", x => x.song_id);
                     table.ForeignKey(
-                        name: "fk_playback_infos_songs_song_id",
+                        name: "fk_playback_info_songs_song_id",
                         column: x => x.song_id,
                         principalTable: "songs",
                         principalColumn: "id",
@@ -198,8 +199,8 @@ namespace MusicManager.DAL.Migrations
                 column: "songwriter_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_covers_disc_id",
-                table: "covers",
+                name: "ix_cover_disc_id",
+                table: "cover",
                 column: "disc_id");
 
             migrationBuilder.CreateIndex(
@@ -225,13 +226,13 @@ namespace MusicManager.DAL.Migrations
                 name: "compilations");
 
             migrationBuilder.DropTable(
-                name: "covers");
+                name: "cover");
 
             migrationBuilder.DropTable(
                 name: "movie_movie_release");
 
             migrationBuilder.DropTable(
-                name: "playback_infos");
+                name: "playback_info");
 
             migrationBuilder.DropTable(
                 name: "movies_releases");

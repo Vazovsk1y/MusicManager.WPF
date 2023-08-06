@@ -11,7 +11,7 @@ using MusicManager.DAL;
 namespace MusicManager.DAL.Migrations
 {
     [DbContext(typeof(MusicManagerDbContext))]
-    [Migration("20230802080053_Initial")]
+    [Migration("20230806101619_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -82,12 +82,12 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnName("full_path");
 
                     b.HasKey("Id")
-                        .HasName("pk_covers");
+                        .HasName("pk_cover");
 
                     b.HasIndex("DiscId")
-                        .HasDatabaseName("ix_covers_disc_id");
+                        .HasDatabaseName("ix_cover_disc_id");
 
-                    b.ToTable("covers", (string)null);
+                    b.ToTable("cover", (string)null);
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Entities.PlaybackInfo", b =>
@@ -111,9 +111,9 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnName("song_duration");
 
                     b.HasKey("SongId")
-                        .HasName("pk_playback_infos");
+                        .HasName("pk_playback_info");
 
-                    b.ToTable("playback_infos", (string)null);
+                    b.ToTable("playback_info", (string)null);
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Models.Movie", b =>
@@ -162,6 +162,10 @@ namespace MusicManager.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT")
                         .HasColumnName("name");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("number");
 
                     b.HasKey("Id")
                         .HasName("pk_songs");
@@ -274,7 +278,7 @@ namespace MusicManager.DAL.Migrations
                         .HasForeignKey("DiscId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_covers_discs_disc_temp_id");
+                        .HasConstraintName("fk_cover_discs_disc_temp_id");
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Entities.PlaybackInfo", b =>
@@ -284,9 +288,9 @@ namespace MusicManager.DAL.Migrations
                         .HasForeignKey("MusicManager.Domain.Entities.PlaybackInfo", "SongId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_playback_infos_songs_song_id");
+                        .HasConstraintName("fk_playback_info_songs_song_id");
 
-                    b.OwnsOne("MusicManager.Domain.Entities.CueInfo", "CueInfo", b1 =>
+                    b.OwnsOne("MusicManager.Domain.ValueObjects.CueInfo", "CueInfo", b1 =>
                         {
                             b1.Property<Guid>("PlaybackInfoSongId")
                                 .HasColumnType("TEXT")
@@ -307,11 +311,11 @@ namespace MusicManager.DAL.Migrations
 
                             b1.HasKey("PlaybackInfoSongId");
 
-                            b1.ToTable("playback_infos");
+                            b1.ToTable("playback_info");
 
                             b1.WithOwner()
                                 .HasForeignKey("PlaybackInfoSongId")
-                                .HasConstraintName("fk_playback_infos_playback_infos_song_id");
+                                .HasConstraintName("fk_playback_info_playback_info_song_id");
                         });
 
                     b.Navigation("CueInfo");

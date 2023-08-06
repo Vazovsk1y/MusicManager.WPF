@@ -25,10 +25,6 @@ public class MusicManagerDbContext : DbContext, IApplicationDbContext
 
     public DbSet<Song> Songs { get; set; }
 
-    public DbSet<PlaybackInfo> PlaybackInfos { get; set; }
-
-    public DbSet<Cover> Covers { get; set; }
-
     public DbSet<Disc> Discs { get; set; }
 
     public MusicManagerDbContext(DbContextOptions options) : base(options)

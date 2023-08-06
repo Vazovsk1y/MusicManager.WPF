@@ -18,14 +18,10 @@ public interface IApplicationDbContext
     public DbSet<Movie> Movies { get; set; }
 
     public DbSet<MovieRelease> MovieReleases { get; set; }
-
+     
     public DbSet<Compilation> Compilations { get; set; }
 
     public DbSet<Song> Songs { get; set; }
-
-    public DbSet<PlaybackInfo> PlaybackInfos { get; set; }
-
-    public DbSet<Cover> Covers { get; set; }
 
     DbSet<TEntity> Set<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors 
         | DynamicallyAccessedMemberTypes.NonPublicConstructors 
