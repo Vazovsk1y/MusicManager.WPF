@@ -109,7 +109,7 @@ public partial class DirectoryToCompilationService : IPathToCompilationService
         return Result.Success(creationDiscResult.Value);
     }
 
-    private Result<(DiscType discType, string discIndetificator, string country, string year)> GetDiscComponents(string discDirectoryName)
+    private Result<(DiscType discType, string discIndetificator, string country, int year)> GetDiscComponents(string discDirectoryName)
     {
         var match = FindAllDiscComponents().Match(discDirectoryName);
         if (match.Success)
@@ -117,13 +117,14 @@ public partial class DirectoryToCompilationService : IPathToCompilationService
             var discTypeCreationResult = match.Groups[1].Value.CreateDiscType();
             if (discTypeCreationResult.IsFailure)
             {
-                return Result.Failure<(DiscType, string, string, string)>(discTypeCreationResult.Error);
+                return Result.Failure<(DiscType, string, string, int)>(discTypeCreationResult.Error);
             }
 
-            return (discTypeCreationResult.Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value);
+            _ = int.TryParse(match.Groups[4].Value, out int result);
+            return (discTypeCreationResult.Value, match.Groups[2].Value, match.Groups[3].Value, result);
         }
 
-        return Result.Failure<(DiscType, string, string, string)>(new Error($"Unable to get some of the required components from disc directory name [{discDirectoryName}]."));
+        return Result.Failure<(DiscType, string, string, int)>(new Error($"Unable to get some of the required components from disc directory name [{discDirectoryName}]."));
     }
 
     [GeneratedRegex(@"^(.*?)\s(.*?)\s-\s(.*?)\s-\s(\d{4})")]

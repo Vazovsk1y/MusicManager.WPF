@@ -6,7 +6,7 @@ namespace MusicManager.WPF.ViewModels.Entities;
 
 internal abstract class DiscViewModel : ObservableObject
 {
-	private string? _productionYear;
+	private int? _productionYear;
 
 	private ObservableCollection<SongViewModel>? _songs;
 
@@ -17,7 +17,7 @@ internal abstract class DiscViewModel : ObservableObject
 	private string _identificator = string.Empty;
 	public required DiscId DiscId { get; init; }
 
-    public string? ProductionYear
+    public int? ProductionYear
 	{
 		get => _productionYear;
 		set => SetProperty(ref _productionYear, value);

@@ -34,7 +34,7 @@ internal partial class MovieAddViewModel : DialogViewModel<MovieAddWindow>
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
-    private string? _selectedYear;
+    private int? _selectedYear;
 
     [ObservableProperty]
     private string _title = string.Empty;
@@ -69,7 +69,7 @@ internal partial class MovieAddViewModel : DialogViewModel<MovieAddWindow>
 
     protected override async Task Accept()
     {
-        var dto = new MovieAddDTO(SelectedSongwriter!.Id, SelectedYear!, SelectedCountry!, Title);
+        var dto = new MovieAddDTO(SelectedSongwriter!.Id, (int)SelectedYear!, SelectedCountry!, Title);
         var saveResult = await _movieService.SaveAsync(dto);
 
         if (saveResult.IsSuccess)

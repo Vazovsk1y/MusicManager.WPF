@@ -27,7 +27,7 @@ public class DirectoryToMovieService : IPathToMovieService
         var movieCreationResult = Movie.Create(
             songwriterId,
             title!,
-            year!,
+            year,
             "Undefined",
             directoryInfo.FullName);
 
@@ -39,14 +39,15 @@ public class DirectoryToMovieService : IPathToMovieService
         return Task.FromResult(Result.Success(movieCreationResult.Value));
     }
 
-    private (bool isSuccessfullyExtracted, string? year, string? title) GetMovieInfo(string directoryName)
+    private (bool isSuccessfullyExtracted, int year, string? title) GetMovieInfo(string directoryName)
     {
         var info = directoryName
             .Split(_separator, StringSplitOptions.RemoveEmptyEntries)
             .Select(i => i.TrimEnd().TrimStart())
             .ToList();
 
-        return info.Count < 2 ? (false, null, null) : (true, info[0], info[1]);
+        _ = int.TryParse(info[0], out int result);
+        return info.Count < 2 ? (false, result, null) : (true, result, info[1]);
     }
 
     private Result<DirectoryInfo> IsAbleToMoveNext(string moviePath)

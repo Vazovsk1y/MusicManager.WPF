@@ -4,7 +4,7 @@ namespace MusicManager.Services.Contracts.Dtos
 {
     public record MovieAddDTO(
         SongwriterId SongwriterId,
-        string ProductionYear,
+        int ProductionYear,
         string ProductionCountry,
         string Title);
 }

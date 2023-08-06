@@ -18,7 +18,7 @@ namespace MusicManager.DAL.Migrations
                     id = table.Column<Guid>(type: "TEXT", nullable: false),
                     entity_directory_info = table.Column<string>(type: "TEXT", nullable: true),
                     production_info_country = table.Column<string>(type: "TEXT", nullable: false),
-                    production_info_year = table.Column<string>(type: "TEXT", nullable: false),
+                    production_info_year = table.Column<int>(type: "INTEGER", nullable: false),
                     type = table.Column<string>(type: "TEXT", nullable: false),
                     identifier = table.Column<string>(type: "TEXT", nullable: false)
                 },
@@ -129,7 +129,7 @@ namespace MusicManager.DAL.Migrations
                     id = table.Column<Guid>(type: "TEXT", nullable: false),
                     songwriter_id = table.Column<Guid>(type: "TEXT", nullable: false),
                     production_info_country = table.Column<string>(type: "TEXT", nullable: false),
-                    production_info_year = table.Column<string>(type: "TEXT", nullable: false),
+                    production_info_year = table.Column<int>(type: "INTEGER", nullable: false),
                     director_info_surname = table.Column<string>(type: "TEXT", nullable: true),
                     director_info_name = table.Column<string>(type: "TEXT", nullable: true),
                     entity_directory_info = table.Column<string>(type: "TEXT", nullable: true),

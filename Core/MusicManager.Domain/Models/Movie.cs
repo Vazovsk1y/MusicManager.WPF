@@ -48,7 +48,7 @@ public class Movie : IAggregateRoot
     public static Result<Movie> Create(
         SongwriterId songwriterId,
         string title, 
-        string productionYear, 
+        int productionYear, 
         string productionCountry)
     {
         if (string.IsNullOrWhiteSpace(title))
@@ -70,7 +70,7 @@ public class Movie : IAggregateRoot
     public static Result<Movie> Create(
         SongwriterId songwriterId,
         string title, 
-        string productionYear, 
+        int productionYear, 
         string productionCountry, 
         string directoryFullPath)
     {
@@ -101,7 +101,7 @@ public class Movie : IAggregateRoot
         return Result.Success();
     }
 
-    public Result SetProductionInfo(string productionCountry, string productionYear)
+    public Result SetProductionInfo(string productionCountry, int productionYear)
     {
         var result = ProductionInfo.Create(productionCountry, productionYear);
 

@@ -8,7 +8,7 @@ public class ProductionInfo : ValueObject<ProductionInfo>
 {
     #region --Fields--
 
-    public static readonly ProductionInfo Undefined = new("Undefined", "Undefined");
+    public static readonly ProductionInfo Undefined = new("Undefined", default);
 
     #endregion
 
@@ -16,13 +16,13 @@ public class ProductionInfo : ValueObject<ProductionInfo>
 
     public string Country { get; private set; } = string.Empty;
 
-    public string Year { get; private set; }
+    public int Year { get; private set; }
 
     #endregion
 
     #region --Constructors--
 
-    private ProductionInfo(string country, string year)
+    private ProductionInfo(string country, int year)
     {
         Country = country;
         Year = year;
@@ -31,21 +31,6 @@ public class ProductionInfo : ValueObject<ProductionInfo>
     #endregion
 
     #region --Methods--
-
-    internal static Result<ProductionInfo> Create(string country, string year)
-    {
-        if (string.IsNullOrWhiteSpace(country) || string.IsNullOrWhiteSpace(year))
-        {
-            return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassed());
-        }
-
-        if (int.TryParse(year, out int result) && IsYearCorrect(result))
-        {
-            return new ProductionInfo(country, year);
-        }
-
-        return Result.Failure<ProductionInfo>(DomainErrors.ProductInfo.IncorrectYearPassed(year));
-    }
 
     internal static Result<ProductionInfo> Create(string country, int year)
     {
@@ -56,7 +41,7 @@ public class ProductionInfo : ValueObject<ProductionInfo>
 
         if (IsYearCorrect(year))
         {
-            return new ProductionInfo(country, year.ToString());
+            return new ProductionInfo(country, year);
         }
 
         return Result.Failure<ProductionInfo>(DomainErrors.ProductInfo.IncorrectYearPassed(year.ToString()));

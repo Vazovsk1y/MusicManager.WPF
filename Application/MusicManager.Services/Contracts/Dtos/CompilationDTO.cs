@@ -13,7 +13,7 @@ namespace MusicManager.Services.Contracts.Dtos
             SongwriterId songwriterId,
             string Identifier, 
             string ProductionCountry, 
-            string ProductionYear, 
+            int? ProductionYear, 
             DiscType DiscType, 
             IEnumerable<SongDTO> SongDTOs
             ) : base(Id, Identifier, ProductionCountry, ProductionYear, DiscType, SongDTOs)

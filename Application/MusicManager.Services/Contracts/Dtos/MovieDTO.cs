@@ -7,7 +7,7 @@ namespace MusicManager.Services.Contracts.Dtos
         SongwriterId SongwriterId,
         string Title,
         string ProductionCountry,
-        string ProductionYear,
+        int? ProductionYear,
         string? DirectorName,
         string? DirectorLastName,
         IEnumerable<MovieReleaseDTO> MovieReleasesDTOs);

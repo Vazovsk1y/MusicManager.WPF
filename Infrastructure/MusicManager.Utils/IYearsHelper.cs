@@ -5,14 +5,14 @@
 /// </summary>
 public interface IYearsHelper
 {
-    IEnumerable<string> Years { get; }
+    IEnumerable<int> Years { get; }
 }
 
 public class YearsHelper : IYearsHelper
 {
-    private readonly List<string> _years = new();
+    private readonly List<int> _years = new();
 
-    public IEnumerable<string> Years
+    public IEnumerable<int> Years
     {
         get
         {
@@ -30,7 +30,7 @@ public class YearsHelper : IYearsHelper
 
     private void Initialize()
     {
-        var numbers = Enumerable.Range(1, DateTime.Now.Year).OrderDescending().Select(e => e.ToString());
+        var numbers = Enumerable.Range(1, DateTime.Now.Year).OrderDescending();
         _years.AddRange(numbers);
     }
 }

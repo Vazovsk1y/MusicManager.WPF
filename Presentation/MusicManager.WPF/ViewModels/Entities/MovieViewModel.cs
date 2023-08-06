@@ -12,7 +12,7 @@ internal class MovieViewModel : ObservableObject
 
     private string? _directorFullName;
 
-    private string? _productionYear;
+    private int? _productionYear;
 
     private ObservableCollection<MovieReleaseViewModel>? _moviesReleasesViewsModels;
 
@@ -32,7 +32,7 @@ internal class MovieViewModel : ObservableObject
         set => SetProperty(ref _title, value);
     }
 
-    public string? ProductionYear
+    public int? ProductionYear
     {
         get => _productionYear;
         set => SetProperty(ref _productionYear, value);

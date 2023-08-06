@@ -100,7 +100,7 @@ public class Disc : IAggregateRoot
         return result;
     }
 
-    public virtual Result SetProductionInfo(string productionCountry, string productionYear)
+    public virtual Result SetProductionInfo(string productionCountry, int productionYear)
     {
         var result = ProductionInfo.Create(productionCountry, productionYear);
 

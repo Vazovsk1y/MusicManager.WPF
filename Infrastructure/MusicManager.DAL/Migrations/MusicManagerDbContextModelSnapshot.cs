@@ -250,9 +250,8 @@ namespace MusicManager.DAL.Migrations
                                 .HasColumnType("TEXT")
                                 .HasColumnName("production_info_country");
 
-                            b1.Property<string>("Year")
-                                .IsRequired()
-                                .HasColumnType("TEXT")
+                            b1.Property<int>("Year")
+                                .HasColumnType("INTEGER")
                                 .HasColumnName("production_info_year");
 
                             b1.HasKey("DiscId");
@@ -338,9 +337,8 @@ namespace MusicManager.DAL.Migrations
                                 .HasColumnType("TEXT")
                                 .HasColumnName("production_info_country");
 
-                            b1.Property<string>("Year")
-                                .IsRequired()
-                                .HasColumnType("TEXT")
+                            b1.Property<int>("Year")
+                                .HasColumnType("INTEGER")
                                 .HasColumnName("production_info_year");
 
                             b1.HasKey("MovieId");
