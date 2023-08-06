@@ -103,12 +103,11 @@ public class Songwriter : IAggregateRoot
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(movie)));
         }
 
-        if (checkDirectoryInfo)
+        if (checkDirectoryInfo && _movies.SingleOrDefault(m =>
+            m.EntityDirectoryInfo == movie.EntityDirectoryInfo
+            && m.Id == movie.Id) is not null)
         {
-            if (_movies.SingleOrDefault(m => m.EntityDirectoryInfo == movie.EntityDirectoryInfo) is not null)
-            {
-                return Result.Failure(new Error("Movie with passed directory info is already exists."));
-            }
+            return Result.Failure(new Error("Movie with passed directory info is already exists."));
         }
 
         _movies.Add(movie);
@@ -127,12 +126,11 @@ public class Songwriter : IAggregateRoot
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(disc)));
         }
 
-        if (checkDirectoryInfo)
+        if (checkDirectoryInfo && _compilations.SingleOrDefault(m =>
+        m.EntityDirectoryInfo == disc.EntityDirectoryInfo
+        && m.Id == disc.Id) is not null)
         {
-            if (_compilations.SingleOrDefault(m => m.EntityDirectoryInfo == disc.EntityDirectoryInfo) is not null)
-            {
-                return Result.Failure(new Error($"Compilation with passed directory info is already exists."));
-            }
+            return Result.Failure(new Error($"Compilation with passed directory info is already exists."));
         }
 
         _compilations.Add(disc);

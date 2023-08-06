@@ -126,18 +126,18 @@ public class Movie : IAggregateRoot
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(release)));
         }
 
+        if (checkDirectoryInfo &&
+            _releases.SingleOrDefault(m =>
+            m.EntityDirectoryInfo == release.EntityDirectoryInfo
+            && m.Id == release.Id) is not null)
+        {
+            return Result.Failure(new Error($"MovieRelease with passed directory info is already exists."));
+        }
+
         var addingDiscResult = release.AddMovie(this);
         if (addingDiscResult.IsFailure)
         {
             return Result.Failure(addingDiscResult.Error);
-        }
-
-        if (checkDirectoryInfo)
-        {
-            if (_releases.SingleOrDefault(m => m.EntityDirectoryInfo == release.EntityDirectoryInfo) is not null)
-            {
-                return Result.Failure(new Error($"MovieRelease with passed directory info is already exists."));
-            }
         }
 
         _releases.Add(release);
