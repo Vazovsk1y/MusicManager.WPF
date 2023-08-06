@@ -1,19 +1,23 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using MusicManager.Services;
 using MusicManager.Services.Contracts.Factories;
 using MusicManager.Utils;
+using MusicManager.WPF.Messages;
 using MusicManager.WPF.Tools;
 using MusicManager.WPF.ViewModels.Entities;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 
 namespace MusicManager.WPF.ViewModels;
 
-internal class SongwirtersPanelViewModel : ObservableRecipient
+internal class SongwirtersPanelViewModel : 
+    ObservableRecipient, 
+    IRecipient<MovieAddedMessage>
 {
     private readonly ObservableCollection<SongwriterViewModel> _songwriters = new();
     private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -28,7 +32,7 @@ internal class SongwirtersPanelViewModel : ObservableRecipient
     public SongwirtersPanelViewModel(
         IServiceScopeFactory serviceScopeFactory,
         IFileManagerInteractor fileManagerInteractor,
-        ISongwriterFolderFactory songwriterFolderFactory)
+        ISongwriterFolderFactory songwriterFolderFactory) : base()
     {
 
         _serviceScopeFactory = serviceScopeFactory;
@@ -90,6 +94,8 @@ internal class SongwirtersPanelViewModel : ObservableRecipient
 
     protected override async void OnActivated()
     {
+        base.OnActivated(); // register messages handlers
+
         using var scope = _serviceScopeFactory.CreateScope();
         var songwriterService = scope.ServiceProvider.GetRequiredService<ISongwriterService>();
 
@@ -101,6 +107,15 @@ internal class SongwirtersPanelViewModel : ObservableRecipient
                 Songwriters.Add(songwriterDTO.ToViewModel());
             }
         }
+    }
+
+    public async void Receive(MovieAddedMessage message)
+    {
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            var songwriter = Songwriters.FirstOrDefault(e => e.SongwriterId == message.MovieViewModel.SongwriterId);
+            songwriter?.Movies.Add(message.MovieViewModel);
+        });
     }
 }
 

@@ -15,6 +15,12 @@ internal static class GenericViewViewModelRegistrator
         .AddTransient(s =>
             {
                 var viewModel = s.GetRequiredService<TViewModel>();
+
+                if (viewModel is ObservableRecipient observableRecipient)
+                {
+                    observableRecipient.IsActive = true;
+                }
+
                 var window = Activator.CreateInstance<TWindow>();
                 window.DataContext = viewModel;
                 return window;

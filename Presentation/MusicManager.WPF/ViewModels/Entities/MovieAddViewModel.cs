@@ -1,0 +1,126 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using MusicManager.Services;
+using MusicManager.Services.Contracts.Dtos;
+using MusicManager.Utils;
+using MusicManager.WPF.Messages;
+using MusicManager.WPF.Tools;
+using MusicManager.WPF.Views.Windows;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace MusicManager.WPF.ViewModels.Entities;
+
+internal partial class MovieAddViewModel : ObservableRecipient
+{
+    #region --Fields--
+
+    private readonly ISongwriterService _songwriterService;
+    private readonly IMovieService _movieService;
+    private readonly IUserDialogService<MovieAddWindow> _dialogService;
+
+    #endregion
+
+    #region --Properties--
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
+    private SongwriterLookupDTO? _selectedSongwriter;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
+    private string? _selectedCountry;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
+    private string? _selectedYear;
+
+    [ObservableProperty]
+    private string _title = string.Empty;
+
+    [ObservableProperty]
+    public ObservableCollection<SongwriterLookupDTO>? _songwriters;
+
+    public ICountriesHelper CountriesHelper { get; }
+    public IYearsHelper YearsHelper { get; }
+
+    #endregion
+
+    #region --Constructors--
+
+    public MovieAddViewModel(
+       ISongwriterService songwriterService,
+       IMovieService movieService,
+       IUserDialogService<MovieAddWindow> dialogService,
+       ICountriesHelper countryHelper,
+       IYearsHelper yearsHelper) : base()
+    {
+        _songwriterService = songwriterService;
+        _movieService = movieService;
+        _dialogService = dialogService;
+
+        CountriesHelper = countryHelper;
+        YearsHelper = yearsHelper;
+    }
+
+    #endregion
+
+    #region --Commands--
+
+    [RelayCommand(CanExecute = nameof(CanAccept))]
+    private async Task Accept()
+    {
+        var dto = new MovieAddDTO(SelectedSongwriter!.Id, SelectedYear!, SelectedCountry!, Title);
+        var saveResult = await _movieService.SaveAsync(dto);
+
+        if (saveResult.IsSuccess)
+        {
+            var message = new MovieAddedMessage(
+            new MovieViewModel
+            {
+                Title = dto.Title,
+                MovieId = saveResult.Value,
+                SongwriterId = dto.SongwriterId,
+                ProductionCountry = dto.ProductionCountry,
+                ProductionYear = dto.ProductionYear
+            });
+
+            Messenger.Send(message);
+        }
+        else
+        {
+            MessageBoxHelper.ShowErrorBox(saveResult.Error.Message);
+        }
+
+        _dialogService.CloseDialog();
+    }
+
+    private bool CanAccept() => NullValidator.IsAllNotNull(SelectedCountry, SelectedSongwriter, SelectedYear);
+
+    [RelayCommand]
+    private void Cancel() => _dialogService.CloseDialog();
+
+    #endregion
+
+    #region --Methods--
+
+    protected override async void OnActivated()
+    {
+        var songwritersResult = await _songwriterService.GetLookupsAsync();
+        if (songwritersResult.IsSuccess)
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                Songwriters = new(songwritersResult.Value);
+            });
+        }
+    }
+
+    #endregion
+}
+
+
+
+
