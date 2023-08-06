@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Shared;
+﻿using MusicManager.Domain.Models;
+using MusicManager.Domain.Shared;
 using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Dtos;
 
@@ -11,5 +12,7 @@ namespace MusicManager.Services
         Task<Result<IEnumerable<SongwriterDTO>>> GetAllAsync(CancellationToken cancellationToken = default);
 
         Task<Result<IEnumerable<SongwriterLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken= default);
+
+        Task<Result<SongwriterId>> SaveAsync(SongwriterAddDTO songwriterAddDTO, CancellationToken cancellationToken = default);
     }
 }

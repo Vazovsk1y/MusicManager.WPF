@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Services;
+﻿using MusicManager.Domain.Models;
+using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
 using MusicManager.Repositories;
 using MusicManager.Repositories.Data;
@@ -63,6 +64,20 @@ public class SongwriterService : ISongwriterService
     {
         var songwriters = await _songwriterRepository.LoadAllAsync(cancellationToken);
         return songwriters.Select(sngw => sngw.ToLookupDTO()).ToList();
+    }
+
+    public async Task<Result<SongwriterId>> SaveAsync(SongwriterAddDTO songwriterAddDTO, CancellationToken cancellationToken = default)
+    {
+        var songwriterCreationResult = Songwriter.Create(songwriterAddDTO.Name, songwriterAddDTO.LastName);
+
+        if (songwriterCreationResult.IsFailure)
+        {
+            return Result.Failure<SongwriterId>(songwriterCreationResult.Error);
+        }
+
+        await _songwriterRepository.InsertAsync(songwriterCreationResult.Value, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return songwriterCreationResult.Value.Id;
     }
 
     public async Task<Result<SongwriterDTO>> SaveFromFolderAsync(SongwriterFolder songwriterFolder, CancellationToken cancellationToken = default)
