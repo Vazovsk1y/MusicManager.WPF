@@ -18,6 +18,11 @@ public class MovieRepository : IMovieRepository
         => await _dbContext.Movies
         .ToListAsync(cancellationToken);
 
+    public async Task<IEnumerable<Movie>> LoadAllWithMovieReleasesAsync(IEnumerable<MovieId> ids, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Movies.Where(e => ids.Contains(e.Id)).ToListAsync(cancellationToken);
+    }
+
     public async Task<Movie?> LoadByIdAsync(MovieId id, CancellationToken cancellationToken = default)
         => await _dbContext.Movies
         .SingleOrDefaultAsync(e => e.Id == id, cancellationToken);

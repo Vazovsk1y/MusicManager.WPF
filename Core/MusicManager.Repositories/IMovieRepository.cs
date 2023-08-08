@@ -9,5 +9,8 @@ public interface IMovieRepository : IRepository<Movie>
 
     Task<Movie?> LoadByIdWithMoviesReleasesAsync(MovieId id, CancellationToken cancellation = default);
 
+    Task<IEnumerable<Movie>> LoadAllWithMovieReleasesAsync(IEnumerable<MovieId> ids, CancellationToken cancellationToken = default);
+
     Task<IEnumerable<Movie>> LoadAllAsync(CancellationToken cancellationToken = default);
+
 }

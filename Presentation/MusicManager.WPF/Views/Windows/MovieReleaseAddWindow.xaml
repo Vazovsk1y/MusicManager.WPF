@@ -32,6 +32,9 @@
                   SelectedItem="{Binding SelectedDiscType}"
                   />
 
+        <ListBox Grid.Row="2"
+                 ItemsSource="{Binding SelectedMovies}"
+                 DisplayMemberPath="TitleAndYear"/>
 
         <StackPanel Grid.Row="3" Margin="10">
             <TextBlock Text="Индетификатор диска: "/>

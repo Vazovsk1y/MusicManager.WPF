@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using MusicManager.Domain.Enums;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
+using MusicManager.Domain.Shared;
 using MusicManager.Services;
 using MusicManager.Services.Contracts.Dtos;
 using MusicManager.Utils;
@@ -29,9 +30,24 @@ namespace MusicManager.WPF.ViewModels.Entities
         [ObservableProperty]
         private ObservableCollection<string>? _discTypes;
 
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
+        //[ObservableProperty]
+        //[NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
         private MovieLookupDTO? _selectedMovie;
+
+        public MovieLookupDTO? SelectedMovie
+        {
+            get => _selectedMovie;
+            set 
+            {
+                if (SetProperty(ref _selectedMovie, value) && 
+                    value is not null
+                    && !SelectedMovies.Contains(value))
+                {
+                    AcceptCommand.NotifyCanExecuteChanged();
+                    SelectedMovies.Add(value);
+                }
+            }
+        }
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
@@ -39,6 +55,11 @@ namespace MusicManager.WPF.ViewModels.Entities
 
         [ObservableProperty]
         private string _identifier = string.Empty;
+
+        //[ObservableProperty]
+        private readonly ObservableCollection<MovieLookupDTO> _selectedMovies = new();
+
+        public ObservableCollection<MovieLookupDTO> SelectedMovies => _selectedMovies;
 
         public MovieReleaseAddViewModel(
             IUserDialogService<MovieReleaseAddWindow> dialogService,
@@ -51,7 +72,8 @@ namespace MusicManager.WPF.ViewModels.Entities
 
         protected override async Task Accept()
         {
-            var dto = new MovieReleaseAddDTO(SelectedMovie!.MovieId, Identifier, SelectedDiscType!.CreateDiscType().Value);
+            var moviesLinks = SelectedMovies.Select(e => e.MovieId).ToList();
+            var dto = new MovieReleaseAddDTO(moviesLinks, Identifier, SelectedDiscType!.CreateDiscType().Value);
             var addingResult = await _movieReleaseService.SaveAsync(dto);
 
             if (addingResult.IsSuccess)
@@ -59,7 +81,7 @@ namespace MusicManager.WPF.ViewModels.Entities
                 var message = new MovieReleaseAddedMessage(new MovieReleaseViewModel
                 {
                     DiscId = addingResult.Value,
-                    MoviesLinks = new List<MovieId> { dto.MovieId },
+                    MoviesLinks = moviesLinks,
                     DiscType = SelectedDiscType!,
                     Identificator = dto.Identifier
                 });

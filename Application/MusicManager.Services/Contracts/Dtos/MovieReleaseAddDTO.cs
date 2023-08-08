@@ -4,7 +4,7 @@ using MusicManager.Domain.Models;
 namespace MusicManager.Services.Contracts.Dtos
 {
     public record MovieReleaseAddDTO(
-        MovieId MovieId,
+        IEnumerable<MovieId> MoviesLinks,
         string Identifier,
         DiscType DiscType
         );

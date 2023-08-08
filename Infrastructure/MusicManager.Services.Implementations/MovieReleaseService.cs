@@ -58,12 +58,13 @@ public class MovieReleaseService : IMovieReleaseService
 
     public async Task<Result<DiscId>> SaveAsync(MovieReleaseAddDTO movieReleaseAddDTO, CancellationToken cancellationToken = default)
     {
-        var movie = await _movieRepository.LoadByIdWithMoviesReleasesAsync(movieReleaseAddDTO.MovieId, cancellationToken);
-
-        if (movie is null)
+        bool hasDuplicates = movieReleaseAddDTO.MoviesLinks.GroupBy(x => x).Any(g => g.Count() > 1);
+        if (hasDuplicates)
         {
-            return Result.Failure<DiscId>(ServicesErrors.MovieWithPassedIdIsNotExists());
+            return Result.Failure<DiscId>(new("Can't add the same movie release to the movie twice.\nMovies links contains duplicates"));
         }
+
+        var movies = await _movieRepository.LoadAllWithMovieReleasesAsync(movieReleaseAddDTO.MoviesLinks, cancellationToken);
 
         var creationResult = MovieRelease.Create(
             movieReleaseAddDTO.DiscType,
@@ -74,14 +75,18 @@ public class MovieReleaseService : IMovieReleaseService
             return Result.Failure<DiscId>(creationResult.Error);
         }
 
-        var addingResult = movie.AddRelease(creationResult.Value);
-        if (addingResult.IsFailure)
+        var movieRelease = creationResult.Value;
+        foreach (var movie in movies)
         {
-            return Result.Failure<DiscId>(addingResult.Error);
+            var addingResult = movie.AddRelease(movieRelease, true);
+            if (addingResult.IsFailure)
+            {
+                return Result.Failure<DiscId>(addingResult.Error);
+            }
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result.Success(creationResult.Value.Id);
+        return Result.Success(movieRelease.Id);
     }
 
     public async Task<Result<MovieReleaseDTO>> SaveFromFolderAsync(DiscFolder movieReleaseFolder, MovieId movieId, CancellationToken cancellationToken = default)
