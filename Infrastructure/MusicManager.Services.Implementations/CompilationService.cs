@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
 using MusicManager.Repositories;
@@ -53,6 +54,35 @@ public class CompilationService : ICompilationService
         }
 
         return result;
+    }
+
+    public async Task<Result<DiscId>> SaveAsync(CompilationAddDTO compilationAddDTO, CancellationToken cancellationToken = default)
+    {
+        var songwriter = await _songwriterRepository.LoadByIdWithCompilationsAsync(compilationAddDTO.SongwriterId, cancellationToken);
+        if (songwriter is null)
+        {
+            return Result.Failure<DiscId>(ServicesErrors.SongwriterWithPassedIdIsNotExists());
+        }
+
+        var creationResult = Compilation.Create(
+            compilationAddDTO.SongwriterId,
+            compilationAddDTO.DiscType,
+            compilationAddDTO.Identifier
+            );
+
+        if (creationResult.IsFailure) 
+        {
+            return Result.Failure<DiscId>(creationResult.Error);
+        }
+
+        var addingResult = songwriter.AddCompilation(creationResult.Value, true);
+        if (addingResult.IsFailure)
+        {
+            return Result.Failure<DiscId>(addingResult.Error);
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return Result.Success(creationResult.Value.Id);
     }
 
     public async Task<Result<CompilationDTO>> SaveFromFolderAsync(DiscFolder compilationFolder, SongwriterId songwriterId, CancellationToken cancellationToken = default)
