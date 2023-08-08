@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
 using MusicManager.Services.Contracts.Base;
 using MusicManager.Services.Contracts.Dtos;
@@ -10,5 +11,7 @@ namespace MusicManager.Services
         Task<Result<MovieReleaseDTO>> SaveFromFolderAsync(DiscFolder movieReleaseFolder, MovieId movieId, CancellationToken cancellationToken = default);
 
         Task<Result<IEnumerable<MovieReleaseDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default);
+
+        Task<Result<DiscId>> SaveAsync(MovieReleaseAddDTO movieReleaseAddDTO, CancellationToken cancellationToken = default);
     }
 }

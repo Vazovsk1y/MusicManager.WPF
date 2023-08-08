@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
 using MusicManager.Repositories;
@@ -53,6 +54,34 @@ public class MovieReleaseService : IMovieReleaseService
         }
 
         return result;
+    }
+
+    public async Task<Result<DiscId>> SaveAsync(MovieReleaseAddDTO movieReleaseAddDTO, CancellationToken cancellationToken = default)
+    {
+        var movie = await _movieRepository.LoadByIdWithMoviesReleasesAsync(movieReleaseAddDTO.MovieId, cancellationToken);
+
+        if (movie is null)
+        {
+            return Result.Failure<DiscId>(ServicesErrors.MovieWithPassedIdIsNotExists());
+        }
+
+        var creationResult = MovieRelease.Create(
+            movieReleaseAddDTO.DiscType,
+            movieReleaseAddDTO.Identifier
+            );
+        if (creationResult.IsFailure)
+        {
+            return Result.Failure<DiscId>(creationResult.Error);
+        }
+
+        var addingResult = movie.AddRelease(creationResult.Value);
+        if (addingResult.IsFailure)
+        {
+            return Result.Failure<DiscId>(addingResult.Error);
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return Result.Success(creationResult.Value.Id);
     }
 
     public async Task<Result<MovieReleaseDTO>> SaveFromFolderAsync(DiscFolder movieReleaseFolder, MovieId movieId, CancellationToken cancellationToken = default)
