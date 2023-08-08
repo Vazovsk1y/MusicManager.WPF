@@ -11,20 +11,24 @@
     <Grid>
         <TabControl>
             <TabItem Header="Releases">
-                <DataGrid ItemsSource="{Binding MoviesPanelViewModel.SelectedMovie.MoviesReleases}"
+                <StackPanel>
+                    <DataGrid ItemsSource="{Binding MoviesPanelViewModel.SelectedMovie.MoviesReleases}"
                           SelectedItem="{Binding SelectedDisc}"
                           AutoGenerateColumns="False">
 
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Type" Binding="{Binding DiscType}"/>
-                        <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry}"/>
-                        <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear}"/>
-                        <DataGridTextColumn Header="Identificator" Binding="{Binding Identificator}"/>
-                        <DataGridTextColumn Header="SongsCount" Binding="{Binding Songs.Count}"/>
-                    </DataGrid.Columns>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Type" Binding="{Binding DiscType}"/>
+                            <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry}"/>
+                            <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear}"/>
+                            <DataGridTextColumn Header="Identificator" Binding="{Binding Identificator}"/>
+                            <DataGridTextColumn Header="SongsCount" Binding="{Binding Songs.Count}"/>
+                        </DataGrid.Columns>
 
 
-                </DataGrid>
+                    </DataGrid>
+
+                    <Button Content="Add" Command="{Binding AddMovieReleaseCommand}"/>
+                </StackPanel>
             </TabItem>
             
             <TabItem Header="Compilations">

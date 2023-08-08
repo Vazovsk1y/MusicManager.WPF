@@ -22,7 +22,8 @@ internal partial class DiscsPanelViewModel : ObservableObject
     public IReadOnlyCollection<MovieReleaseViewModel> MovieReleases => 
         new ObservableCollection<MovieReleaseViewModel>(MoviesPanelViewModel.Movies.SelectMany(e => e.MoviesReleases));
 
-    private readonly IUserDialogService<CompilationAddWindow> _dialogService;
+    private readonly IUserDialogService<CompilationAddWindow> _compilationDialogService;
+    private readonly IUserDialogService<MovieReleaseAddWindow> _movieReleaseDialogService;
 
     private DiscViewModel? _selectedDisc;
 
@@ -34,11 +35,13 @@ internal partial class DiscsPanelViewModel : ObservableObject
     public DiscsPanelViewModel(
         SongwirtersPanelViewModel songwritersPanelViewModel,
         MoviesPanelViewModel moviesPanelViewModel,
-        IUserDialogService<CompilationAddWindow> dialogService)
+        IUserDialogService<CompilationAddWindow> dialogService,
+        IUserDialogService<MovieReleaseAddWindow> movieReleaseDialogService)
     {
         SongwritersPanelViewModel = songwritersPanelViewModel;
         MoviesPanelViewModel = moviesPanelViewModel;
-        _dialogService = dialogService;
+        _compilationDialogService = dialogService;
+        _movieReleaseDialogService = movieReleaseDialogService;
     }
 
     public DiscViewModel? SelectedDisc
@@ -50,6 +53,12 @@ internal partial class DiscsPanelViewModel : ObservableObject
     [RelayCommand]
     private void AddCompilation()
     {
-        _dialogService.ShowDialog();
+        _compilationDialogService.ShowDialog();
+    }
+
+    [RelayCommand]
+    private void AddMovieRelease()
+    {
+        _movieReleaseDialogService.ShowDialog();
     }
 }

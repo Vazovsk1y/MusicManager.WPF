@@ -1,4 +1,7 @@
-﻿using MusicManager.WPF.ViewModels.Base;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using MusicManager.WPF.ViewModels.Base;
+using System.Linq;
+using System.Reflection;
 
 namespace MusicManager.WPF.ViewModels;
 
@@ -41,7 +44,7 @@ internal class MainWindowViewModel : TitledViewModel
         SongsPanelViewModel = songsPanelViewModel;
         ControlTitle = App.Name;
 
-        SongwirtersPanelViewModel.IsActive = true;
+        ActivateAllRecipients();
     }
 
     #endregion
@@ -54,7 +57,19 @@ internal class MainWindowViewModel : TitledViewModel
 
     #region --Methods--
 
+    private void ActivateAllRecipients()
+    {
+        var type = GetType();
+        var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
+        foreach (var property in properties)
+        {
+            if (property.GetValue(this) is ObservableRecipient observableRecipient)
+            {
+                observableRecipient.IsActive = true;
+            }
+        }
+    }
 
     #endregion
 }

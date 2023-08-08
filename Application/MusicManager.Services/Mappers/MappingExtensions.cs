@@ -38,6 +38,14 @@ public static class MappingExtensions
             );
     }
 
+    public static MovieLookupDTO ToLookupDTO(this Movie movie)
+    {
+        return new MovieLookupDTO(
+            movie.Id,
+            $"{movie.Title} {movie.ProductionInfo?.Year}"
+            );
+    }
+
     public static CompilationDTO ToDTO(this Compilation compilation)
     {
         return new CompilationDTO(
@@ -55,6 +63,7 @@ public static class MappingExtensions
     {
         return new MovieReleaseDTO(
             movieRelease.Id,
+            movieRelease.Movies.Select(e => e.Id),
             movieRelease.Identifier,
             movieRelease.ProductionInfo?.Country,
             movieRelease.ProductionInfo?.Year,

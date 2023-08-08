@@ -53,6 +53,7 @@ internal static class MappingExtensions
         return new MovieReleaseViewModel()
         {
             DiscId = movieReleaseDTO.Id,
+            MoviesLinks = movieReleaseDTO.MoviesLinks.ToList(),
             Identificator = movieReleaseDTO.Identifier,
             ProductionCountry = movieReleaseDTO.ProductionCountry ?? ProductionInfo.UndefinedCountry,
             ProductionYear = movieReleaseDTO.ProductionYear,

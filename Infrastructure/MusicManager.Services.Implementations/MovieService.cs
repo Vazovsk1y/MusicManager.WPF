@@ -15,17 +15,20 @@ public class MovieService : IMovieService
     private readonly IMovieReleaseService _movieReleaseService;
     private readonly ISongwriterRepository _songwriterRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMovieRepository _movieRepository;
 
     public MovieService(
         IPathToMovieService pathToMovieService,
         IMovieReleaseService movieReleaseService,
         ISongwriterRepository songwriterRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IMovieRepository movieRepository)
     {
         _pathToMovieService = pathToMovieService;
         _movieReleaseService = movieReleaseService;
         _songwriterRepository = songwriterRepository;
         _unitOfWork = unitOfWork;
+        _movieRepository = movieRepository;
     }
 
     public async Task<Result<IEnumerable<MovieDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default)
@@ -54,6 +57,12 @@ public class MovieService : IMovieService
         }
 
         return result;
+    }
+
+    public async Task<Result<IEnumerable<MovieLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken = default)
+    {
+        var movies = await _movieRepository.LoadAllAsync(cancellationToken);
+        return movies.Select(e => e.ToLookupDTO()).ToList();
     }
 
     public async Task<Result<MovieId>> SaveAsync(MovieAddDTO movieAddDTO, CancellationToken cancellationToken = default)
