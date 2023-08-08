@@ -12,6 +12,7 @@ public static class DomainExtensions
     private const string APE_ROW = "Ape";
     private const string WV_ROW = "WV";
     private const string MP3_ROW = "MP3";
+    private const string UNKNOWN_ROW = "Unknown";
 
     public static Result<DiscType> CreateDiscType(this string discTypeRow) => discTypeRow switch
     {
@@ -20,6 +21,7 @@ public static class DomainExtensions
         BOOTLEG_Row => DiscType.Bootleg,
         "2CD" => DiscType.TwoCD,
         "3CD" => DiscType.ThreeeCD,
+        UNKNOWN_ROW => DiscType.Unknown,
         _ => Result.Failure<DiscType>(new Error($"Unable to create disk type from {discTypeRow}."))
     };
 
@@ -39,6 +41,7 @@ public static class DomainExtensions
         DiscType.Bootleg => BOOTLEG_Row,
         DiscType.TwoCD => "2CD",
         DiscType.ThreeeCD => "3CD",
+        DiscType.Unknown => "Unknown",
         _ => throw new KeyNotFoundException()
     };
 
