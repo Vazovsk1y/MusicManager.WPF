@@ -28,20 +28,24 @@
             </TabItem>
             
             <TabItem Header="Compilations">
-                <DataGrid ItemsSource="{Binding SongwritersPanelViewModel.SelectedSongwriter.Compilations}"
+                <StackPanel>
+                    <DataGrid ItemsSource="{Binding SongwritersPanelViewModel.SelectedSongwriter.Compilations}"
                           SelectedItem="{Binding SelectedDisc}"
                           AutoGenerateColumns="False">
 
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Type" Binding="{Binding DiscType}"/>
-                        <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry}"/>
-                        <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear}"/>
-                        <DataGridTextColumn Header="Identificator" Binding="{Binding Identificator}"/>
-                        <DataGridTextColumn Header="SongsCount" Binding="{Binding Songs.Count}"/>
-                    </DataGrid.Columns>
-                    
-                    
-                </DataGrid>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Type" Binding="{Binding DiscType}"/>
+                            <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry}"/>
+                            <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear}"/>
+                            <DataGridTextColumn Header="Identificator" Binding="{Binding Identificator}"/>
+                            <DataGridTextColumn Header="SongsCount" Binding="{Binding Songs.Count}"/>
+                        </DataGrid.Columns>
+
+
+                    </DataGrid>
+
+                    <Button Content="Add" Command="{Binding AddCompilationCommand}"/>
+                </StackPanel>
             </TabItem>
         </TabControl>
     </Grid>

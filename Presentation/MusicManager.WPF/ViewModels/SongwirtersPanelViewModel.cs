@@ -19,7 +19,8 @@ namespace MusicManager.WPF.ViewModels;
 internal partial class SongwirtersPanelViewModel : 
     ObservableRecipient, 
     IRecipient<MovieAddedMessage>,
-    IRecipient<SongwriterAddedMessage>
+    IRecipient<SongwriterAddedMessage>,
+    IRecipient<CompilationAddedMessage>
 {
     private readonly ObservableCollection<SongwriterViewModel> _songwriters = new();
     private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -131,6 +132,15 @@ internal partial class SongwirtersPanelViewModel :
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
             Songwriters.Add(message.SongwriterViewModel);
+        });
+    }
+
+    public async void Receive(CompilationAddedMessage message)
+    {
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            var songwriter = Songwriters.FirstOrDefault(e => e.SongwriterId == message.CompilationViewModel.SongwriterId);
+            songwriter?.Compilations.Add(message.CompilationViewModel);
         });
     }
 }
