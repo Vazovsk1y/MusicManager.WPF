@@ -16,19 +16,46 @@ public class MovieService : IMovieService
     private readonly ISongwriterRepository _songwriterRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMovieRepository _movieRepository;
+    private readonly IMovieReleaseRepository _movieReleaseRepository;
 
     public MovieService(
         IPathToMovieService pathToMovieService,
         IMovieReleaseService movieReleaseService,
         ISongwriterRepository songwriterRepository,
         IUnitOfWork unitOfWork,
-        IMovieRepository movieRepository)
+        IMovieRepository movieRepository,
+        IMovieReleaseRepository movieReleaseRepository)
     {
         _pathToMovieService = pathToMovieService;
         _movieReleaseService = movieReleaseService;
         _songwriterRepository = songwriterRepository;
         _unitOfWork = unitOfWork;
         _movieRepository = movieRepository;
+        _movieReleaseRepository = movieReleaseRepository;
+    }
+
+    public async Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, CancellationToken cancellationToken = default)
+    {
+        var movie = await _movieRepository.LoadByIdWithMoviesReleasesAsync(dto.MovieId, cancellationToken);
+        if (movie is null)
+        {
+            return Result.Failure(ServicesErrors.MovieWithPassedIdIsNotExists());
+        }
+
+        var movieRelease = await _movieReleaseRepository.LoadWithMoviesAsync(dto.MovieReleaseLink, cancellationToken);
+        if (movieRelease is null)
+        {
+            return Result.Failure(ServicesErrors.MovieReleaseWithPassedIdIsNotExists());
+        }
+
+        var addingResult = movie.AddRelease(movieRelease, true);
+        if (addingResult.IsFailure)
+        {
+            return addingResult;
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return Result.Success();
     }
 
     public async Task<Result<IEnumerable<MovieDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default)

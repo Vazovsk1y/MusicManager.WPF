@@ -14,5 +14,7 @@ namespace MusicManager.Services
         Task<Result<IEnumerable<MovieLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken = default);
 
         Task<Result<MovieId>> SaveAsync(MovieAddDTO movieAddDTO, CancellationToken cancellationToken = default);
+
+        Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, CancellationToken cancellationToken = default);
     }
 }
