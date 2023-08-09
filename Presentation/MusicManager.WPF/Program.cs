@@ -7,9 +7,12 @@ internal class Program
 {
     public static bool IsInDebug { get; private set; }
 
+    public const double REGEX_DEFAULT_MATCH_TIMEOUT_Milliseconds = 50d;
+
     [STAThread]
     public static void Main(string[] args)
     {
+        AppDomain.CurrentDomain.SetData("REGEX_DEFAULT_MATCH_TIMEOUT", TimeSpan.FromMilliseconds(REGEX_DEFAULT_MATCH_TIMEOUT_Milliseconds));
 
 #if DEBUG
         IsInDebug = true;
