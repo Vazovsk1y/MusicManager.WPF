@@ -2,4 +2,4 @@
 
 namespace MusicManager.WPF.Messages;
 
-internal record CompilationAddedMessage(CompilationViewModel CompilationViewModel);
+internal record CompilationCreatedMessage(CompilationViewModel CompilationViewModel);

@@ -53,7 +53,7 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
         var addingResult = await _compilationService.SaveAsync(dto);
         if (addingResult.IsSuccess)
         {
-            var message = new CompilationAddedMessage(new CompilationViewModel
+            var message = new CompilationCreatedMessage(new CompilationViewModel
             {
                 DiscId = addingResult.Value,
                 SongwriterId = dto.SongwriterId,

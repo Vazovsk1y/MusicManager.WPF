@@ -2,5 +2,4 @@
 
 namespace MusicManager.WPF.Messages;
 
-internal record SongwriterAddedMessage(SongwriterViewModel SongwriterViewModel);
-
+internal record MovieCreatedMessage(MovieViewModel MovieViewModel);

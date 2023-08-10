@@ -78,7 +78,7 @@ namespace MusicManager.WPF.ViewModels.Entities
 
             if (addingResult.IsSuccess)
             {
-                var message = new MovieReleaseAddedMessage(new MovieReleaseViewModel
+                var message = new MovieReleaseCreatedMessage(new MovieReleaseViewModel
                 {
                     DiscId = addingResult.Value,
                     MoviesLinks = moviesLinks,

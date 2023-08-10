@@ -33,7 +33,7 @@ internal partial class SongwriterAddViewModel : DialogViewModel<SongwriterAddWin
 
         if (savingResult.IsSuccess)
         {
-            var message = new SongwriterAddedMessage(
+            var message = new SongwriterCreatedMessage(
                 new SongwriterViewModel
                 {
                     SongwriterId = savingResult.Value,

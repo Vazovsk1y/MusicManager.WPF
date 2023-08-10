@@ -25,6 +25,7 @@
             </DataGrid>
 
             <Button Content="AddMovie" Command="{Binding AddMovieCommand}"/>
+            <Button Content="AddMR" Command="{Binding AddMovieReleaseCommand}"/>
         </StackPanel>
     </Grid>
 </UserControl>

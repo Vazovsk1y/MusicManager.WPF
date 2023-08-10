@@ -74,7 +74,7 @@ internal partial class MovieAddViewModel : DialogViewModel<MovieAddWindow>
 
         if (saveResult.IsSuccess)
         {
-            var message = new MovieAddedMessage(
+            var message = new MovieCreatedMessage(
             new MovieViewModel
             {
                 Title = dto.Title,

@@ -21,5 +21,8 @@ internal static class Registrator
         .AddSingleton<SongsPanelViewModel>()
         .AddSingleton<ICountriesHelper, CountryHelper>()
         .AddSingleton<IYearsHelper, YearsHelper>()
+        .AddTransient<MovieReleaseAddToMovieViewModel>()
+        .AddTransient<MovieReleaseMovieWindow>()
+        .AddSingleton(typeof(IWpfWindowService<>), typeof(WpfWindowService<>))
         ;
 }

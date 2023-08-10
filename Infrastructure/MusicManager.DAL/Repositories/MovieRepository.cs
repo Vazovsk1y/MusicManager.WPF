@@ -30,5 +30,6 @@ public class MovieRepository : IMovieRepository
     public async Task<Movie?> LoadByIdWithMoviesReleasesAsync(MovieId id, CancellationToken cancellation = default)
         => await _dbContext.Movies
         .Include(e => e.Releases)
+        .ThenInclude(e => e.Movies)
         .SingleOrDefaultAsync(e => e.Id == id, cancellation);
 }

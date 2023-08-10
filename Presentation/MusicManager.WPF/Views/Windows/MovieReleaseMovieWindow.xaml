@@ -1,0 +1,19 @@
+﻿<Window x:Class="MusicManager.WPF.Views.Windows.MovieReleaseMovieWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MusicManager.WPF.Views.Windows" 
+        xmlns:viewmodels="clr-namespace:MusicManager.WPF.ViewModels" 
+        d:DataContext="{d:DesignInstance Type=viewmodels:MovieReleaseMovieViewModel}"
+        mc:Ignorable="d"
+        Title="TestWindow" Height="400" Width="400">
+    <Grid>
+        <StackPanel>
+            <ComboBox ItemsSource="{Binding MoviesReleasesToSelectFrom}"
+                      SelectedItem="{Binding SelectedViewModel}"
+                      DisplayMemberPath="Identificator"/>
+            <Button Content="Ok" Command="{Binding AcceptCommand}"/>
+        </StackPanel>
+    </Grid>
+</Window>
