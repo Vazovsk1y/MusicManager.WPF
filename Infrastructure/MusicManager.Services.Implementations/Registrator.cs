@@ -12,6 +12,7 @@ public static class Registrator
         .AddTransient<ICompilationService, CompilationService>()
         .AddTransient<IMovieReleaseService, MovieReleaseService>()
         .AddTransient<ISongService, SongService>()
+        .AddTransient<IBaseDiscService, BaseDiscService>()
         .AddTransient<IFileManagerInteractor, FileManagerInteractor>()
         .AddSingleton<ISongwriterFolderFactory, SongwriterFolderFactory>()
         .AddSingleton<IMovieFolderFactory, MovieFolderFactory>()
