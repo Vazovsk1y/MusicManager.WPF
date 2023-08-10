@@ -20,7 +20,7 @@ namespace MusicManager.WPF.ViewModels;
 
 internal partial class MoviesPanelViewModel : 
     ObservableRecipient,
-    IRecipient<MovieReleaseCreatedMessage>,
+    IRecipient<MovieCreatedMessage>,
     IRecipient<ExistingMovieReleaseAddToMovieRequest>
 {
     private MovieViewModel? _selectedMovie;
@@ -82,19 +82,6 @@ internal partial class MoviesPanelViewModel :
         return SelectedMovie is not null;
     }
 
-    public async void Receive(MovieReleaseCreatedMessage message)
-    {
-        await Application.Current.Dispatcher.InvokeAsync(() =>
-        {
-            var movies = Movies.Where(e => message.MovieReleaseViewModel.MoviesLinks.Contains(e.MovieId));
-
-            foreach (var movie in movies)
-            {
-                movie.MoviesReleases.Add(message.MovieReleaseViewModel);
-            }
-        });
-    }
-
     public async void Receive(ExistingMovieReleaseAddToMovieRequest request)
     {
         using var scope = _serviceScopeFactory.CreateScope();
@@ -113,6 +100,18 @@ internal partial class MoviesPanelViewModel :
         {
             MessageBoxHelper.ShowErrorBox(addingResult.Error.Message);
         }
+    }
+
+    public async void Receive(MovieCreatedMessage message)
+    {
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            var songwriter = SongwritersPanelViewModel
+            .Songwriters
+            .FirstOrDefault(e => e.SongwriterId == message.MovieViewModel.SongwriterId);
+
+            songwriter?.Movies.Add(message.MovieViewModel);
+        });
     }
 }
 
