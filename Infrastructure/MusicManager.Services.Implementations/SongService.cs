@@ -35,6 +35,28 @@ public class SongService : ISongService
             disc.Songs.Select(e => e.ToDTO()).ToList();
     }
 
+    public async Task<Result<IEnumerable<SongDTO>>> SaveAsync(SongsAddFromCueDTO dto, CancellationToken cancellationToken = default)
+    {
+        var disc = await _discRepository.LoadByIdWithSongsAsync(dto.DiscId, cancellationToken);
+        if (disc is null)
+        {
+            return Result.Failure<IEnumerable<SongDTO>>(ServicesErrors.DiscWithPassedIdIsNotExists());
+        }
+
+        return await SaveFromCue(dto.CueFilePath, disc, cancellationToken);
+    }
+
+    public async Task<Result<SongDTO>> SaveAsync(SongAddDTO dTO, CancellationToken cancellationToken = default)
+    {
+        var disc = await _discRepository.LoadByIdWithSongsAsync(dTO.DiscId, cancellationToken);
+        if (disc is null)
+        {
+            return Result.Failure<SongDTO>(ServicesErrors.DiscWithPassedIdIsNotExists());
+        }
+
+        return await SaveFromSingeFile(dTO.PlaybackFilePath, disc, cancellationToken);
+    }
+
     public async Task<Result<IEnumerable<SongDTO>>> SaveFromFileAsync(SongFile songFile, DiscId discId, CancellationToken cancellationToken = default)
     {
         var disc = await _discRepository.LoadByIdWithSongsAsync(discId, cancellationToken);
