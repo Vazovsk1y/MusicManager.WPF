@@ -8,5 +8,4 @@ namespace MusicManager.Services.Contracts.Dtos
         string Identifier,
         DiscType DiscType
         );
-
 }

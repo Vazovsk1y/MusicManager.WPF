@@ -21,6 +21,7 @@ public partial class CueFileInteractor : ICueFileInteractor
     private const string Index00KeyWord = "INDEX 00";
     private const string Index01KeyWord = "INDEX 01";
     private const string AudioKeyWord = "AUDIO";
+    private const string FILE_KeyWord = "FILE";
 
     #endregion
 
@@ -54,33 +55,49 @@ public partial class CueFileInteractor : ICueFileInteractor
 
     #region --Public--
 
-    public async Task<Result<IEnumerable<ICueFileTrack>>> GetTracksAsync(string cueFilePath, CancellationToken cancellationToken = default)
+    public async Task<Result<CueSheetInfo>> GetCueSheetAsync(string cueFilePath, CancellationToken cancellationToken = default)
     {
         var result = IsAbleToReadFile(cueFilePath);
         if (result.IsFailure)
         {
-            return Result.Failure<IEnumerable<ICueFileTrack>>(result.Error);
+            return Result.Failure<CueSheetInfo>(result.Error);
         }
 
         var fileInfo = result.Value;
         string cueFileText = await GetCueFileTextAsync(fileInfo, cancellationToken).ConfigureAwait(false);
-        var tracksSections = cueFileText
+        var splittedText = cueFileText
             .Split(TrackKeyWord, StringSplitOptions.RemoveEmptyEntries)
-            .Skip(1)                                                     // skip the row that before first track section.
-            .ToList();                                                   
+            .ToList();
 
-        if (tracksSections.Count is 0)
+        if (splittedText.Count is 0)
         {
-            return Result.Failure<IEnumerable<ICueFileTrack>>(new Error("No tracks were founded in cue file."));
+            return Result.Failure<CueSheetInfo>(new Error("Error occured while cue file reading."));
         }
 
-        var tracks = new List<ICueFileTrack>();
-        foreach (var section in tracksSections)
+        var rowWithFileNumber = splittedText
+            .First()
+            .Split(_cueRowsSeparators, StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault(e => e.Contains(FILE_KeyWord));
+
+        if (rowWithFileNumber is null)
         {
-            tracks.Add(GetTrackFromSection(section));
+            return Result.Failure<CueSheetInfo>(new Error("Can't to get an executable file name for passed cue file."));
         }
 
-        return tracks;
+        var tracks = new List<CueFileTrack>();
+        for (int i = 1; i < splittedText.Count; i++)      // skip the row that before first track section.
+        {
+            var trackSection = splittedText[i];
+            tracks.Add(GetTrackFromSection(trackSection));
+        }
+
+        var executableFileName = GetRowFromQuotes(rowWithFileNumber);
+        if (string.IsNullOrWhiteSpace(executableFileName))
+        {
+            return Result.Failure<CueSheetInfo>(new Error("Error occured while tried to get an executable file name for passed cue file."));
+        }
+
+        return new CueSheetInfo(executableFileName, tracks);
     }
 
     #endregion

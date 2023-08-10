@@ -1,10 +1,10 @@
 ﻿namespace MusicManager.Domain.Services;
 
-public interface ICueFileTrack
+public class CueFileTrack
 {
-    public string Title { get; set; } 
+    public string Title { get; set; } = string.Empty;
 
-    public string Performer { get; set; }
+    public string Performer { get; set; } = string.Empty;
 
     public int TrackPosition { get; set; }
 

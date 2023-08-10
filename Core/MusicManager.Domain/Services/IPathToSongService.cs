@@ -8,5 +8,5 @@ public interface IPathToSongService
 {
     Task<Result<Song>> GetEntityAsync(string songPath, DiscId parentId);
 
-    Task<Result<IEnumerable<Song>>> GetEntitiesFromCueFileAsync(string songFilePath, string cueFilePath, DiscId parentId);
+    Task<Result<IEnumerable<Song>>> GetEntitiesFromCueFileAsync(string cueFilePath, DiscId parentId);
 }

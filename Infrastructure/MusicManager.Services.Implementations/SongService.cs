@@ -43,15 +43,20 @@ public class SongService : ISongService
             return Result.Failure<IEnumerable<SongDTO>>(ServicesErrors.DiscWithPassedIdIsNotExists());
         }
 
-        return songFile.CueFilePath is null ?
-            await SaveFromSingeFile(songFile.SongFilePath, disc, cancellationToken)
-            :
-            await SaveFromCue(songFile.SongFilePath, songFile.CueFilePath, disc, cancellationToken);
+        if (songFile.CueFilePath is null)
+        {
+            var result = await SaveFromSingeFile(songFile.SongFilePath, disc, cancellationToken);
+            return result.IsFailure ? Result.Failure<IEnumerable<SongDTO>>(result.Error) : new List<SongDTO>() { result.Value };
+        }
+        else
+        {
+            return await SaveFromCue(songFile.CueFilePath, disc, cancellationToken);
+        }
     }
 
-    private async Task<Result<IEnumerable<SongDTO>>> SaveFromCue(string songFilePath, string cueFilePath, Disc disc, CancellationToken cancellationToken)
+    private async Task<Result<IEnumerable<SongDTO>>> SaveFromCue(string cueFilePath, Disc disc, CancellationToken cancellationToken)
     {
-        var songsResult = await _pathToSongService.GetEntitiesFromCueFileAsync(songFilePath, cueFilePath, disc.Id);
+        var songsResult = await _pathToSongService.GetEntitiesFromCueFileAsync(cueFilePath, disc.Id);
 
         if (songsResult.IsFailure)
         {
@@ -68,13 +73,13 @@ public class SongService : ISongService
         return songs.Select(s => s.ToDTO()).ToList();
     }
 
-    private async Task<Result<IEnumerable<SongDTO>>> SaveFromSingeFile(string songFilePath, Disc disc, CancellationToken cancellationToken)
+    private async Task<Result<SongDTO>> SaveFromSingeFile(string songFilePath, Disc disc, CancellationToken cancellationToken)
     {
         var songResult = await _pathToSongService.GetEntityAsync(songFilePath, disc.Id);
 
         if (songResult.IsFailure)
         {
-            return Result.Failure<IEnumerable<SongDTO>>(songResult.Error);
+            return Result.Failure<SongDTO>(songResult.Error);
         }
 
         var song = songResult.Value;
@@ -82,9 +87,6 @@ public class SongService : ISongService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new List<SongDTO>()
-        {
-            song.ToDTO(),
-        };
+        return song.ToDTO();
     }
 }

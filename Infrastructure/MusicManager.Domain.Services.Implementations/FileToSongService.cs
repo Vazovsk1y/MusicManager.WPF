@@ -100,8 +100,15 @@ namespace MusicManager.Domain.Services.Implementations
             return Task.FromResult(Result.Success(songCreationResultWithoutDiscNumber.Value));
         }
 
-        public async Task<Result<IEnumerable<Song>>> GetEntitiesFromCueFileAsync(string songFilePath, string cueFilePath, DiscId parentId)
+        public async Task<Result<IEnumerable<Song>>> GetEntitiesFromCueFileAsync(string cueFilePath, DiscId parentId)
         {
+            var cueSheetResult = await _cueFileInteractor.GetCueSheetAsync(cueFilePath);
+            if (cueSheetResult.IsFailure)
+            {
+                return Result.Failure<IEnumerable<Song>>(cueSheetResult.Error);
+            }
+
+            var songFilePath = Path.Combine(Path.GetDirectoryName(cueFilePath)!, cueSheetResult.Value.ExecutableFileName);
             var songInfoResult = GetSongFileInfo(songFilePath);
             if (songInfoResult.IsFailure)
             {
@@ -119,14 +126,8 @@ namespace MusicManager.Domain.Services.Implementations
 
             var parentDirectoryName = new FileInfo(songFileInfo.Name).Directory?.Name ?? string.Empty;
             var discNumberMatch = IsDiscNumber().Match(parentDirectoryName);
-            var cueFileTracksGettingResult = await _cueFileInteractor.GetTracksAsync(cueFilePath);
+            var cueFileTracks = cueSheetResult.Value.Tracks.ToList();
 
-            if (cueFileTracksGettingResult.IsFailure)
-            {
-                return Result.Failure<IEnumerable<Song>>(cueFileTracksGettingResult.Error);
-            }
-
-            var cueFileTracks = cueFileTracksGettingResult.Value.ToList();
             if (discNumberMatch.Success)
             {
                 var result = ParseCueFileTracksToSongs(
@@ -181,7 +182,7 @@ namespace MusicManager.Domain.Services.Implementations
         }
 
         private Result<IEnumerable<Song>> ParseCueFileTracksToSongs(
-            IEnumerable<ICueFileTrack> cueFileTracks,
+            IEnumerable<CueFileTrack> cueFileTracks,
             DiscId parent,
             string songFilePath,
             string cueFilePath,
