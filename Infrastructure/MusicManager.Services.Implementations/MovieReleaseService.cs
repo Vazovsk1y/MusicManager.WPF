@@ -123,7 +123,7 @@ public class MovieReleaseService : IMovieReleaseService
         var songsDtos = new List<SongDTO>();    
         foreach (var songFile in movieReleaseFolder.Songs)
         {
-            var result = await _songService.SaveFromFileAsync(songFile, movieRelease.Id, cancellationToken);
+            var result = await _songService.SaveFromFileAsync(songFile, movieRelease.Id, true, cancellationToken);
 
             if (result.IsFailure)
             {

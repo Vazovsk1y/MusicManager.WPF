@@ -1,0 +1,49 @@
+﻿<Window x:Class="MusicManager.WPF.Views.Windows.SongAddWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MusicManager.WPF.Views.Windows" 
+        xmlns:entities="clr-namespace:MusicManager.WPF.ViewModels.Entities" 
+        d:DataContext="{d:DesignInstance Type=entities:SongAddViewModel}"
+        mc:Ignorable="d"
+        Title="SongAddWindow" Height="400" Width="400">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+
+        <GroupBox Grid.Row="4">
+            <DockPanel>
+                <UniformGrid DockPanel.Dock="Bottom" Rows="1" >
+                    <Button Margin ="20" Content="Ок" Command="{Binding AcceptCommand}"/>
+                    <Button Margin ="20" Content="Отмена" Command="{Binding CancelCommand}"/>
+                </UniformGrid>
+            </DockPanel>
+        </GroupBox>
+
+        <ComboBox ItemsSource="{Binding Discs, UpdateSourceTrigger=PropertyChanged}" 
+                  Grid.Row="0"
+                  DisplayMemberPath="Identificator"
+                  SelectedItem="{Binding SelectedDisc}"
+                  />
+
+        <TextBlock Grid.Row="2"
+            Text="{Binding SelectedSongPath.FullName}"/>
+
+        <StackPanel Grid.Row="1"
+                    Orientation="Vertical">
+            <CheckBox 
+                  Content="From cue?"
+                 IsChecked="{Binding IsFromCue}"/>
+
+            <Button Content="Select" Command="{Binding SelectPathCommand}"/>
+        </StackPanel>
+       
+    </Grid>
+</Window>

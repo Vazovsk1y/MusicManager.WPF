@@ -1,16 +1,26 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using MusicManager.Services;
 using MusicManager.Utils;
+using MusicManager.WPF.Messages;
 using MusicManager.WPF.ViewModels.Entities;
+using MusicManager.WPF.Views.Windows;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.Versioning;
+using System.Windows;
 
 namespace MusicManager.WPF.ViewModels;
 
-internal class SongsPanelViewModel : ObservableObject
+internal partial class SongsPanelViewModel : 
+    ObservableRecipient,
+    IRecipient<SongCreatedMessage>
 {
     public DiscsPanelViewModel DiscsPanelViewModel { get; }
+
+    private readonly IUserDialogService<SongAddWindow> _dialogService;    
 
     public IReadOnlyCollection<SongViewModel> Songs => new ObservableCollection<SongViewModel>(DiscsPanelViewModel.Compilations
         .SelectMany(e => e.Songs)
@@ -24,9 +34,11 @@ internal class SongsPanelViewModel : ObservableObject
     }
 
     public SongsPanelViewModel(
-        DiscsPanelViewModel discsPanelViewModel)
+        DiscsPanelViewModel discsPanelViewModel, 
+        IUserDialogService<SongAddWindow> dialogService)
     {
         DiscsPanelViewModel = discsPanelViewModel;
+        _dialogService = dialogService;
     }
 
     public SongViewModel? SelectedSong
@@ -34,6 +46,41 @@ internal class SongsPanelViewModel : ObservableObject
         get => _selectedSong;
         set => SetProperty(ref _selectedSong, value);
     }
+
+    [RelayCommand]
+    private void AddSong()
+    {
+        _dialogService.ShowDialog();
+    }
+
+    public async void Receive(SongCreatedMessage message)
+    {
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            var discs = DiscsPanelViewModel.Discs.Where(e => e.DiscId == message.DiscId);
+
+            foreach (var item in discs)
+            {
+                item.Songs.AddRange(message.SongsViewsModels);
+            }
+        });
+    }
 }
+
+
+public static class CollectionExtensions
+{
+    public static void AddRange<T>(this IList<T> values, IEnumerable<T> collectionToAdd)
+    {
+        ArgumentNullException.ThrowIfNull(collectionToAdd);
+
+        foreach (var item in collectionToAdd)
+        {
+            values.Add(item);
+        }
+    }
+}
+    
+    
 
 

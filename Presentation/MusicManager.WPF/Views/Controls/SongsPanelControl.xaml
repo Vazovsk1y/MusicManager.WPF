@@ -9,17 +9,22 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <DataGrid ItemsSource="{Binding DiscsPanelViewModel.SelectedDisc.Songs}"
+        <StackPanel>
+
+            <DataGrid ItemsSource="{Binding DiscsPanelViewModel.SelectedDisc.Songs}"
                       SelectedItem="{Binding SelectedSong}"
                   AutoGenerateColumns="False">
 
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="SongNumber" Binding="{Binding Number}"/>
-                <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}"/>
-                <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
-                <DataGridTextColumn Header="SongType" Binding="{Binding ExecutableType}"/>
-            </DataGrid.Columns>
-            
-        </DataGrid>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="SongNumber" Binding="{Binding Number}"/>
+                    <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}"/>
+                    <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
+                    <DataGridTextColumn Header="SongType" Binding="{Binding ExecutableType}"/>
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+            <Button Content="Add" Command="{Binding AddSongCommand}"/>
+        </StackPanel>
     </Grid>
 </UserControl>

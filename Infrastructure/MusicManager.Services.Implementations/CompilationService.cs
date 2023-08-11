@@ -119,7 +119,7 @@ public class CompilationService : ICompilationService
         var songsDtos = new List<SongDTO>();
         foreach (var song in compilationFolder.Songs)
         {
-            var result = await _songService.SaveFromFileAsync(song, compilation.Id, cancellationToken);
+            var result = await _songService.SaveFromFileAsync(song, compilation.Id, true, cancellationToken);
             if (result.IsFailure)
             {
                 return Result.Failure<CompilationDTO>(result.Error);

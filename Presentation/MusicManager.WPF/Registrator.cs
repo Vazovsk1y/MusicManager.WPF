@@ -15,6 +15,7 @@ internal static class Registrator
         .AddWindowWithViewModelTransient<SongwriterAddWindow, SongwriterAddViewModel>()
         .AddWindowWithViewModelTransient<CompilationAddWindow, CompilationAddViewModel>()
         .AddWindowWithViewModelTransient<MovieReleaseAddWindow, MovieReleaseAddViewModel>()
+        .AddWindowWithViewModelTransient<SongAddWindow, SongAddViewModel>()
         .AddSingleton<SongwirtersPanelViewModel>()
         .AddSingleton<MoviesPanelViewModel>()
         .AddSingleton<DiscsPanelViewModel>()

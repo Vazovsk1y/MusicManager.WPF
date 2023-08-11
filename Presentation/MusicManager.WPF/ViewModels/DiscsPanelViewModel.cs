@@ -28,6 +28,11 @@ internal partial class DiscsPanelViewModel :
     public IReadOnlyCollection<MovieReleaseViewModel> MovieReleases => 
         new ObservableCollection<MovieReleaseViewModel>(MoviesPanelViewModel.Movies.SelectMany(e => e.MoviesReleases));
 
+    public IReadOnlyCollection<DiscViewModel> Discs => new ObservableCollection<DiscViewModel>(
+        MovieReleases.Cast<DiscViewModel>()
+        .Union(Compilations.Cast<DiscViewModel>())
+        );
+
     private readonly IUserDialogService<CompilationAddWindow> _compilationDialogService;
     private readonly IUserDialogService<MovieReleaseAddWindow> _movieReleaseDialogService;
 
