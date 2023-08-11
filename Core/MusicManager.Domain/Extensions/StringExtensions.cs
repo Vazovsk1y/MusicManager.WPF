@@ -1,4 +1,4 @@
-﻿namespace MusicManager.Domain.Services.Implementations.Extensions
+﻿namespace MusicManager.Domain.Extensions
 {
     public static class StringExtensions
     {

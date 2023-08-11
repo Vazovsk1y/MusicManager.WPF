@@ -1,4 +1,7 @@
-﻿namespace MusicManager.Domain.ValueObjects;
+﻿using MusicManager.Domain.Errors;
+using MusicManager.Domain.Shared;
+
+namespace MusicManager.Domain.ValueObjects;
 
 public class DirectorInfo
 {
@@ -6,10 +9,20 @@ public class DirectorInfo
 
     public string Name { get; init; } 
 
-    public DirectorInfo(string name, string surname)
+    private DirectorInfo() { }
+
+    public static Result<DirectorInfo> Create(string name, string surname)
     {
-        Name = name;
-        Surname = surname;
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(surname))
+        {
+            return Result.Failure<DirectorInfo>(DomainErrors.NullOrEmptyStringPassed());
+        }
+
+        return new DirectorInfo
+        {
+            Name = name,
+            Surname = surname
+        };
     }
 }
 

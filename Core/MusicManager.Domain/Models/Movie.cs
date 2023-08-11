@@ -69,6 +69,27 @@ public class Movie : IAggregateRoot
 
     public static Result<Movie> Create(
         SongwriterId songwriterId,
+        string title,
+        string directoryFullPath)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return Result.Failure<Movie>(DomainErrors.NullOrEmptyStringPassed(nameof(title)));
+        }
+
+        var entityDirInfoRes = EntityDirectoryInfo.Create(directoryFullPath);
+
+        return entityDirInfoRes.IsFailure ? Result.Failure<Movie>(entityDirInfoRes.Error)
+            :
+            new Movie(songwriterId)
+            {
+                Title = title,
+                EntityDirectoryInfo = entityDirInfoRes.Value,
+            };
+    }
+
+    public static Result<Movie> Create(
+        SongwriterId songwriterId,
         string title, 
         int productionYear, 
         string productionCountry, 
@@ -86,6 +107,49 @@ public class Movie : IAggregateRoot
             Result.Failure<Movie>(settingDirInfoResult.Error)
             :
             creationResult.Value;
+    }
+
+    public static Result<Movie> Create(
+        SongwriterId songwriterId,
+        string title,
+        int productionYear,
+        string productionCountry,
+        string directoryFullPath,
+        string directorName,
+        string directorSurname)
+    {
+        var creationResult = Create(songwriterId, title, productionYear, productionCountry);
+        if (creationResult.IsFailure)
+        {
+            return creationResult;
+        }
+
+        var settingDirInfoResult = creationResult.Value.SetDirectoryInfo(directoryFullPath);
+
+        if (settingDirInfoResult.IsFailure)
+        {
+            return Result.Failure<Movie>(settingDirInfoResult.Error);
+        }
+
+        var settingDirectorInfoResult = creationResult.Value.SetDirectorInfo(directorName, directorSurname);
+
+        return settingDirectorInfoResult.IsFailure ?
+            Result.Failure<Movie>(settingDirectorInfoResult.Error)
+            :
+            creationResult.Value;
+    }
+
+    public Result SetDirectorInfo(string directorName, string directorSurname)
+    {
+        var result = DirectorInfo.Create(directorName, directorSurname);
+
+        if (result.IsFailure)
+        {
+            return result;
+        }
+
+        DirectorInfo = result.Value;
+        return Result.Success();
     }
 
     public Result SetDirectoryInfo(string fullPath)
