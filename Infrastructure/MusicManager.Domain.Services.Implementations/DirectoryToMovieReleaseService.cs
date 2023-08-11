@@ -9,64 +9,65 @@ using System.Text.RegularExpressions;
 
 namespace MusicManager.Domain.Services.Implementations;
 
-public partial class DirectoryToMovieReleaseService : IPathToMovieReleaseService
+public partial class DirectoryToMovieReleaseService : 
+    BaseDiscDomainService,
+    IPathToMovieReleaseService
 {
-    private readonly string _bootLegKeyWord = "Bootleg";
+    #region --Fields--
+
+    private readonly string _bootLegKeyWord = DiscType.Bootleg.ToString();
+
+    #endregion
+
+    #region --Properties--
+
+
+
+    #endregion
+
+    #region --Constructors--
+
+
+
+    #endregion
+
+    #region --Methods--
 
     private readonly ConcurrentDictionary<string, MovieRelease> _cache = new();
 
-    public Task<Result<MovieRelease>> GetEntityAsync(string compilationPath)
+    public Task<Result<MovieRelease>> GetEntityAsync(string movieReleasePath)
     {
-        var result = isAbleToMoveNext(compilationPath);
-        if (result.IsFailure)
+        var isAbleToMoveNextResult = IsAbleToMoveNext<DirectoryInfo>(movieReleasePath);
+        if (isAbleToMoveNextResult.IsFailure)
         {
-            return Task.FromResult(Result.Failure<MovieRelease>(result.Error));
+            return Task.FromResult(Result.Failure<MovieRelease>(isAbleToMoveNextResult.Error));
         }
 
-        if (_cache.TryGetValue(compilationPath, out var value))
+        if (_cache.TryGetValue(movieReleasePath, out var value))
         {
             return Task.FromResult(Result.Success(value));
         }
 
-        var directoryInfo = result.Value;
-        if (directoryInfo.Name.Contains(_bootLegKeyWord))
+        var directoryInfo = isAbleToMoveNextResult.Value;
+        if (directoryInfo.EnumerateFiles().FirstOrDefault(e => e.Name == MovieReleaseEntityJson.FileName) is FileInfo fileInfo)
         {
-            var movieReleaseCreationResult = CreateBootLeg(directoryInfo);
-            if (movieReleaseCreationResult.IsFailure)
-            {
-                return Task.FromResult(Result.Failure<MovieRelease>(movieReleaseCreationResult.Error));
-            }
+            var entityJsonResult = GetEntityInfoFromJsonFile<MovieReleaseEntityJson, MovieRelease>(fileInfo);
+            return entityJsonResult.IsFailure ?
+                Task.FromResult(Result.Failure<MovieRelease>(entityJsonResult.Error))
+                :
+                Task.FromResult(entityJsonResult.Value.ToEntity(movieReleasePath));
+        }
 
+        var movieReleaseCreationResult = directoryInfo.Name.Contains(_bootLegKeyWord) ?
+            CreateBootLeg(directoryInfo) : CreateSimpleDisc(directoryInfo);
 
-            _cache[compilationPath] = movieReleaseCreationResult.Value;
+        if (movieReleaseCreationResult.IsSuccess)
+        {
+            _cache[movieReleasePath] = movieReleaseCreationResult.Value;
             return Task.FromResult(Result.Success(movieReleaseCreationResult.Value));
         }
-        else
-        {
-            var movieReleaseCreationResult = CreateDisc(directoryInfo);
-            if (movieReleaseCreationResult.IsFailure)
-            {
-                return Task.FromResult(Result.Failure<MovieRelease>(movieReleaseCreationResult.Error));
-            }
 
-            _cache[compilationPath] = movieReleaseCreationResult.Value;
-            return Task.FromResult(Result.Success(movieReleaseCreationResult.Value));
-        }
-    }
-
-    private Result<DirectoryInfo> isAbleToMoveNext(string discPath)
-    {
-        if (!PathValidator.IsValid(discPath))
-        {
-            return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryPathIsInvalid(discPath));
-        }
-
-        var directoryInfo = new DirectoryInfo(discPath);
-        if (!directoryInfo.Exists)
-        {
-            return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryIsNotExists(discPath));
-        }
-        return directoryInfo;
+        return Task.FromResult(Result.Failure<MovieRelease>(movieReleaseCreationResult.Error));
     }
 
     private Result<MovieRelease> CreateBootLeg(DirectoryInfo discDirectoryInfo)
@@ -76,17 +77,12 @@ public partial class DirectoryToMovieReleaseService : IPathToMovieReleaseService
             discDirectoryInfo.Name,
             discDirectoryInfo.FullName);
 
-        if (diskCreationResult.IsFailure)
-        {
-            return Result.Failure<MovieRelease>(diskCreationResult.Error);
-        }
-
-        return diskCreationResult.Value;
+        return diskCreationResult;
     }
 
-    private Result<MovieRelease> CreateDisc(DirectoryInfo discDirectoryInfo)
+    private Result<MovieRelease> CreateSimpleDisc(DirectoryInfo discDirectoryInfo)
     {
-        var gettingComponentsResult = GetDiscComponents(discDirectoryInfo.Name);
+        var gettingComponentsResult = GetDiscComponentsFromDirectoryName(discDirectoryInfo.Name);
 
         if (gettingComponentsResult.IsFailure)
         {
@@ -94,38 +90,14 @@ public partial class DirectoryToMovieReleaseService : IPathToMovieReleaseService
         }
 
         var creationDiscResult = MovieRelease.Create(
-            gettingComponentsResult.Value.discType,
-            gettingComponentsResult.Value.discIndetificator,
+            gettingComponentsResult.Value.type,
+            gettingComponentsResult.Value.identificator,
             discDirectoryInfo.FullName,
-            gettingComponentsResult.Value.year,
-            gettingComponentsResult.Value.country);
+            gettingComponentsResult.Value.prodYear,
+            gettingComponentsResult.Value.prodCountry);
 
-        if (creationDiscResult.IsFailure)
-        {
-            return creationDiscResult;
-        }
-
-        return Result.Success(creationDiscResult.Value);
+        return creationDiscResult;
     }
 
-    private Result<(DiscType discType, string discIndetificator, string country, int year)> GetDiscComponents(string discDirectoryName)
-    {
-        var match = FindAllDiscComponents().Match(discDirectoryName);
-        if (match.Success)
-        {
-            var discTypeCreationResult = match.Groups[1].Value.CreateDiscType();
-            if (discTypeCreationResult.IsFailure)
-            {
-                return Result.Failure<(DiscType, string, string, int)>(discTypeCreationResult.Error);
-            }
-
-            _ = int.TryParse(match.Groups[4].Value, out int result);
-            return (discTypeCreationResult.Value, match.Groups[2].Value, match.Groups[3].Value, result);
-        }
-
-        return Result.Failure<(DiscType, string, string, int)>(new Error($"Unable to get some of the required components from disc directory name [{discDirectoryName}]."));
-    }
-
-    [GeneratedRegex(@"^(.*?)\s(.*?)\s-\s(.*?)\s-\s(\d{4})")]
-    private partial Regex FindAllDiscComponents();
+    #endregion
 }

@@ -1,25 +1,55 @@
-﻿using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Extensions;
+using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
-using MusicManager.Utils;
 
 namespace MusicManager.Domain.Services.Implementations;
 
-public class DirectoryToMovieService : IPathToMovieService
+public class DirectoryToMovieService : 
+    BaseDomainService,
+    IPathToMovieService
 {
+    #region --Fields--
+
     private readonly char _separator = '-';
+
+    #endregion
+
+    #region --Properties--
+
+
+
+    #endregion
+
+    #region --Constructors--
+
+
+
+    #endregion
+
+    #region --Methods--
 
     public Task<Result<Movie>> GetEntityAsync(string moviePath, SongwriterId songwriterId)
     {
-        var isAbleToMoveNext = IsAbleToMoveNext(moviePath);
-        if (isAbleToMoveNext.IsFailure)
+        var isAbleToMoveNextResult = IsAbleToMoveNext<DirectoryInfo>(moviePath);
+        if (isAbleToMoveNextResult.IsFailure)
         {
-            return Task.FromResult(Result.Failure<Movie>(isAbleToMoveNext.Error));
+            return Task.FromResult(Result.Failure<Movie>(isAbleToMoveNextResult.Error));
         }
 
-        var directoryInfo = isAbleToMoveNext.Value;
-        var (isInfoSuccessfullyExtracted, year, title) = GetMovieInfo(directoryInfo.Name);
+        var directoryInfo = isAbleToMoveNextResult.Value;
+        if (directoryInfo.EnumerateFiles().FirstOrDefault(e => e.Name == MovieEntityJson.FileName) is FileInfo fileInfo)
+        {
+            var entityJsonResult = GetEntityInfoFromJsonFile<MovieEntityJson, Movie>(fileInfo);
+            return entityJsonResult.IsFailure ?
+                Task.FromResult(Result.Failure<Movie>(entityJsonResult.Error))
+                :
+                Task.FromResult(entityJsonResult.Value.ToEntity(songwriterId, moviePath));
+        }
+
+
+        var (isInfoSuccessfullyExtracted, year, title) = GetMovieInfoFromDirectoryName(directoryInfo.Name);
         if (!isInfoSuccessfullyExtracted)
         {
             return Task.FromResult(Result.Failure<Movie>(DomainServicesErrors.PassedDirectoryNamedIncorrect(moviePath)));
@@ -40,7 +70,7 @@ public class DirectoryToMovieService : IPathToMovieService
         return Task.FromResult(Result.Success(movieCreationResult.Value));
     }
 
-    private (bool isSuccessfullyExtracted, int year, string? title) GetMovieInfo(string directoryName)
+    private (bool isSuccessfullyExtracted, int year, string? title) GetMovieInfoFromDirectoryName(string directoryName)
     {
         var info = directoryName
             .Split(_separator, StringSplitOptions.RemoveEmptyEntries)
@@ -56,19 +86,5 @@ public class DirectoryToMovieService : IPathToMovieService
         return (true, result, info[1]);
     }
 
-    private Result<DirectoryInfo> IsAbleToMoveNext(string moviePath)
-    {
-        if (!PathValidator.IsValid(moviePath))
-        {
-            return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryPathIsInvalid(moviePath));
-        }
-
-        var directoryInfo = new DirectoryInfo(moviePath);
-        if (!directoryInfo.Exists)
-        {
-            return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryIsNotExists(moviePath));
-        }
-
-        return directoryInfo;
-    }
+    #endregion
 }

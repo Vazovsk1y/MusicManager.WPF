@@ -1,27 +1,56 @@
-﻿using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Extensions;
+using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
-using MusicManager.Utils;
 
 namespace MusicManager.Domain.Services.Implementations;
 
-public class DirectoryToSongwriterService : IPathToSongwriterService
+public class DirectoryToSongwriterService : 
+    BaseDomainService,
+    IPathToSongwriterService
 {
+    #region --Fields--
+
     private readonly char _separator = '.';
 
-    public Task<Result<Songwriter>> GetEntityAsync(string songWriterPath)
+    #endregion
+
+    #region --Properties--
+
+
+
+    #endregion
+
+    #region --Constructors--
+
+
+
+    #endregion
+
+    #region --Methods--
+
+    public Task<Result<Songwriter>> GetEntityAsync(string songwriterPath)
     {
-        var isAbleToMoveNext = IsAbleToMoveNext(songWriterPath);
-        if (isAbleToMoveNext.IsFailure)
+        var isAbleToMoveNextResult = IsAbleToMoveNext<DirectoryInfo>(songwriterPath);
+        if (isAbleToMoveNextResult.IsFailure)
         {
-            return Task.FromResult(Result.Failure<Songwriter>(isAbleToMoveNext.Error));
+            return Task.FromResult(Result.Failure<Songwriter>(isAbleToMoveNextResult.Error));
         }
 
-        var directoryInfo = isAbleToMoveNext.Value;
-        var (isInfoSuccessfullyExtracted, name, surname) = GetSongwriterInfo(directoryInfo.Name);
+        var directoryInfo = isAbleToMoveNextResult.Value;
+        if (directoryInfo.EnumerateFiles().FirstOrDefault(e => e.Name == SongwriterEntityJson.FileName) is FileInfo fileInfo)
+        {
+            var entityJsonResult = GetEntityInfoFromJsonFile<SongwriterEntityJson, Songwriter>(fileInfo);
+            return entityJsonResult.IsFailure ?
+                Task.FromResult(Result.Failure<Songwriter>(entityJsonResult.Error))
+                :
+                Task.FromResult(entityJsonResult.Value.ToEntity(songwriterPath));
+        }
+
+        var (isInfoSuccessfullyExtracted, name, surname) = GetSongwriterInfoFromDirectoryName(directoryInfo.Name);
         if (!isInfoSuccessfullyExtracted)
         {
-            return Task.FromResult(Result.Failure<Songwriter>(DomainServicesErrors.PassedDirectoryNamedIncorrect(songWriterPath)));
+            return Task.FromResult(Result.Failure<Songwriter>(DomainServicesErrors.PassedDirectoryNamedIncorrect(songwriterPath)));
         }
 
         var songwriterCreationResult = Songwriter.Create(name!, surname!, directoryInfo.FullName);
@@ -30,30 +59,17 @@ public class DirectoryToSongwriterService : IPathToSongwriterService
             return Task.FromResult(Result.Failure<Songwriter>(songwriterCreationResult.Error));
         }
 
-        var songWriter = songwriterCreationResult.Value;
-        return Task.FromResult(Result.Success(songWriter));
+        var songwriter = songwriterCreationResult.Value;
+        return Task.FromResult(Result.Success(songwriter));
     }
 
-    private (bool isInfoSuccessfullyExtracted, string? name, string? surname) GetSongwriterInfo(string directoryName)
+    private (bool isInfoSuccessfullyExtracted, string? name, string? surname) GetSongwriterInfoFromDirectoryName(string directoryName)
     {
         var info = directoryName.Split(_separator, StringSplitOptions.RemoveEmptyEntries);
 
         return info.Length < 2 ? (false, null, null) : (true, info[0], info[1]);
     }
 
-    private Result<DirectoryInfo> IsAbleToMoveNext(string songWriterPath)
-    {
-        if (!PathValidator.IsValid(songWriterPath))
-        {
-            return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryPathIsInvalid(songWriterPath));
-        }
 
-        var directoryInfo = new DirectoryInfo(songWriterPath);
-        if (!directoryInfo.Exists)
-        {
-            return Result.Failure<DirectoryInfo>(DomainServicesErrors.PassedDirectoryIsNotExists(songWriterPath));
-        }
-
-        return directoryInfo;
-    }
+    #endregion
 }
