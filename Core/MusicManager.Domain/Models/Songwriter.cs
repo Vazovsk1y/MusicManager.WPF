@@ -104,8 +104,7 @@ public class Songwriter : IAggregateRoot
         }
 
         if (checkDirectoryInfo && _movies.SingleOrDefault(m =>
-            m.EntityDirectoryInfo == movie.EntityDirectoryInfo
-            && m.Id == movie.Id) is not null)
+            m.EntityDirectoryInfo == movie.EntityDirectoryInfo) is not null)
         {
             return Result.Failure(new Error("Movie with passed directory info is already exists."));
         }
@@ -127,8 +126,7 @@ public class Songwriter : IAggregateRoot
         }
 
         if (checkDirectoryInfo && _compilations.SingleOrDefault(m =>
-        m.EntityDirectoryInfo == disc.EntityDirectoryInfo
-        && m.Id == disc.Id) is not null)
+        m.EntityDirectoryInfo == disc.EntityDirectoryInfo) is not null)
         {
             return Result.Failure(new Error($"Compilation with passed directory info is already exists."));
         }

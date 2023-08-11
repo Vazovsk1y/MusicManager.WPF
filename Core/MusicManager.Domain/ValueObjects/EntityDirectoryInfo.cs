@@ -6,14 +6,13 @@ namespace MusicManager.Domain.ValueObjects;
 
 public class EntityDirectoryInfo : ValueObject<EntityDirectoryInfo>
 {
-    public string Name { get; }
+    public string Name => Path.GetFileName(FullPath);
 
     public string FullPath { get; private set; } = string.Empty;
 
     private EntityDirectoryInfo(string fullPath)
     {
         FullPath = fullPath;
-        Name = Path.GetFileName(fullPath);
     }
 
     public static Result<EntityDirectoryInfo> Create(string fullPath)
@@ -26,9 +25,8 @@ public class EntityDirectoryInfo : ValueObject<EntityDirectoryInfo>
         return new EntityDirectoryInfo(fullPath);
     }
 
-    protected override IEnumerable<object> GetEqualityComponents()
+    protected override IEnumerable<object?> GetEqualityComponents()
     {
-        yield return Name;
         yield return FullPath;
     }
 }

@@ -49,7 +49,7 @@ public class ProductionInfo : ValueObject<ProductionInfo>
 
     private static bool IsYearCorrect(int year) => year > 0 && year <= DateTime.Now.Year;
 
-    protected override IEnumerable<object> GetEqualityComponents()
+    protected override IEnumerable<object?> GetEqualityComponents()
     {
         yield return Country;
         yield return Year;

@@ -35,7 +35,7 @@ public class CueInfo : ValueObject<CueInfo>
         };
     }
 
-    protected override IEnumerable<object> GetEqualityComponents()
+    protected override IEnumerable<object?> GetEqualityComponents()
     {
         yield return CueFilePath;
         yield return Index00;

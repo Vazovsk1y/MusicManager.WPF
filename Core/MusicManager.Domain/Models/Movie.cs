@@ -128,8 +128,7 @@ public class Movie : IAggregateRoot
 
         if (checkDirectoryInfo &&
             _releases.SingleOrDefault(m =>
-            m.EntityDirectoryInfo == release.EntityDirectoryInfo
-            && m.Id == release.Id) is not null)
+            m.EntityDirectoryInfo == release.EntityDirectoryInfo) is not null)
         {
             return Result.Failure(new Error($"MovieRelease with passed directory info is already exists."));
         }

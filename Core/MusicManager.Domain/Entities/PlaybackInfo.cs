@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Constants;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Constants;
 using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Models;
@@ -7,7 +8,7 @@ using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Entities;
 
-public class PlaybackInfo
+public class PlaybackInfo : ValueObject<PlaybackInfo>
 {
     #region --Fields--
 
@@ -18,8 +19,6 @@ public class PlaybackInfo
     #region --Properties--
 
     public SongId SongId { get; private set; }
-
-    public string ExecutableFileName { get; }
 
     public string ExecutableFileFullPath { get; }
 
@@ -38,7 +37,6 @@ public class PlaybackInfo
     private PlaybackInfo(string fullPath, SongId songId)
     {
         ExecutableFileFullPath = fullPath;
-        ExecutableFileName = Path.GetFileName(ExecutableFileFullPath);
         SongId = songId;
     }
 
@@ -108,6 +106,14 @@ public class PlaybackInfo
         var songPlayInfo = creationResult.Value;
         songPlayInfo.CueInfo = cueInfoCreationResult.Value;
         return songPlayInfo;
+    }
+
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return ExecutableFileFullPath;
+        yield return ExecutableType;
+        yield return SongDuration;
+        yield return CueInfo;
     }
 
     #endregion

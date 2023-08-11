@@ -38,6 +38,6 @@
 
         public static bool operator !=(ValueObject<T>? a, ValueObject<T>? b) => !(a == b);
 
-        protected abstract IEnumerable<object> GetEqualityComponents();
+        protected abstract IEnumerable<object?> GetEqualityComponents();
     }
 }

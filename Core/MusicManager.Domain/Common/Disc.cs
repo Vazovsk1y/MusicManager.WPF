@@ -77,10 +77,9 @@ public class Disc : IAggregateRoot
         }
 
         if (checkPlaybackInfo && _songs.SingleOrDefault(e =>
-        e.PlaybackInfo == song.PlaybackInfo
-        && e.Id == song.Id) is not null)
+        e.PlaybackInfo == song.PlaybackInfo) is not null)
         {
-            return Result.Failure(new Error("Movie with passed directory info is already exists."));
+            return Result.Failure(new Error("Song with passed playback info is already exists."));
         }
 
         _songs.Add(song);
