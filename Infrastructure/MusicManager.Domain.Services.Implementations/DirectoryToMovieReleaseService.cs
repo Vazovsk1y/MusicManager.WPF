@@ -1,11 +1,8 @@
 ﻿using MusicManager.Domain.Enums;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
-using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
-using MusicManager.Utils;
 using System.Collections.Concurrent;
-using System.Text.RegularExpressions;
 
 namespace MusicManager.Domain.Services.Implementations;
 
@@ -15,7 +12,7 @@ public partial class DirectoryToMovieReleaseService :
 {
     #region --Fields--
 
-    private readonly string _bootLegKeyWord = DiscType.Bootleg.ToString();
+    private readonly ConcurrentDictionary<string, MovieRelease> _cache = new();
 
     #endregion
 
@@ -32,8 +29,6 @@ public partial class DirectoryToMovieReleaseService :
     #endregion
 
     #region --Methods--
-
-    private readonly ConcurrentDictionary<string, MovieRelease> _cache = new();
 
     public Task<Result<MovieRelease>> GetEntityAsync(string movieReleasePath)
     {
@@ -58,7 +53,7 @@ public partial class DirectoryToMovieReleaseService :
                 Task.FromResult(entityJsonResult.Value.ToEntity(movieReleasePath));
         }
 
-        var movieReleaseCreationResult = directoryInfo.Name.Contains(_bootLegKeyWord) ?
+        var movieReleaseCreationResult = directoryInfo.Name.Contains(DiscType.Bootleg.ToString()) ?
             CreateBootLeg(directoryInfo) : CreateSimpleDisc(directoryInfo);
 
         if (movieReleaseCreationResult.IsSuccess)

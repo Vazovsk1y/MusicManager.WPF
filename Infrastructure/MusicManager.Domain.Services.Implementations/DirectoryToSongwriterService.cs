@@ -11,7 +11,7 @@ public class DirectoryToSongwriterService :
 {
     #region --Fields--
 
-    private readonly char _separator = '.';
+
 
     #endregion
 
@@ -65,7 +65,7 @@ public class DirectoryToSongwriterService :
 
     private (bool isInfoSuccessfullyExtracted, string? name, string? surname) GetSongwriterInfoFromDirectoryName(string directoryName)
     {
-        var info = directoryName.Split(_separator, StringSplitOptions.RemoveEmptyEntries);
+        var info = directoryName.Split(DomainServicesConstants.SongwriterDirectoryNameSeparator, StringSplitOptions.RemoveEmptyEntries);
 
         return info.Length < 2 ? (false, null, null) : (true, info[0], info[1]);
     }

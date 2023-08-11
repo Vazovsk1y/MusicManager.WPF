@@ -12,8 +12,6 @@ public partial class DirectoryToCompilationService :
 {
     #region --Fields--
 
-    private readonly string _bootLegKeyWord = DiscType.Bootleg.ToString();
-
     private readonly ConcurrentDictionary<string, Compilation> _cache = new();
 
     #endregion
@@ -55,7 +53,7 @@ public partial class DirectoryToCompilationService :
                 Task.FromResult(entityJsonResult.Value.ToEntity(parent, compilationPath));
         }
 
-        var compilationCreationResult = directoryInfo.Name.Contains(_bootLegKeyWord) ?
+        var compilationCreationResult = directoryInfo.Name.Contains(DiscType.Bootleg.ToString()) ?
             CreateBootLeg(directoryInfo, parent) : CreateSimpleDisc(directoryInfo, parent);
 
         if (compilationCreationResult.IsSuccess)

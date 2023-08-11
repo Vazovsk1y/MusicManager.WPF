@@ -6,7 +6,7 @@ using MusicManager.Repositories;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts.Base;
 using MusicManager.Services.Contracts.Dtos;
-using MusicManager.Services.Mappers;
+using MusicManager.Services.Extensions;
 
 namespace MusicManager.Services.Implementations;
 

@@ -1,4 +1,5 @@
 ﻿using IWshRuntimeLibrary;
+using MusicManager.Domain.Services;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Services.Contracts;
@@ -10,9 +11,6 @@ namespace MusicManager.Services.Implementations.Contracts.Factories;
 
 public class SongwriterFolderFactory : ISongwriterFolderFactory
 {
-    private const string MOVIES_FOLDER_NAME = "movies";
-    private const string COMPILATIONS_FOLDER_NAME = "compilations";
-
     private readonly IMovieFolderFactory _movieFolderFactory;
     private readonly IDiscFolderFactory _compilationFolderFactory;
 
@@ -34,8 +32,8 @@ public class SongwriterFolderFactory : ISongwriterFolderFactory
         List<MovieFolder> moviesFolders = new();
         List<DiscFolder> compilationsFolders = new();
         var subDirectories = songwriterDirectory.EnumerateDirectories();
-        var moviesDirectory = subDirectories.FirstOrDefault(d => d.Name == MOVIES_FOLDER_NAME);
-        var compilationsDirectory = subDirectories.FirstOrDefault(d => d.Name == COMPILATIONS_FOLDER_NAME);
+        var moviesDirectory = subDirectories.FirstOrDefault(d => d.Name == DomainServicesConstants.MOVIES_FOLDER_NAME);
+        var compilationsDirectory = subDirectories.FirstOrDefault(d => d.Name == DomainServicesConstants.COMPILATIONS_FOLDER_NAME);
         
         if (moviesDirectory is not null)
         {

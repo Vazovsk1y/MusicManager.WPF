@@ -1,7 +1,7 @@
 ﻿using MusicManager.Domain.Models;
 using MusicManager.Services.Contracts.Dtos;
 
-namespace MusicManager.Services.Mappers;
+namespace MusicManager.Services.Extensions;
 
 public static class MappingExtensions
 {

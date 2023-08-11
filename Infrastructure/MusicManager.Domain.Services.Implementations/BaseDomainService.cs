@@ -7,22 +7,22 @@ namespace MusicManager.Domain.Services.Implementations;
 
 public abstract class BaseDomainService
 {
-    protected Result<TJsonEntityType> GetEntityInfoFromJsonFile<TJsonEntityType, TEntityType>(FileInfo fileInfo) 
-        where TJsonEntityType : SerializableEntityInfo<TEntityType>
+    protected Result<TSerializableEntity> GetEntityInfoFromJsonFile<TSerializableEntity, TEntityType>(FileInfo fileInfo) 
+        where TSerializableEntity : SerializableEntity<TEntityType>
         where TEntityType : class
     {
         try
         {
             using var stream = fileInfo.OpenRead();
-            var deserializeResult = JsonSerializer.Deserialize<TJsonEntityType>(stream);
+            var deserializeResult = JsonSerializer.Deserialize<TSerializableEntity>(stream);
             return deserializeResult is null ?
-                Result.Failure<TJsonEntityType>(new Error($"Unable to deserialize {fileInfo.Name} file to {nameof(TEntityType)}."))
+                Result.Failure<TSerializableEntity>(new Error($"Unable to deserialize {fileInfo.Name} file to {nameof(TEntityType)}."))
                 :
                 Result.Success(deserializeResult);
         }
         catch(Exception ex)
         {
-            return Result.Failure<TJsonEntityType>(new Error(ex.Message));
+            return Result.Failure<TSerializableEntity>(new Error(ex.Message));
         }
     }
 

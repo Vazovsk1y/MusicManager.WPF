@@ -12,7 +12,7 @@ public class DirectoryToMovieService :
 {
     #region --Fields--
 
-    private readonly char _separator = '-';
+
 
     #endregion
 
@@ -73,7 +73,7 @@ public class DirectoryToMovieService :
     private (bool isSuccessfullyExtracted, int year, string? title) GetMovieInfoFromDirectoryName(string directoryName)
     {
         var info = directoryName
-            .Split(_separator, StringSplitOptions.RemoveEmptyEntries)
+            .Split(DomainServicesConstants.MovieDirectoryNameSeparator, StringSplitOptions.RemoveEmptyEntries)
             .Select(i => i.TrimEnd().TrimStart())
             .ToList();
 

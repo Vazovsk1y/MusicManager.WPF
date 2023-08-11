@@ -12,12 +12,6 @@ namespace MusicManager.Domain.Services.Implementations
 
         private readonly ICueFileInteractor _cueFileInteractor;
 
-        [GeneratedRegex("^\\d+")]
-        private static partial Regex GetSongNumberFromRow();
-
-        [GeneratedRegex(@"^CD(\d+)")]
-        private static partial Regex IsDiscNumber();
-
         private readonly ConcurrentDictionary<(string songFilePath, DiscId parentId), Song> _simpleFilesCache = new();
 
         private readonly ConcurrentDictionary<(string songFilePath, string cueFilePath, DiscId parentId), IEnumerable<Song>> _cueFilesCache = new();
@@ -272,6 +266,12 @@ namespace MusicManager.Domain.Services.Implementations
 
             return 0;
         }
+
+        [GeneratedRegex("^\\d+")]
+        private static partial Regex GetSongNumberFromRow();
+
+        [GeneratedRegex(@"^CD(\d+)")]
+        private static partial Regex IsDiscNumber();
 
         #endregion
 

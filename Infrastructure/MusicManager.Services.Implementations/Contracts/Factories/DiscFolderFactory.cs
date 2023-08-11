@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Constants;
+using MusicManager.Domain.Services;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Services.Contracts;
@@ -10,9 +11,6 @@ namespace MusicManager.Services.Implementations.Contracts.Factories;
 
 public class DiscFolderFactory : IDiscFolderFactory
 {
-    private const string COVERS_FOLDER_NAME = "covers";
-    private const string FolderJPG = "folder.jpg";
-    private const string CD_KEYWORD = "CD";
     private readonly string[] _allowedFilesExtensions = new[]
     {
         DomainConstants.WVExtension,
@@ -38,12 +36,12 @@ public class DiscFolderFactory : IDiscFolderFactory
 
         var coversFolder = discDirectory
             .EnumerateDirectories()
-            .FirstOrDefault(d => d.Name == COVERS_FOLDER_NAME);
+            .FirstOrDefault(d => d.Name == DomainServicesConstants.COVERS_FOLDER_NAME);
 
         List<string> covers = coversFolder is null ? new List<string>() : coversFolder.EnumerateFiles().Select(f => f.FullName).ToList();
         var folderJPGfile = discDirectory
             .EnumerateFiles()
-            .FirstOrDefault(f => f.Name == FolderJPG);
+            .FirstOrDefault(f => f.Name == DomainServicesConstants.FolderJPG);
 
         if (folderJPGfile is not null)
         {
@@ -53,7 +51,7 @@ public class DiscFolderFactory : IDiscFolderFactory
         List<SongFile> songsFiles = new();
         var songsFromCdFolders = discDirectory
             .EnumerateDirectories()
-            .Where(d => d.Name.StartsWith(CD_KEYWORD))
+            .Where(d => d.Name.StartsWith(DomainServicesConstants.CD_KEYWORD))
             .SelectMany(d => 
             d.EnumerateFiles().Where(f => _allowedFilesExtensions.Contains(f.Extension)));
 
