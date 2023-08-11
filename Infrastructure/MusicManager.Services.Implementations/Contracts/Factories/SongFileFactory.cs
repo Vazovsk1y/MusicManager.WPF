@@ -8,9 +8,14 @@ namespace MusicManager.Services.Implementations.Contracts.Factories;
 
 public class SongFileFactory : ISongFileFactory
 {
-    public Result<SongFile> Create(FileInfo songFilePath, FileInfo? cueFilePath = null)
+    public Result<SongFile> Create(FileInfo? songFilePath, FileInfo? cueFilePath = null)
     {
-        if (!songFilePath.Exists)
+        if (songFilePath is null && cueFilePath is null)
+        {
+            return Result.Failure<SongFile>(new Error("Song file path cant null if cuepath null."));
+        }
+
+        if (songFilePath is { Exists: false })
         {
             return Result.Failure<SongFile>(DomainServicesErrors.PassedFileIsNotExists(songFilePath.FullName));
         }
@@ -20,6 +25,6 @@ public class SongFileFactory : ISongFileFactory
             return Result.Failure<SongFile>(DomainServicesErrors.PassedFileIsNotExists(cueFilePath.FullName));
         }
 
-        return new SongFile(songFilePath.FullName, cueFilePath?.FullName);
+        return new SongFile(songFilePath?.FullName, cueFilePath?.FullName);
     }
 }
