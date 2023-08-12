@@ -4,7 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MusicManager.WPF.Views.Windows" 
-        xmlns:entities="clr-namespace:MusicManager.WPF.ViewModels.Entities" 
+        xmlns:entities="clr-namespace:MusicManager.WPF.ViewModels.Entities"
+        xmlns:utils="clr-namespace:MusicManager.Utils;assembly=MusicManager.Utils"
         d:DataContext="{d:DesignInstance Type=entities:MovieAddViewModel}"
         mc:Ignorable="d"
         Title="MovieAddWindow" Height="450" Width="400">
@@ -27,12 +28,12 @@
             </DockPanel>
         </GroupBox>
 
-        <ComboBox ItemsSource="{Binding YearsHelper.Years, UpdateSourceTrigger=PropertyChanged}" 
+        <ComboBox ItemsSource="{Binding Source={x:Static utils:YearsHelper.Years}, UpdateSourceTrigger=PropertyChanged}" 
                   Grid.Row="1"
                   SelectedItem="{Binding SelectedYear}"
                   />
 
-        <ComboBox ItemsSource="{Binding CountriesHelper.Countries}" 
+        <ComboBox ItemsSource="{Binding Source={x:Static utils:CountryHelper.Countries}}" 
                   Grid.Row="2"
                   SelectedItem="{Binding SelectedCountry}"
                   />
