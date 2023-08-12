@@ -1,22 +1,25 @@
-﻿using MusicManager.Domain.Common;
+﻿using Microsoft.EntityFrameworkCore;
 using MusicManager.Domain.Shared;
-using MusicManager.Repositories.Common;
+using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts.Dtos;
 
 namespace MusicManager.Services.Implementations;
 
 internal class BaseDiscService : IBaseDiscService
 {
-    private readonly IBaseDiscRepository<Disc> _discRepository;
+    private readonly IApplicationDbContext _dbContext;
 
-    public BaseDiscService(IBaseDiscRepository<Disc> discRepository)
+    public BaseDiscService(IApplicationDbContext dbContext)
     {
-        _discRepository = discRepository;
+        _dbContext = dbContext;
     }
 
     public async Task<Result<IEnumerable<DiscLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken = default)
     {
-        var discs = await _discRepository.LoadAllAsync(cancellationToken);
-        return discs.Select(e => new DiscLookupDTO(e.Id, e.Identifier)).ToList();
+        return await _dbContext
+            .Discs
+            .AsNoTracking()
+            .Select(e => new DiscLookupDTO(e.Id, e.Identifier))
+            .ToListAsync(cancellationToken);
     }
 }

@@ -5,6 +5,6 @@ namespace MusicManager.Services.Contracts.Dtos;
 
 public record ExistingMovieReleaseToMovieDTO(
     MovieId MovieId,
-    DiscId MovieReleaseLink);
+    DiscId DiscId);
 
 

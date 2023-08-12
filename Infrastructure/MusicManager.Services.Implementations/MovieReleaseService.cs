@@ -1,8 +1,8 @@
-﻿using MusicManager.Domain.Common;
+﻿using Microsoft.EntityFrameworkCore;
+using MusicManager.Domain.Common;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
-using MusicManager.Repositories;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts.Base;
 using MusicManager.Services.Contracts.Dtos;
@@ -14,25 +14,27 @@ public class MovieReleaseService : IMovieReleaseService
 {
     private readonly IPathToMovieReleaseService _pathToMovieReleaseService;
     private readonly ISongService _songService;
-    private readonly IMovieRepository _movieRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IApplicationDbContext _dbContext;
 
     public MovieReleaseService(
         IPathToMovieReleaseService pathToMovieReleaseService,
         ISongService songService,
-        IMovieRepository movieRepository,
-        IUnitOfWork unitOfWork)
+        IApplicationDbContext dbContext)
     {
         _pathToMovieReleaseService = pathToMovieReleaseService;
         _songService = songService;
-        _movieRepository = movieRepository;
-        _unitOfWork = unitOfWork;
+        _dbContext = dbContext;
     }
 
     public async Task<Result<IEnumerable<MovieReleaseDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default)
     {
         var result = new List<MovieReleaseDTO>();
-        var movie = await _movieRepository.LoadByIdWithMoviesReleasesAsync(movieId, cancellationToken);
+        var movie = await _dbContext
+            .Movies
+            .Include(e => e.Releases)
+            .ThenInclude(e => e.Movies)
+            .SingleOrDefaultAsync(e => e.Id == movieId, cancellationToken);
+
         if (movie is null)
         {
             return Result.Failure<IEnumerable<MovieReleaseDTO>>(ServicesErrors.MovieWithPassedIdIsNotExists());
@@ -64,12 +66,18 @@ public class MovieReleaseService : IMovieReleaseService
             return Result.Failure<DiscId>(new("Can't add the same movie release to the movie twice.\nMovies links contains duplicates"));
         }
 
-        var movies = await _movieRepository.LoadAllWithMovieReleasesAsync(movieReleaseAddDTO.MoviesLinks, cancellationToken);
+        var movies = await _dbContext
+            .Movies
+            .Include(e => e.Releases)
+            .ThenInclude(e => e.Movies)
+            .Where(e => movieReleaseAddDTO.MoviesLinks.Contains(e.Id))
+            .ToListAsync(cancellationToken);
 
         var creationResult = MovieRelease.Create(
             movieReleaseAddDTO.DiscType,
             movieReleaseAddDTO.Identifier
             );
+
         if (creationResult.IsFailure)
         {
             return Result.Failure<DiscId>(creationResult.Error);
@@ -85,7 +93,7 @@ public class MovieReleaseService : IMovieReleaseService
             }
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(movieRelease.Id);
     }
 
@@ -101,10 +109,20 @@ public class MovieReleaseService : IMovieReleaseService
         }
 
         var movieRelease = movieReleaseResult.Value;
-        var movie = await _movieRepository.LoadByIdWithMoviesReleasesAsync(movieId, cancellationToken);
+        var movie = await _dbContext
+            .Movies
+            .Include(e => e.Releases)
+            .ThenInclude(e => e.Movies)
+            .SingleOrDefaultAsync(e => e.Id == movieId, cancellationToken);
+
         if (movie is null)
         {
             return Result.Failure<MovieReleaseDTO>(ServicesErrors.MovieWithPassedIdIsNotExists());
+        }
+
+        foreach (var coverPath in movieReleaseFolder.CoversPaths)
+        {
+            movieRelease.AddCover(coverPath);
         }
 
         var addingResult = movie.AddRelease(movieRelease);
@@ -113,12 +131,7 @@ public class MovieReleaseService : IMovieReleaseService
             return Result.Failure<MovieReleaseDTO>(addingResult.Error);
         }
 
-        foreach (var coverPath in movieReleaseFolder.CoversPaths)
-        {
-            movieRelease.AddCover(coverPath);
-        }
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         var songsDtos = new List<SongDTO>();    
         foreach (var songFile in movieReleaseFolder.Songs)

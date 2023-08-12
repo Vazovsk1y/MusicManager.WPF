@@ -1,8 +1,8 @@
-﻿using MusicManager.Domain.Common;
+﻿using Microsoft.EntityFrameworkCore;
+using MusicManager.Domain.Common;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
-using MusicManager.Repositories;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts.Base;
 using MusicManager.Services.Contracts.Dtos;
@@ -13,26 +13,28 @@ namespace MusicManager.Services.Implementations;
 public class CompilationService : ICompilationService
 {
     private readonly ISongService _songService;
-    private readonly ISongwriterRepository _songwriterRepository;
     private readonly IPathToCompilationService _pathToCompilationService;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IApplicationDbContext _dbContext;
 
     public CompilationService(
         ISongService songService,
-        ISongwriterRepository songwriterRepository,
         IPathToCompilationService pathToCompilationService,
-        IUnitOfWork unitOfWork)
+        IApplicationDbContext dbContext)
     {
         _songService = songService;
-        _songwriterRepository = songwriterRepository;
         _pathToCompilationService = pathToCompilationService;
-        _unitOfWork = unitOfWork;
+        _dbContext = dbContext;
     }
 
     public async Task<Result<IEnumerable<CompilationDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default)
     {
         var result = new List<CompilationDTO>();
-        var songwriter = await _songwriterRepository.LoadByIdWithCompilationsAsync(songwriterId, cancellation);
+        var songwriter = await _dbContext
+            .Songwriters
+            .AsNoTracking()
+            .Include(e => e.Compilations)
+            .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellation);
+
         if (songwriter is null)
         {
             return Result.Failure<IEnumerable<CompilationDTO>>(ServicesErrors.SongwriterWithPassedIdIsNotExists());
@@ -58,7 +60,11 @@ public class CompilationService : ICompilationService
 
     public async Task<Result<DiscId>> SaveAsync(CompilationAddDTO compilationAddDTO, CancellationToken cancellationToken = default)
     {
-        var songwriter = await _songwriterRepository.LoadByIdWithCompilationsAsync(compilationAddDTO.SongwriterId, cancellationToken);
+        var songwriter = await _dbContext
+            .Songwriters
+            .Include(e => e.Compilations)
+            .SingleOrDefaultAsync(e => e.Id == compilationAddDTO.SongwriterId, cancellationToken);
+
         if (songwriter is null)
         {
             return Result.Failure<DiscId>(ServicesErrors.SongwriterWithPassedIdIsNotExists());
@@ -81,7 +87,7 @@ public class CompilationService : ICompilationService
             return Result.Failure<DiscId>(addingResult.Error);
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(creationResult.Value.Id);
     }
 
@@ -97,7 +103,11 @@ public class CompilationService : ICompilationService
         }
 
         var compilation = compilationResult.Value;
-        var songwriter = await _songwriterRepository.LoadByIdWithCompilationsAsync(songwriterId, cancellationToken);
+        var songwriter = await _dbContext
+            .Songwriters
+            .Include(e => e.Compilations)
+            .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellationToken);
+
         if (songwriter is null) 
         {
             return Result.Failure<CompilationDTO>(ServicesErrors.SongwriterWithPassedIdIsNotExists());
@@ -114,7 +124,7 @@ public class CompilationService : ICompilationService
             compilation.AddCover(coverPath);
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         var songsDtos = new List<SongDTO>();
         foreach (var song in compilationFolder.Songs)

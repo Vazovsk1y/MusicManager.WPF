@@ -1,3 +1,4 @@
+﻿using Microsoft.EntityFrameworkCore;
 ﻿using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
@@ -5,14 +6,13 @@ using MusicManager.Repositories;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Dtos;
-using MusicManager.Services.Mappers;
+using MusicManager.Services.Extensions;
 
 namespace MusicManager.Services.Implementations;
 
 public class SongwriterService : ISongwriterService
 {
-    private readonly ISongwriterRepository _songwriterRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IApplicationDbContext _dbContext;
     private readonly IPathToSongwriterService _pathToSongwriterService;
     private readonly IMovieService _movieService;
     private readonly ICompilationService _compilationService;
@@ -22,19 +22,24 @@ public class SongwriterService : ISongwriterService
         IUnitOfWork unitOfWork,
         IPathToSongwriterService pathToSongwriterService,
         IMovieService movieService,
-        ICompilationService compilationService)
+        ICompilationService compilationService,
+        IApplicationDbContext dbContext)
     {
         _songwriterRepository = songwriterRepository;
         _unitOfWork = unitOfWork;
         _pathToSongwriterService = pathToSongwriterService;
         _movieService = movieService;
         _compilationService = compilationService;
+        _dbContext = dbContext;
     }
 
     public async Task<Result<IEnumerable<SongwriterDTO>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var result = new List<SongwriterDTO>();
-        var songwriters = await _songwriterRepository.LoadAllAsync(cancellationToken);
+        var songwriters = await _dbContext
+            .Songwriters
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 
         foreach (var songwriter in songwriters)
         {
@@ -62,8 +67,11 @@ public class SongwriterService : ISongwriterService
 
     public async Task<Result<IEnumerable<SongwriterLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken = default)
     {
-        var songwriters = await _songwriterRepository.LoadAllAsync(cancellationToken);
-        return songwriters.Select(sngw => sngw.ToLookupDTO()).ToList();
+        return await _dbContext
+            .Songwriters
+            .AsNoTracking()
+            .Select(sngw => sngw.ToLookupDTO())
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<Result<SongwriterId>> SaveAsync(SongwriterAddDTO songwriterAddDTO, CancellationToken cancellationToken = default)
@@ -75,9 +83,12 @@ public class SongwriterService : ISongwriterService
             return Result.Failure<SongwriterId>(songwriterCreationResult.Error);
         }
 
-        await _songwriterRepository.InsertAsync(songwriterCreationResult.Value, cancellationToken);
+        var createdSongwriter = songwriterCreationResult.Value;
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return songwriterCreationResult.Value.Id;
+        await _dbContext.Songwriters.AddAsync(createdSongwriter, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return createdSongwriter.Id;
     }
 
     public async Task<Result<SongwriterDTO>> SaveFromFolderAsync(SongwriterFolder songwriterFolder, CancellationToken cancellationToken = default)
@@ -92,13 +103,13 @@ public class SongwriterService : ISongwriterService
         }
 
         var songwriter = songWriterResult.Value;
-        if (await _songwriterRepository.IsExistsWithPassedDirectoryInfo(songwriter.EntityDirectoryInfo!))
+        if (_dbContext.Songwriters.IsSongwriterWithPassedEntityDirectoryInfoExists(songwriter.EntityDirectoryInfo))
         {
             return Result.Failure<SongwriterDTO>(new Error("Songwriter with passed directory path is already exists."));
         }
 
-        await _songwriterRepository.InsertAsync(songwriter, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _dbContext.Songwriters.AddAsync(songwriter, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         var moviesDtos = new List<MovieDTO>();
         var compilationsDtos = new List<CompilationDTO>();
@@ -134,5 +145,3 @@ public class SongwriterService : ISongwriterService
         };
     }
 }
-
-

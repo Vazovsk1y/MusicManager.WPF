@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
 using MusicManager.Repositories;
@@ -13,36 +14,37 @@ public class MovieService : IMovieService
 {
     private readonly IPathToMovieService _pathToMovieService;
     private readonly IMovieReleaseService _movieReleaseService;
-    private readonly ISongwriterRepository _songwriterRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMovieRepository _movieRepository;
-    private readonly IMovieReleaseRepository _movieReleaseRepository;
+    private readonly IApplicationDbContext _dbContext;
 
     public MovieService(
         IPathToMovieService pathToMovieService,
         IMovieReleaseService movieReleaseService,
-        ISongwriterRepository songwriterRepository,
-        IUnitOfWork unitOfWork,
-        IMovieRepository movieRepository,
-        IMovieReleaseRepository movieReleaseRepository)
+        IApplicationDbContext dbContext)
     {
         _pathToMovieService = pathToMovieService;
         _movieReleaseService = movieReleaseService;
-        _songwriterRepository = songwriterRepository;
-        _unitOfWork = unitOfWork;
-        _movieRepository = movieRepository;
-        _movieReleaseRepository = movieReleaseRepository;
+        _dbContext = dbContext;
     }
 
     public async Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, CancellationToken cancellationToken = default)
     {
-        var movie = await _movieRepository.LoadByIdWithMoviesReleasesAsync(dto.MovieId, cancellationToken);
+        var movie = await _dbContext
+            .Movies
+            .Include(e => e.Releases)
+            .ThenInclude(e => e.Movies)
+            .SingleOrDefaultAsync(e => e.Id == dto.MovieId, cancellationToken);
+
         if (movie is null)
         {
             return Result.Failure(ServicesErrors.MovieWithPassedIdIsNotExists());
         }
 
-        var movieRelease = await _movieReleaseRepository.LoadWithMoviesAsync(dto.MovieReleaseLink, cancellationToken);
+        var movieRelease = await _dbContext
+            .MovieReleases
+            .Include(e => e.Movies)
+            .ThenInclude(e => e.Releases)
+            .SingleOrDefaultAsync(e => e.Id == dto.DiscId, cancellationToken);
+
         if (movieRelease is null)
         {
             return Result.Failure(ServicesErrors.MovieReleaseWithPassedIdIsNotExists());
@@ -54,14 +56,18 @@ public class MovieService : IMovieService
             return addingResult;
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 
     public async Task<Result<IEnumerable<MovieDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default)
     {
         var result = new List<MovieDTO>();
-        var songwriter = await _songwriterRepository.LoadByIdWithMoviesAsync(songwriterId, cancellation);
+        var songwriter = await _dbContext
+            .Songwriters
+            .AsNoTracking()
+            .Include(e => e.Movies)
+            .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellation);
 
         if (songwriter is null)
         {
@@ -88,13 +94,19 @@ public class MovieService : IMovieService
 
     public async Task<Result<IEnumerable<MovieLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken = default)
     {
-        var movies = await _movieRepository.LoadAllAsync(cancellationToken);
-        return movies.Select(e => e.ToLookupDTO()).ToList();
+        return await _dbContext
+            .Movies
+            .AsNoTracking()
+            .Select(e => e.ToLookupDTO())
+            .ToListAsync(cancellationToken); 
     }
 
     public async Task<Result<MovieId>> SaveAsync(MovieAddDTO movieAddDTO, CancellationToken cancellationToken = default)
     {
-        var songwriter = await _songwriterRepository.LoadByIdWithMoviesAsync(movieAddDTO.SongwriterId, cancellationToken);
+        var songwriter = await _dbContext
+            .Songwriters
+            .Include(e => e.Movies)
+            .SingleOrDefaultAsync(e => e.Id == movieAddDTO.SongwriterId, cancellationToken);
 
         if (songwriter is null)
         {
@@ -121,7 +133,7 @@ public class MovieService : IMovieService
             return Result.Failure<MovieId>(addingResult.Error);
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(movie.Id);
     }
 
@@ -137,11 +149,14 @@ public class MovieService : IMovieService
         }
 
         var movie = movieResult.Value;
-        var songwriter = await _songwriterRepository.LoadByIdWithMoviesAsync(songwriterId, cancellationToken);
+        var songwriter = await _dbContext
+            .Songwriters
+            .Include(e => e.Movies)
+            .SingleOrDefaultAsync(e => e.Id == movie.SongwriterId, cancellationToken);
 
         if (songwriter is null)
         {
-            return Result.Failure<MovieDTO>(new Error($"Songwriter with passed id is not exists in database."));
+            return Result.Failure<MovieDTO>(ServicesErrors.SongwriterWithPassedIdIsNotExists());
         }
 
         var addingResult = songwriter.AddMovie(movie, true);
@@ -150,7 +165,7 @@ public class MovieService : IMovieService
             return Result.Failure<MovieDTO>(addingResult.Error);
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         var moviesReleasesDtos = new List<MovieReleaseDTO>();
         foreach (var movieReleaseFolder in movieFolder.MoviesReleasesFolders)

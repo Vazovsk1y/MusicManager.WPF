@@ -1,7 +1,7 @@
-﻿using MusicManager.Domain.Common;
+﻿using Microsoft.EntityFrameworkCore;
+using MusicManager.Domain.Common;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
-using MusicManager.Repositories.Common;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Dtos;
@@ -11,23 +11,25 @@ namespace MusicManager.Services.Implementations;
 
 public class SongService : ISongService
 {
-    private readonly IBaseDiscRepository<Disc> _discRepository;
     private readonly IPathToSongService _pathToSongService;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IApplicationDbContext _dbContext;
 
     public SongService(
-        IUnitOfWork unitOfWork,
-        IPathToSongService pathToSongService,
-        IBaseDiscRepository<Disc> discRepository)
+        IApplicationDbContext dbContext,
+        IPathToSongService pathToSongService)
     {
-        _unitOfWork = unitOfWork;
+        _dbContext = dbContext;
         _pathToSongService = pathToSongService;
-        _discRepository = discRepository;
     }
 
     public async Task<Result<IEnumerable<SongDTO>>> GetAllAsync(DiscId discId, CancellationToken cancellationToken = default)
     {
-        var disc = await _discRepository.LoadByIdWithSongsAsync(discId, cancellationToken);
+        var disc = await _dbContext
+            .Discs
+            .AsNoTracking()
+            .Include(e => e.Songs)
+            .ThenInclude(e => e.PlaybackInfo)
+            .SingleOrDefaultAsync(e => e.Id == discId, cancellationToken);
 
         return disc is null ?
             Result.Failure<IEnumerable<SongDTO>>(ServicesErrors.DiscWithPassedIdIsNotExists())
@@ -35,10 +37,14 @@ public class SongService : ISongService
             disc.Songs.Select(e => e.ToDTO()).ToList();
     }
 
-
     public async Task<Result<IEnumerable<SongDTO>>> SaveFromFileAsync(SongFile songFile, DiscId discId, bool ignoreSongAddingResult, CancellationToken cancellationToken = default)
     {
-        var disc = await _discRepository.LoadByIdWithSongsAsync(discId, cancellationToken);
+        var disc = await _dbContext
+            .Discs
+            .Include(e => e.Songs)
+            .ThenInclude(e => e.PlaybackInfo)
+            .SingleOrDefaultAsync(e => e.Id == discId, cancellationToken);
+
         if (disc is null)
         {
             return Result.Failure<IEnumerable<SongDTO>>(ServicesErrors.DiscWithPassedIdIsNotExists());
@@ -74,7 +80,7 @@ public class SongService : ISongService
             }
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
         return songs.Select(s => s.ToDTO()).ToList();
     }
 
@@ -94,8 +100,7 @@ public class SongService : ISongService
             return Result.Failure<SongDTO>(addingResult.Error);
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
+        await _dbContext.SaveChangesAsync(cancellationToken);
         return song.ToDTO();
     }
 }
