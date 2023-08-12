@@ -2,19 +2,11 @@
 
 namespace MusicManager.Utils;
 
-/// <summary>
-/// Register as singleton.
-/// </summary>
-public interface ICountriesHelper
+public static class CountryHelper 
 {
-    IEnumerable<string> Countries { get; }
-}
+    private static readonly List<string> _countriesNames = new();
 
-public class CountryHelper : ICountriesHelper
-{
-    private readonly List<string> _countriesNames = new();
-
-    public IEnumerable<string> Countries
+    public static IEnumerable<string> Countries
     {
         get
         {
@@ -25,12 +17,12 @@ public class CountryHelper : ICountriesHelper
         }
     }
 
-    public CountryHelper()
+    static CountryHelper()
     {
         Initialize();
     }
 
-    private void Initialize()
+    private static void Initialize()
     {
         CultureInfo[] cultures = CultureInfo.GetCultures(CultureTypes.AllCultures & ~CultureTypes.NeutralCultures);
 

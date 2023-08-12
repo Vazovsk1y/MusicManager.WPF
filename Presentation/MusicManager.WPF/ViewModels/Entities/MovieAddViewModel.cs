@@ -42,9 +42,6 @@ internal partial class MovieAddViewModel : DialogViewModel<MovieAddWindow>
     [ObservableProperty]
     public ObservableCollection<SongwriterLookupDTO>? _songwriters;
 
-    public ICountriesHelper CountriesHelper { get; }
-    public IYearsHelper YearsHelper { get; }
-
     #endregion
 
     #region --Constructors--
@@ -52,15 +49,10 @@ internal partial class MovieAddViewModel : DialogViewModel<MovieAddWindow>
     public MovieAddViewModel(
        ISongwriterService songwriterService,
        IMovieService movieService,
-       IUserDialogService<MovieAddWindow> dialogService,
-       ICountriesHelper countryHelper,
-       IYearsHelper yearsHelper) : base(dialogService)
+       IUserDialogService<MovieAddWindow> dialogService) : base(dialogService)
     {
         _songwriterService = songwriterService;
         _movieService = movieService;
-
-        CountriesHelper = countryHelper;
-        YearsHelper = yearsHelper;
     }
 
     #endregion

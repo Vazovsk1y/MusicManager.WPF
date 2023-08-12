@@ -1,18 +1,10 @@
 ﻿namespace MusicManager.Utils;
 
-/// <summary>
-/// Register as singleton.
-/// </summary>
-public interface IYearsHelper
+public static class YearsHelper 
 {
-    IEnumerable<int> Years { get; }
-}
+    private static readonly List<int> _years = new();
 
-public class YearsHelper : IYearsHelper
-{
-    private readonly List<int> _years = new();
-
-    public IEnumerable<int> Years
+    public static IEnumerable<int> Years
     {
         get
         {
@@ -23,12 +15,12 @@ public class YearsHelper : IYearsHelper
         }
     }
 
-    public YearsHelper()
+    static YearsHelper()
     {
         Initialize();
     }
 
-    private void Initialize()
+    private static void Initialize()
     {
         var numbers = Enumerable.Range(1, DateTime.Now.Year).OrderDescending();
         _years.AddRange(numbers);
