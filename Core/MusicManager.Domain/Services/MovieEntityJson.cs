@@ -2,7 +2,7 @@
 
 namespace MusicManager.Domain.Services;
 
-public class MovieEntityJson : SerializableEntityInfo<Movie>
+public class MovieEntityJson : SerializableEntity<Movie>
 {
     public string Title { get; set; }
 

@@ -3,7 +3,7 @@ using MusicManager.Domain.Models;
 
 namespace MusicManager.Domain.Services;
 
-public class CompilationEntityJson : SerializableEntityInfo<Compilation>
+public class CompilationEntityJson : SerializableEntity<Compilation>
 {
     public string Identifier { get; set; }
 

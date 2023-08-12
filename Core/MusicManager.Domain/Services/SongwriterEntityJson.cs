@@ -2,7 +2,7 @@
 
 namespace MusicManager.Domain.Services;
 
-public class SongwriterEntityJson : SerializableEntityInfo<Songwriter>
+public class SongwriterEntityJson : SerializableEntity<Songwriter>
 {
     public string Name { get; set; }
 

@@ -1,6 +1,8 @@
-﻿using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
+using System.Text.Json;
 
 namespace MusicManager.Domain.Extensions
 {
@@ -105,6 +107,14 @@ namespace MusicManager.Domain.Extensions
                 ProductionCountry = movieRelease.ProductionInfo?.Country,
                 ProductionYear = movieRelease.ProductionInfo?.Year,
             };
+        }
+
+        public static async Task AddSerializedJsonEntityToAsync<TEntity>(this SerializableEntity<TEntity> entity, string path)
+        where TEntity : class, IAggregateRoot
+        {
+            using var writer = new StreamWriter(path);
+            string json = JsonSerializer.Serialize(entity, entity.GetType());
+            await writer.WriteAsync(json);
         }
     }
 }

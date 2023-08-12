@@ -3,7 +3,7 @@ using MusicManager.Domain.Models;
 
 namespace MusicManager.Domain.Services;
 
-public class MovieReleaseEntityJson : SerializableEntityInfo<MovieRelease>
+public class MovieReleaseEntityJson : SerializableEntity<MovieRelease>
 {
     public string Identifier { get; set; }
 

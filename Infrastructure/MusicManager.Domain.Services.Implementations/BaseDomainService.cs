@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Services.Implementations.Errors;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Utils;
 using System.Text.Json;
@@ -7,22 +8,22 @@ namespace MusicManager.Domain.Services.Implementations;
 
 public abstract class BaseDomainService
 {
-    protected Result<TSerializableEntity> GetEntityInfoFromJsonFile<TSerializableEntity, TEntityType>(FileInfo fileInfo) 
-        where TSerializableEntity : SerializableEntity<TEntityType>
-        where TEntityType : class
+    protected Result<TSerializable> GetEntityInfoFromJsonFile<TSerializable, TEntity>(FileInfo fileInfo) 
+        where TSerializable : SerializableEntity<TEntity>
+        where TEntity : class, IAggregateRoot
     {
         try
         {
             using var stream = fileInfo.OpenRead();
-            var deserializeResult = JsonSerializer.Deserialize<TSerializableEntity>(stream);
+            var deserializeResult = JsonSerializer.Deserialize<TSerializable>(stream);
             return deserializeResult is null ?
-                Result.Failure<TSerializableEntity>(new Error($"Unable to deserialize {fileInfo.Name} file to {nameof(TEntityType)}."))
+                Result.Failure<TSerializable>(new Error($"Unable to deserialize {fileInfo.Name} file to {typeof(TEntity).Name}."))
                 :
                 Result.Success(deserializeResult);
         }
         catch(Exception ex)
         {
-            return Result.Failure<TSerializableEntity>(new Error(ex.Message));
+            return Result.Failure<TSerializable>(new Error(ex.Message));
         }
     }
 
