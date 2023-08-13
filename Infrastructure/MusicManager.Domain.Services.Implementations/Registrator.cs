@@ -11,6 +11,7 @@ namespace MusicManager.Domain.Services.Implementations
             .AddSingleton<IPathToCompilationService, DirectoryToCompilationService>()
             .AddSingleton<IPathToMovieReleaseService, DirectoryToMovieReleaseService>()
             .AddSingleton<IPathToSongService, FileToSongService>()
+            .AddScoped<ISongwriterToFolderService, SongwriterToFolderService>()
             ;
     }
 }

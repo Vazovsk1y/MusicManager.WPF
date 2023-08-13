@@ -8,11 +8,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\MusicManager.Domain\MusicManager.Domain.csproj" />
+    <ProjectReference Include="..\..\Core\MusicManager.Repositories\MusicManager.Repositories.csproj" />
     <ProjectReference Include="..\MusicManager.Utils\MusicManager.Utils.csproj" />
   </ItemGroup>
 

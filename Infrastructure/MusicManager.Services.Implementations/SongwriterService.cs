@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-﻿using MusicManager.Domain.Models;
+using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
-using MusicManager.Repositories;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Dtos;
@@ -16,21 +15,20 @@ public class SongwriterService : ISongwriterService
     private readonly IPathToSongwriterService _pathToSongwriterService;
     private readonly IMovieService _movieService;
     private readonly ICompilationService _compilationService;
+    private readonly ISongwriterToFolderService _songwriterToFolderService;
 
     public SongwriterService(
-        ISongwriterRepository songwriterRepository,
-        IUnitOfWork unitOfWork,
         IPathToSongwriterService pathToSongwriterService,
         IMovieService movieService,
         ICompilationService compilationService,
-        IApplicationDbContext dbContext)
+        IApplicationDbContext dbContext,
+        ISongwriterToFolderService songwriterToFolderService)
     {
-        _songwriterRepository = songwriterRepository;
-        _unitOfWork = unitOfWork;
         _pathToSongwriterService = pathToSongwriterService;
         _movieService = movieService;
         _compilationService = compilationService;
         _dbContext = dbContext;
+        _songwriterToFolderService = songwriterToFolderService;
     }
 
     public async Task<Result<IEnumerable<SongwriterDTO>>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -84,8 +82,13 @@ public class SongwriterService : ISongwriterService
         }
 
         var createdSongwriter = songwriterCreationResult.Value;
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return songwriterCreationResult.Value.Id;
+        var creatingAssociatedFolderAndFileResult = await _songwriterToFolderService.CreateAssociatedFolderAndFileAsync(createdSongwriter);
+        if (creatingAssociatedFolderAndFileResult.IsFailure)
+        {
+            return Result.Failure<SongwriterId>(creatingAssociatedFolderAndFileResult.Error);
+        }
+
+        createdSongwriter.SetDirectoryInfo(creatingAssociatedFolderAndFileResult.Value);
         await _dbContext.Songwriters.AddAsync(createdSongwriter, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return createdSongwriter.Id;
@@ -145,3 +148,11 @@ public class SongwriterService : ISongwriterService
         };
     }
 }
+
+
+
+
+
+
+
+
