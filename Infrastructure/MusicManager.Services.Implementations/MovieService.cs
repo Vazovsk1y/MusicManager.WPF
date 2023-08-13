@@ -2,7 +2,6 @@
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
-using MusicManager.Repositories;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Dtos;
@@ -15,15 +14,18 @@ public class MovieService : IMovieService
     private readonly IPathToMovieService _pathToMovieService;
     private readonly IMovieReleaseService _movieReleaseService;
     private readonly IApplicationDbContext _dbContext;
+    private readonly IMovieToFolderService _movieToFolderService;
 
     public MovieService(
         IPathToMovieService pathToMovieService,
         IMovieReleaseService movieReleaseService,
-        IApplicationDbContext dbContext)
+        IApplicationDbContext dbContext,
+        IMovieToFolderService movieToFolderService)
     {
         _pathToMovieService = pathToMovieService;
         _movieReleaseService = movieReleaseService;
         _dbContext = dbContext;
+        _movieToFolderService = movieToFolderService;
     }
 
     public async Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, CancellationToken cancellationToken = default)
@@ -133,6 +135,13 @@ public class MovieService : IMovieService
             return Result.Failure<MovieId>(addingResult.Error);
         }
 
+        var createdAssociatedFolderAndFileResult = await _movieToFolderService.CreateAssociatedFolderAndFileAsync(movie, songwriter);
+        if (createdAssociatedFolderAndFileResult.IsFailure)
+        {
+            return Result.Failure<MovieId>(createdAssociatedFolderAndFileResult.Error);
+        }
+
+        movie.SetDirectoryInfo(createdAssociatedFolderAndFileResult.Value);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(movie.Id);
     }
@@ -185,3 +194,6 @@ public class MovieService : IMovieService
         };
     }
 }
+
+
+

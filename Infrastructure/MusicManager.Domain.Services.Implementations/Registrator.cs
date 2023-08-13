@@ -12,6 +12,7 @@ namespace MusicManager.Domain.Services.Implementations
             .AddSingleton<IPathToMovieReleaseService, DirectoryToMovieReleaseService>()
             .AddSingleton<IPathToSongService, FileToSongService>()
             .AddScoped<ISongwriterToFolderService, SongwriterToFolderService>()
+            .AddScoped<IMovieToFolderService, MovieToFolderService>()
             ;
     }
 }
