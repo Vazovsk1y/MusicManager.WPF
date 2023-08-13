@@ -9,6 +9,8 @@ public static class DomainServicesConstants
 
     public const char MovieDirectoryNameSeparator = '-';
 
+    public const char DiscDirectoryNameSeparator = '-';
+
     public static string CD_KEYWORD => DiscType.CD.ToString();
 
     public const string MOVIES_FOLDER_NAME = "movies";

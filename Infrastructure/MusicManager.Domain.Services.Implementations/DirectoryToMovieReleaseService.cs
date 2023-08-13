@@ -84,12 +84,22 @@ public partial class DirectoryToMovieReleaseService :
             return Result.Failure<MovieRelease>(gettingComponentsResult.Error);
         }
 
+        var (type, identificator, prodCountry, prodYear) = gettingComponentsResult.Value;
+        if (prodCountry is null || prodYear is null)
+        {
+            return MovieRelease.Create(
+                type,
+                identificator,
+                discDirectoryInfo.FullName
+                );
+        }
+
         var creationDiscResult = MovieRelease.Create(
             gettingComponentsResult.Value.type,
             gettingComponentsResult.Value.identificator,
             discDirectoryInfo.FullName,
-            gettingComponentsResult.Value.prodYear,
-            gettingComponentsResult.Value.prodCountry);
+            (int)gettingComponentsResult.Value.prodYear!,
+            gettingComponentsResult.Value.prodCountry!);
 
         return creationDiscResult;
     }

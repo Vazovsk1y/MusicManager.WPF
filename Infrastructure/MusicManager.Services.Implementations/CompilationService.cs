@@ -15,15 +15,18 @@ public class CompilationService : ICompilationService
     private readonly ISongService _songService;
     private readonly IPathToCompilationService _pathToCompilationService;
     private readonly IApplicationDbContext _dbContext;
+    private readonly ICompilationToFolderService _compilationToFolderService;
 
     public CompilationService(
         ISongService songService,
         IPathToCompilationService pathToCompilationService,
-        IApplicationDbContext dbContext)
+        IApplicationDbContext dbContext,
+        ICompilationToFolderService compilationToFolderService)
     {
         _songService = songService;
         _pathToCompilationService = pathToCompilationService;
         _dbContext = dbContext;
+        _compilationToFolderService = compilationToFolderService;
     }
 
     public async Task<Result<IEnumerable<CompilationDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default)
@@ -81,14 +84,22 @@ public class CompilationService : ICompilationService
             return Result.Failure<DiscId>(creationResult.Error);
         }
 
-        var addingResult = songwriter.AddCompilation(creationResult.Value, true);
+        var compilation = creationResult.Value;
+        var addingResult = songwriter.AddCompilation(compilation, true);
         if (addingResult.IsFailure)
         {
             return Result.Failure<DiscId>(addingResult.Error);
         }
 
+        var createdAssociatedFolderAndFileResult = await _compilationToFolderService.CreateAssociatedFolderAndFileAsync(compilation, songwriter);
+        if (createdAssociatedFolderAndFileResult.IsFailure)
+        {
+            return Result.Failure<DiscId>(createdAssociatedFolderAndFileResult.Error);
+        }
+
+        compilation.SetDirectoryInfo(createdAssociatedFolderAndFileResult.Value);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return Result.Success(creationResult.Value.Id);
+        return Result.Success(compilation.Id);
     }
 
     public async Task<Result<CompilationDTO>> SaveFromFolderAsync(DiscFolder compilationFolder, SongwriterId songwriterId, CancellationToken cancellationToken = default)
