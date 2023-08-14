@@ -31,8 +31,8 @@ public class SongwriterToFolderService : ISongwriterToFolderService
         }
 
         string rootPath = rootPathResult.Value;
-        var (isCreated, message) = DirectoryHelper.TryToCreateIfNotExists(rootPath, out var rootDirectory);
-        if (!isCreated)
+        var (isSuccess, message) = DirectoryHelper.TryToCreateIfNotExists(rootPath, out var rootDirectory);
+        if (!isSuccess)
         {
             return Result.Failure<string>(new(message));
         }

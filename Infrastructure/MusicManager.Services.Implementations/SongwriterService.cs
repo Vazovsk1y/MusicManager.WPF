@@ -96,16 +96,16 @@ public class SongwriterService : ISongwriterService
 
     public async Task<Result<SongwriterDTO>> SaveFromFolderAsync(SongwriterFolder songwriterFolder, CancellationToken cancellationToken = default)
     {
-        var songWriterResult = await _pathToSongwriterService
+        var songwriterCreationResult = await _pathToSongwriterService
             .GetEntityAsync(songwriterFolder.Path)
             .ConfigureAwait(false);
 
-        if (songWriterResult.IsFailure)
+        if (songwriterCreationResult.IsFailure)
         {
-            return Result.Failure<SongwriterDTO>(songWriterResult.Error);
+            return Result.Failure<SongwriterDTO>(songwriterCreationResult.Error);
         }
 
-        var songwriter = songWriterResult.Value;
+        var songwriter = songwriterCreationResult.Value;
         if (_dbContext.Songwriters.IsSongwriterWithPassedEntityDirectoryInfoExists(songwriter.EntityDirectoryInfo))
         {
             return Result.Failure<SongwriterDTO>(new Error("Songwriter with passed directory path is already exists."));

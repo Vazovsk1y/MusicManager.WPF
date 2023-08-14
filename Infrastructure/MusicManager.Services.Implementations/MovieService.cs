@@ -128,13 +128,6 @@ public class MovieService : IMovieService
         }
 
         var movie = movieCreationResult.Value;
-        var addingResult = songwriter.AddMovie(movie, true);
-
-        if (addingResult.IsFailure)
-        {
-            return Result.Failure<MovieId>(addingResult.Error);
-        }
-
         var createdAssociatedFolderAndFileResult = await _movieToFolderService.CreateAssociatedFolderAndFileAsync(movie, songwriter);
         if (createdAssociatedFolderAndFileResult.IsFailure)
         {
@@ -142,6 +135,8 @@ public class MovieService : IMovieService
         }
 
         movie.SetDirectoryInfo(createdAssociatedFolderAndFileResult.Value);
+        songwriter.AddMovie(movie);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(movie.Id);
     }

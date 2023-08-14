@@ -85,12 +85,6 @@ public class CompilationService : ICompilationService
         }
 
         var compilation = creationResult.Value;
-        var addingResult = songwriter.AddCompilation(compilation, true);
-        if (addingResult.IsFailure)
-        {
-            return Result.Failure<DiscId>(addingResult.Error);
-        }
-
         var createdAssociatedFolderAndFileResult = await _compilationToFolderService.CreateAssociatedFolderAndFileAsync(compilation, songwriter);
         if (createdAssociatedFolderAndFileResult.IsFailure)
         {
@@ -98,6 +92,7 @@ public class CompilationService : ICompilationService
         }
 
         compilation.SetDirectoryInfo(createdAssociatedFolderAndFileResult.Value);
+        songwriter.AddCompilation(compilation);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(compilation.Id);
     }

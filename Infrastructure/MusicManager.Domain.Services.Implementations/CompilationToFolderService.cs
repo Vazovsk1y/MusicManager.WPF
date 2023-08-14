@@ -41,7 +41,7 @@ public class CompilationToFolderService : ICompilationToFolderService
         if (Directory.Exists(createdCompilationDirectoryFullPath)
             || await _dbContext.Compilations.AnyAsync(e => e.EntityDirectoryInfo == EntityDirectoryInfo.Create(createdCompilationDirectoryFullPath).Value))
         {
-            return Result.Failure<string>(new Error("Directory for this movie is already exists or movie with that directory info is already added to database."));
+            return Result.Failure<string>(new Error("Directory for this compilation is already exists or compilation with that directory info is already added to database."));
         }
 
         var createdCompilationDirectoryInfo = DirectoryHelper.CreateIfNotExists(createdCompilationDirectoryFullPath);
