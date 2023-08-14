@@ -5,6 +5,7 @@ using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Base;
 using MusicManager.Services.Contracts.Factories;
 using System.IO;
+using System.Windows.Forms;
 
 namespace MusicManager.Services.Implementations.Contracts.Factories;
 
@@ -25,15 +26,26 @@ public class MovieFolderFactory : IMovieFolderFactory
         }
 
         List<DiscFolder> moviesReleasesFolders = new();
-        var moviesReleasesDirectories = new List<DirectoryInfo>(movieDirectory.EnumerateDirectories());
-        var linksFiles = movieDirectory.EnumerateFiles().Where(e => e.Extension == ".lnk");
+        var moviesReleasesDirectories = new List<DirectoryInfo>();
 
-        foreach (var linkFile in linksFiles)
+        // if shortcut file with .lnk extension, if link directory with not null link target.
+        var fileSystemInfos = movieDirectory.EnumerateFileSystemInfos().Where(e => e.LinkTarget is not null || e.Extension == ".lnk");  
+
+        foreach (var fileSystemInfo in fileSystemInfos)
         {
-            WshShell shell = new();
-            WshShortcut shortcut = (WshShortcut)shell.CreateShortcut(linkFile.FullName);
-            moviesReleasesDirectories.Add(new DirectoryInfo(shortcut.TargetPath));
+            if (fileSystemInfo.Extension == ".lnk")
+            {
+                WshShell shell = new();
+                WshShortcut shortcut = (WshShortcut)shell.CreateShortcut(fileSystemInfo.FullName);
+                moviesReleasesDirectories.Add(new DirectoryInfo(shortcut.TargetPath));
+            }
+            else
+            {
+                moviesReleasesDirectories.Add(new DirectoryInfo(fileSystemInfo.LinkTarget!));
+            }
         }
+
+        moviesReleasesDirectories.AddRange(movieDirectory.EnumerateDirectories().Where(e => e.LinkTarget is null));  // exclude already added directories links
 
         foreach (var movieReleaseDirectory in moviesReleasesDirectories)
         {
