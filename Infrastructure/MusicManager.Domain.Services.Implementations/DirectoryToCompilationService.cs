@@ -47,10 +47,20 @@ public partial class DirectoryToCompilationService :
         if (directoryInfo.EnumerateFiles().FirstOrDefault(e => e.Name == CompilationEntityJson.FileName) is FileInfo fileInfo)
         {
             var entityJsonResult = GetEntityInfoFromJsonFile<CompilationEntityJson, Compilation>(fileInfo);
-            return entityJsonResult.IsFailure ?
-                Task.FromResult(Result.Failure<Compilation>(entityJsonResult.Error))
-                :
-                Task.FromResult(entityJsonResult.Value.ToEntity(parent, compilationPath));
+            if (entityJsonResult.IsSuccess)
+            {
+                var entityResult = entityJsonResult.Value.ToEntity(parent, compilationPath);
+                if (entityResult.IsFailure)
+                {
+                    Task.FromResult(Result.Failure<Compilation>(entityResult.Error));
+                }
+
+                // add to cache parsed from json entity
+                _cache[compilationPath] = entityResult.Value;
+                return Task.FromResult(Result.Success(entityResult.Value));
+            }
+
+            return Task.FromResult(Result.Failure<Compilation>(entityJsonResult.Error));
         }
 
         var compilationCreationResult = directoryInfo.Name.Contains(DiscType.Bootleg.ToString()) ?

@@ -47,10 +47,20 @@ public partial class DirectoryToMovieReleaseService :
         if (directoryInfo.EnumerateFiles().FirstOrDefault(e => e.Name == MovieReleaseEntityJson.FileName) is FileInfo fileInfo)
         {
             var entityJsonResult = GetEntityInfoFromJsonFile<MovieReleaseEntityJson, MovieRelease>(fileInfo);
-            return entityJsonResult.IsFailure ?
-                Task.FromResult(Result.Failure<MovieRelease>(entityJsonResult.Error))
-                :
-                Task.FromResult(entityJsonResult.Value.ToEntity(movieReleasePath));
+            if (entityJsonResult.IsSuccess)
+            {
+                var entityResult = entityJsonResult.Value.ToEntity(movieReleasePath);
+                if (entityResult.IsFailure)
+                {
+                    Task.FromResult(Result.Failure<MovieRelease>(entityResult.Error));
+                }
+
+                // add to cache parsed from json entity
+                _cache[movieReleasePath] = entityResult.Value;
+                return Task.FromResult(Result.Success(entityResult.Value));
+            }
+
+            return Task.FromResult(Result.Failure<MovieRelease>(entityJsonResult.Error));
         }
 
         var movieReleaseCreationResult = directoryInfo.Name.Contains(DiscType.Bootleg.ToString()) ?
