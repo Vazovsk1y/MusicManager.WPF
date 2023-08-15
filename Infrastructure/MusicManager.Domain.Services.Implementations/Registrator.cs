@@ -14,6 +14,7 @@ namespace MusicManager.Domain.Services.Implementations
             .AddScoped<ISongwriterToFolderService, SongwriterToFolderService>()
             .AddScoped<IMovieToFolderService, MovieToFolderService>()
             .AddScoped<ICompilationToFolderService, CompilationToFolderService>()
+            .AddScoped<IMovieReleaseToFolderService, MovieReleaseToFolderService>()
             ;
     }
 }

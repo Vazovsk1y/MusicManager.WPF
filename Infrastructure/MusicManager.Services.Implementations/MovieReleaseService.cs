@@ -15,15 +15,18 @@ public class MovieReleaseService : IMovieReleaseService
     private readonly IPathToMovieReleaseService _pathToMovieReleaseService;
     private readonly ISongService _songService;
     private readonly IApplicationDbContext _dbContext;
+    private readonly IMovieReleaseToFolderService _movieReleaseToFolderService;
 
     public MovieReleaseService(
         IPathToMovieReleaseService pathToMovieReleaseService,
         ISongService songService,
-        IApplicationDbContext dbContext)
+        IApplicationDbContext dbContext,
+        IMovieReleaseToFolderService movieReleaseToFolderService)
     {
         _pathToMovieReleaseService = pathToMovieReleaseService;
         _songService = songService;
         _dbContext = dbContext;
+        _movieReleaseToFolderService = movieReleaseToFolderService;
     }
 
     public async Task<Result<IEnumerable<MovieReleaseDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default)
@@ -63,7 +66,7 @@ public class MovieReleaseService : IMovieReleaseService
         bool hasDuplicates = movieReleaseAddDTO.MoviesLinks.GroupBy(x => x).Any(g => g.Count() > 1);
         if (hasDuplicates)
         {
-            return Result.Failure<DiscId>(new("Can't add the same movie release to the movie twice.\nMovies links contains duplicates"));
+            return Result.Failure<DiscId>(new("Can't add the same movie release to the one movie twice.\nMovies links contains duplicates."));
         }
 
         var movies = await _dbContext
@@ -72,6 +75,11 @@ public class MovieReleaseService : IMovieReleaseService
             .ThenInclude(e => e.Movies)
             .Where(e => movieReleaseAddDTO.MoviesLinks.Contains(e.Id))
             .ToListAsync(cancellationToken);
+
+        if (movies.Count is 0)
+        {
+            return Result.Failure<DiscId>(new Error("No movie were selected."));
+        }
 
         var creationResult = MovieRelease.Create(
             movieReleaseAddDTO.DiscType,
@@ -84,15 +92,21 @@ public class MovieReleaseService : IMovieReleaseService
         }
 
         var movieRelease = creationResult.Value;
-        foreach (var movie in movies)
+        var firstMovie = movies.FirstOrDefault();
+        var createMovieReleaseForFirstFilmFolderResult = await _movieReleaseToFolderService.CreateAssociatedFolderAndFileAsync(movieRelease, firstMovie!);
+        if (createMovieReleaseForFirstFilmFolderResult.IsFailure)
         {
-            var addingResult = movie.AddRelease(movieRelease, true);
-            if (addingResult.IsFailure)
-            {
-                return Result.Failure<DiscId>(addingResult.Error);
-            }
+            return Result.Failure<DiscId>(createMovieReleaseForFirstFilmFolderResult.Error);
         }
 
+        var settingLinksResult = await SetLinks(movies.Skip(1).ToList(), createMovieReleaseForFirstFilmFolderResult.Value);
+        if (settingLinksResult.IsFailure)
+        {
+            return Result.Failure<DiscId>(settingLinksResult.Error);
+        }
+
+        movieRelease.SetDirectoryInfo(createMovieReleaseForFirstFilmFolderResult.Value);
+        AddToAllMovies(movies, movieRelease);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(movieRelease.Id);
     }
@@ -150,5 +164,29 @@ public class MovieReleaseService : IMovieReleaseService
         {
             SongDTOs = songsDtos,
         };
+    }
+
+    private Result AddToAllMovies(IList<Movie> movies, MovieRelease movieRelease)
+    {
+        foreach (var movie in movies)
+        {
+            movie.AddRelease(movieRelease);
+        }
+
+        return Result.Success();
+    }
+
+    private async Task<Result> SetLinks(IList<Movie> movies, string movieReleaseFullPath)
+    {
+        foreach (var movie in movies) 
+        {
+            var settingLinkResult = await _movieReleaseToFolderService.CreateFolderLinkAsync(movie, movieReleaseFullPath);
+            if (settingLinkResult.IsFailure)
+            {
+                return Result.Failure(settingLinkResult.Error);
+            }
+        }
+
+        return Result.Success();
     }
 }
