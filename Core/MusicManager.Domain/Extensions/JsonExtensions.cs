@@ -2,6 +2,7 @@
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 using System.Text.Json;
 
 namespace MusicManager.Domain.Extensions
@@ -17,12 +18,12 @@ namespace MusicManager.Domain.Extensions
         {
             if (entityJson.ProductionCountry is null || entityJson.ProductionYear is null)
             {
-                return Compilation.Create(songwriterId, entityJson.DiscType, entityJson.Identifier, associatedDirectoryPath);
+                return Compilation.Create(songwriterId, DiscType.Create(entityJson.DiscType).Value, entityJson.Identifier, associatedDirectoryPath);
             }
 
             return Compilation.Create(
-                songwriterId, 
-                entityJson.DiscType, 
+                songwriterId,
+                DiscType.Create(entityJson.DiscType).Value, 
                 entityJson.Identifier, 
                 associatedDirectoryPath,
                 (int)entityJson.ProductionYear, 
@@ -55,11 +56,11 @@ namespace MusicManager.Domain.Extensions
         {
             if (entityJson.ProductionCountry is null || entityJson.ProductionYear is null)
             {
-                return MovieRelease.Create(entityJson.DiscType, entityJson.Identifier, associatedDirectoryPath);
+                return MovieRelease.Create(DiscType.Create(entityJson.DiscType).Value, entityJson.Identifier, associatedDirectoryPath);
             }
 
             return MovieRelease.Create(
-                entityJson.DiscType,
+                DiscType.Create(entityJson.DiscType).Value,
                 entityJson.Identifier,
                 associatedDirectoryPath,
                 (int)entityJson.ProductionYear,
@@ -92,7 +93,7 @@ namespace MusicManager.Domain.Extensions
             return new CompilationEntityJson
             {
                 Identifier = compilation.Identifier,
-                DiscType = compilation.Type,
+                DiscType = compilation.Type.Value,
                 ProductionCountry = compilation.ProductionInfo?.Country,
                 ProductionYear = compilation.ProductionInfo?.Year,
             };
@@ -103,7 +104,7 @@ namespace MusicManager.Domain.Extensions
             return new MovieReleaseEntityJson
             {
                 Identifier = movieRelease.Identifier,
-                DiscType = movieRelease.Type,
+                DiscType = movieRelease.Type.Value,
                 ProductionCountry = movieRelease.ProductionInfo?.Country,
                 ProductionYear = movieRelease.ProductionInfo?.Year,
             };

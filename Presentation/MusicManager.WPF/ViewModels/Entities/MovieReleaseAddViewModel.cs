@@ -4,6 +4,7 @@ using MusicManager.Domain.Enums;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 using MusicManager.Services;
 using MusicManager.Services.Contracts.Dtos;
 using MusicManager.Utils;
@@ -28,10 +29,8 @@ namespace MusicManager.WPF.ViewModels.Entities
         private ObservableCollection<MovieLookupDTO>? _movies;
 
         [ObservableProperty]
-        private ObservableCollection<string>? _discTypes;
+        private ObservableCollection<DiscType>? _discTypes;
 
-        //[ObservableProperty]
-        //[NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
         private MovieLookupDTO? _selectedMovie;
 
         public MovieLookupDTO? SelectedMovie
@@ -51,12 +50,11 @@ namespace MusicManager.WPF.ViewModels.Entities
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
-        private string? _selectedDiscType;
+        private DiscType? _selectedDiscType;
 
         [ObservableProperty]
         private string _identifier = string.Empty;
 
-        //[ObservableProperty]
         private readonly ObservableCollection<MovieLookupDTO> _selectedMovies = new();
 
         public ObservableCollection<MovieLookupDTO> SelectedMovies => _selectedMovies;
@@ -73,7 +71,7 @@ namespace MusicManager.WPF.ViewModels.Entities
         protected override async Task Accept()
         {
             var moviesLinks = SelectedMovies.Select(e => e.MovieId).ToList();
-            var dto = new MovieReleaseAddDTO(moviesLinks, Identifier, SelectedDiscType!.CreateDiscType().Value);
+            var dto = new MovieReleaseAddDTO(moviesLinks, Identifier, SelectedDiscType!);
             var addingResult = await _movieReleaseService.SaveAsync(dto);
 
             if (addingResult.IsSuccess)
@@ -82,7 +80,7 @@ namespace MusicManager.WPF.ViewModels.Entities
                 {
                     DiscId = addingResult.Value,
                     MoviesLinks = moviesLinks,
-                    DiscType = SelectedDiscType!,
+                    DiscType = SelectedDiscType!.Value,
                     Identificator = dto.Identifier
                 });
 
@@ -112,7 +110,7 @@ namespace MusicManager.WPF.ViewModels.Entities
                 });
             }
 
-            DiscTypes = new(Enum.GetValues<DiscType>().Select(e => e.MapToString()));
+            DiscTypes = new (DiscType.EnumerateRange());
         }
     }
 }

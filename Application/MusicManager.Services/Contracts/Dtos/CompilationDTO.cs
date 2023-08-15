@@ -1,6 +1,7 @@
 ﻿using MusicManager.Domain.Common;
 using MusicManager.Domain.Enums;
 using MusicManager.Domain.Models;
+using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Services.Contracts.Dtos
 {

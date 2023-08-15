@@ -31,7 +31,7 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
             return Result.Failure<string>(new Error("Parent directory is not exists."));
         }
 
-        string baseMovieReleaseDirectoryName = $"{movieRelease.Type.MapToString()} {movieRelease.Identifier}";
+        string baseMovieReleaseDirectoryName = $"{movieRelease.Type.Value} {movieRelease.Identifier}";
         string createdMovieReleaseDirectoryName = movieRelease.ProductionInfo is null ?
         baseMovieReleaseDirectoryName
         :

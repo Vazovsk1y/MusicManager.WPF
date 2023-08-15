@@ -31,8 +31,8 @@ internal class DiscConfiguration : IEntityTypeConfiguration<Disc>
 
         entityBuilder.Property(e => e.Type)
                .HasConversion(
-            e => e.MapToString(),
-            e => e.CreateDiscType().Value)
+            e => e.Value,
+            e => DiscType.Create(e).Value)
                .IsRequired();
 
         entityBuilder.Property(e => e.Identifier).IsRequired();

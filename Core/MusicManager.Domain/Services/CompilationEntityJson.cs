@@ -11,5 +11,5 @@ public class CompilationEntityJson : SerializableEntity<Compilation>
 
     public int? ProductionYear { get; set; }
 
-    public DiscType DiscType { get; set; }  
+    public string DiscType { get; set; }  
 }

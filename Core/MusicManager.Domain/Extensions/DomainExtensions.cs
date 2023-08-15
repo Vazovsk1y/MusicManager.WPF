@@ -1,29 +1,25 @@
 ﻿using MusicManager.Domain.Enums;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Extensions;
 
 public static class DomainExtensions
 {
-    private const string CD_Row = "CD";
-    private const string LP_Row = "LP";
-    private const string BOOTLEG_Row = "Bootleg";
     private const string FLAC_ROW = "Flac";
     private const string APE_ROW = "Ape";
     private const string WV_ROW = "WV";
     private const string MP3_ROW = "MP3";
-    private const string UNKNOWN_ROW = "Unknown";
 
-    public static Result<DiscType> CreateDiscType(this string discTypeRow) => discTypeRow switch
+    public static Result<DiscType> Create(this int number)
     {
-        CD_Row => DiscType.CD,
-        LP_Row => DiscType.LP,
-        BOOTLEG_Row => DiscType.Bootleg,
-        "2CD" => DiscType.TwoCD,
-        "3CD" => DiscType.ThreeeCD,
-        UNKNOWN_ROW => DiscType.Unknown,
-        _ => Result.Failure<DiscType>(new Error($"Unable to create disk type from {discTypeRow}."))
-    };
+        if (number <= 1)
+        {
+            return Result.Failure<DiscType>(new Error("Disc type starting with number must be positive number greater than 1."));
+        }
+
+        return new DiscType(number);
+    }
 
     public static Result<SongFileType> CreateSongFileType(this string executableTypeRow) => executableTypeRow switch
     {
@@ -34,23 +30,12 @@ public static class DomainExtensions
         _ => Result.Failure<SongFileType>(new Error($"Unable to create song file type from {executableTypeRow}."))
     };
 
-    public static string MapToString(this DiscType discType) => discType switch
-    {
-        DiscType.CD => CD_Row,
-        DiscType.LP => LP_Row,
-        DiscType.Bootleg => BOOTLEG_Row,
-        DiscType.TwoCD => "2CD",
-        DiscType.ThreeeCD => "3CD",
-        DiscType.Unknown => "Unknown",
-        _ => throw new KeyNotFoundException()
-    };
-
     public static string MapToString(this SongFileType songFileType) => songFileType switch
     {
         SongFileType.Mp3 => MP3_ROW,
         SongFileType.Flac => FLAC_ROW,
         SongFileType.WV => WV_ROW,
         SongFileType.Ape => APE_ROW,
-        _ => throw new KeyNotFoundException()
+        _ => SongFileType.Unknown.ToString(),
     };
 }

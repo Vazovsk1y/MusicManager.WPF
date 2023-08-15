@@ -1,6 +1,7 @@
 ﻿using MusicManager.Domain.Enums;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 using System.Text.RegularExpressions;
 
 namespace MusicManager.Domain.Services.Implementations;
@@ -12,7 +13,7 @@ public abstract partial class BaseDiscDomainService : BaseDomainService
         var match = FindAllDiscComponents().Match(discDirectoryName);
         if (match.Success)
         {
-            var discTypeCreationResult = match.Groups[1].Value.CreateDiscType();
+            var discTypeCreationResult = DiscType.Create(match.Groups[1].Value);
             if (discTypeCreationResult.IsFailure)
             {
                 return Result.Failure<(DiscType, string, string?, int?)>(discTypeCreationResult.Error);

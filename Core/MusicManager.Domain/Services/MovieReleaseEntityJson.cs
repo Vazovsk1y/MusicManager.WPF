@@ -11,5 +11,5 @@ public class MovieReleaseEntityJson : SerializableEntity<MovieRelease>
 
     public int? ProductionYear { get; set; }
 
-    public DiscType DiscType { get; set; }
+    public string DiscType { get; set; }
 }

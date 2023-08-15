@@ -43,7 +43,7 @@ internal static class MappingExtensions
             SongwriterId = compilationDTO.SongwriterId,
             ProductionCountry = compilationDTO.ProductionCountry ?? ProductionInfo.UndefinedCountry,
             ProductionYear = compilationDTO.ProductionYear,
-            DiscType = compilationDTO.DiscType.MapToString(),
+            DiscType = compilationDTO.DiscType.Value,
             Songs = new(compilationDTO.SongDTOs.Select(e => e.ToViewModel())),
         };
     }
@@ -57,7 +57,7 @@ internal static class MappingExtensions
             Identificator = movieReleaseDTO.Identifier,
             ProductionCountry = movieReleaseDTO.ProductionCountry ?? ProductionInfo.UndefinedCountry,
             ProductionYear = movieReleaseDTO.ProductionYear,
-            DiscType = movieReleaseDTO.DiscType.MapToString(),
+            DiscType = movieReleaseDTO.DiscType.Value,
             Songs = new (movieReleaseDTO.SongDTOs.Select(e => e.ToViewModel())),
         };
     }

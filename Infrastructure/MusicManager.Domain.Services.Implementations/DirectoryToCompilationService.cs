@@ -2,6 +2,7 @@
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 using System.Collections.Concurrent;
 
 namespace MusicManager.Domain.Services.Implementations;
@@ -63,7 +64,7 @@ public partial class DirectoryToCompilationService :
             return Task.FromResult(Result.Failure<Compilation>(entityJsonResult.Error));
         }
 
-        var compilationCreationResult = directoryInfo.Name.Contains(DiscType.Bootleg.ToString()) ?
+        var compilationCreationResult = directoryInfo.Name.Contains(DiscType.Bootleg.Value) ?
             CreateBootLeg(directoryInfo, parent) : CreateSimpleDisc(directoryInfo, parent);
 
         if (compilationCreationResult.IsSuccess)

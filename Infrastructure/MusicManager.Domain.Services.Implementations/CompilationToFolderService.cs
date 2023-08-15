@@ -30,7 +30,7 @@ public class CompilationToFolderService : ICompilationToFolderService
             return Result.Failure<string>(new Error("Parent directory is not exists."));
         }
 
-        string baseCompilationDirectoryName = $"{compilation.Type.MapToString()} {compilation.Identifier}";
+        string baseCompilationDirectoryName = $"{compilation.Type.Value} {compilation.Identifier}";
         string createdCompilationDirectoryName = compilation.ProductionInfo is null ?
         baseCompilationDirectoryName
         :

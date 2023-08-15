@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using MusicManager.Domain.Enums;
 using MusicManager.Domain.Extensions;
+using MusicManager.Domain.ValueObjects;
 using MusicManager.Services;
 using MusicManager.Services.Contracts.Dtos;
 using MusicManager.Utils;
@@ -25,7 +26,7 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
     private ObservableCollection<SongwriterLookupDTO>? _songwriters;
 
     [ObservableProperty]
-    private ObservableCollection<string>? _discTypes;
+    private ObservableCollection<DiscType>? _discTypes;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
@@ -33,7 +34,7 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
-    private string? _selectedDiscType;
+    private DiscType? _selectedDiscType;
 
     [ObservableProperty]
     private string _identifier = string.Empty;
@@ -49,7 +50,7 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
 
     protected override async Task Accept()
     {
-        var dto = new CompilationAddDTO(SelectedSongwriter!.Id, Identifier, SelectedDiscType!.CreateDiscType().Value);
+        var dto = new CompilationAddDTO(SelectedSongwriter!.Id, Identifier, SelectedDiscType!);
         var addingResult = await _compilationService.SaveAsync(dto);
         if (addingResult.IsSuccess)
         {
@@ -58,7 +59,7 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
                 DiscId = addingResult.Value,
                 SongwriterId = dto.SongwriterId,
                 Identificator = dto.Identifier,
-                DiscType = SelectedDiscType!,
+                DiscType = SelectedDiscType!.Value,
             });
 
             Messenger.Send(message);
@@ -87,6 +88,6 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
             });
         }
 
-        DiscTypes = new (Enum.GetValues<DiscType>().Select(e => e.MapToString()));
+        DiscTypes = new(DiscType.EnumerateRange());
     }
 }
