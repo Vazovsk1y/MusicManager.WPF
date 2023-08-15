@@ -2,6 +2,7 @@
 using MusicManager.Domain.Entities;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Models;
 
@@ -19,13 +20,13 @@ public class Song : IAggregateRoot
 
     public DiscId DiscId { get; private set; }
 
-    public string? DiscNumber { get; private set; }
+    public DiscNumber? DiscNumber { get; private set; }
 
     public PlaybackInfo? PlaybackInfo { get; private set; }
 
     public string Name { get; private set; } = string.Empty;
 
-    public int Number { get; private set; }
+    public int Order { get; private set; }
 
     #endregion
 
@@ -45,55 +46,56 @@ public class Song : IAggregateRoot
     public static Result<Song> Create(
         DiscId discId,
         string name,
-        int number)
+        int order)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
             return Result.Failure<Song>(DomainErrors.NullOrEmptyStringPassed(nameof(name)));
         }
 
-        if (number < 0)
+        if (int.IsNegative(order))
         {
-            return Result.Failure<Song>(new("Song number must be non-negative number."));
+            return Result.Failure<Song>(new("Song order must be non-negative number."));
         }
 
         return new Song(name, discId)
         {
-            Number = number
+            Order = order
         };
     }
 
     public static Result<Song> Create(
         DiscId discId, 
         string name,
-        int number,
-        string discNumber)
+        int order,
+        int discNumber)
     {
-        if (string.IsNullOrEmpty(discNumber))
-        {
-            return Result.Failure<Song>(DomainErrors.NullOrEmptyStringPassed(nameof(discNumber)));
-        }
-
-        var songCreationResult = Create(discId, name, number);
+        var songCreationResult = Create(discId, name, order);
         if (songCreationResult.IsFailure)
         {
             return songCreationResult;
         }
 
         var song = songCreationResult.Value;
-        song.DiscNumber = discNumber;
+        var discNumberCreationResult = DiscNumber.Create(discNumber);
+        if (discNumberCreationResult.IsFailure)
+        {
+            return Result.Failure<Song>(discNumberCreationResult.Error);
+        }
+
+        song.DiscNumber = discNumberCreationResult.Value;
         return song;
     }
 
     public static Result<Song> Create(
         DiscId discId, 
         string name,
-        int number,
-        string discNumber, 
+        int order,
+        int discNumber, 
         string songFileFullPath,
         TimeSpan songDuration)
     {
-        var songCreationResult = Create(discId, name, number, discNumber);
+        var songCreationResult = Create(discId, name, order, discNumber);
 
         if (songCreationResult.IsFailure)
         {
@@ -114,11 +116,11 @@ public class Song : IAggregateRoot
     public static Result<Song> Create(
         DiscId discId,
         string name,
-        int number,
+        int order,
         string songFileFullPath,
         TimeSpan songDuration)
     {
-        var songCreationResult = Create(discId, name, number);
+        var songCreationResult = Create(discId, name, order);
 
         if (songCreationResult.IsFailure)
         {
@@ -139,15 +141,15 @@ public class Song : IAggregateRoot
     public static Result<Song> Create(
         DiscId discId, 
         string name,
-        int number,
-        string discNumber,
+        int order,
+        int discNumber,
         string songFileFullPath,
         TimeSpan songDuration,
         string cueFileFullPath,
         TimeSpan index00,
         TimeSpan index01)
     {
-        var songCreationResult = Create(discId, name, number, discNumber);
+        var songCreationResult = Create(discId, name, order, discNumber);
 
         if (songCreationResult.IsFailure)
         {
@@ -168,14 +170,14 @@ public class Song : IAggregateRoot
     public static Result<Song> Create(
         DiscId discId, 
         string name,
-        int number,
+        int order,
         string songFileFullPath,
         TimeSpan songDuration,
         string cueFileFullPath,
         TimeSpan index00,
         TimeSpan index01)
     {
-        var songCreationResult = Create(discId, name, number);
+        var songCreationResult = Create(discId, name, order);
 
         if (songCreationResult.IsFailure)
         {

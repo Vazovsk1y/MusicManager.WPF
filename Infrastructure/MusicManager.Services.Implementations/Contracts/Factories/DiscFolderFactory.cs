@@ -2,6 +2,7 @@
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Base;
 using MusicManager.Services.Contracts.Factories;
@@ -51,7 +52,7 @@ public class DiscFolderFactory : IDiscFolderFactory
         List<SongFile> songsFiles = new();
         var songsFromCdFolders = discDirectory
             .EnumerateDirectories()
-            .Where(d => d.Name.StartsWith(DomainServicesConstants.CD_KEYWORD))
+            .Where(d => d.Name.StartsWith(DiscNumber.CD_KEYWORD))
             .SelectMany(d => 
             d.EnumerateFiles().Where(f => _allowedFilesExtensions.Contains(f.Extension)));
 

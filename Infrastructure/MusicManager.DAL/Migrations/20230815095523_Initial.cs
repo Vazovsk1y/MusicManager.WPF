@@ -83,9 +83,9 @@ namespace MusicManager.DAL.Migrations
                 {
                     id = table.Column<Guid>(type: "TEXT", nullable: false),
                     disc_id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    disc_number = table.Column<string>(type: "TEXT", nullable: true),
+                    disc_number = table.Column<int>(type: "INTEGER", nullable: true),
                     name = table.Column<string>(type: "TEXT", nullable: false),
-                    number = table.Column<int>(type: "INTEGER", nullable: false)
+                    order = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {

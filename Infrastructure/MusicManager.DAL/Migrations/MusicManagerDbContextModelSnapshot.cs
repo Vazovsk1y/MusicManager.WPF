@@ -151,8 +151,8 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("disc_id");
 
-                    b.Property<string>("DiscNumber")
-                        .HasColumnType("TEXT")
+                    b.Property<int?>("DiscNumber")
+                        .HasColumnType("INTEGER")
                         .HasColumnName("disc_number");
 
                     b.Property<string>("Name")
@@ -160,9 +160,9 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("name");
 
-                    b.Property<int>("Number")
+                    b.Property<int>("Order")
                         .HasColumnType("INTEGER")
-                        .HasColumnName("number");
+                        .HasColumnName("order");
 
                     b.HasKey("Id")
                         .HasName("pk_songs");

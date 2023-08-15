@@ -62,7 +62,7 @@ namespace MusicManager.Domain.Services.Implementations
                     parentId,
                     songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
                     songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
-                    discNumberMatch.Value,
+                    int.Parse(discNumberMatch.Groups[1].Value),
                     songFilePath,
                     songInfo.Properties.Duration
                     );
@@ -130,7 +130,7 @@ namespace MusicManager.Domain.Services.Implementations
                     songFilePath,
                     cueFilePath,
                     allSongFileDuration,
-                    discNumberMatch.Value);
+                    int.Parse(discNumberMatch.Groups[1].Value));
 
                 if (result.IsFailure)
                 {
@@ -181,7 +181,7 @@ namespace MusicManager.Domain.Services.Implementations
             string songFilePath,
             string cueFilePath,
             TimeSpan allSongFileDuration,
-            string? discNumber = null)
+            int? discNumber = null)
         {
             var results = new List<Song>();
             var tracks = cueFileTracks.ToList();
@@ -206,7 +206,7 @@ namespace MusicManager.Domain.Services.Implementations
                     parent, 
                     previousTrack.Title,
                     previousTrack.TrackPosition,
-                    discNumber,
+                    (int)discNumber,
                     songFilePath,
                     currentTrack.Index01 - previousTrack.Index01,
                     cueFilePath,
@@ -238,7 +238,7 @@ namespace MusicManager.Domain.Services.Implementations
                     parent,
                     lastTrack.Title,
                     lastTrack.TrackPosition,
-                    discNumber,
+                    (int)discNumber,
                     songFilePath,
                     allSongFileDuration - lastTrack.Index01,
                     cueFilePath,
@@ -257,7 +257,7 @@ namespace MusicManager.Domain.Services.Implementations
 
         private int GetSongNumberFromFileName(string fileName)
         {
-            var match = GetSongNumberFromRow().Match(fileName);
+            var match = GetSongOrderFromRow().Match(fileName);
             if (match.Success)
             {
                 _ = int.TryParse(match.Value, out int result);
@@ -268,7 +268,7 @@ namespace MusicManager.Domain.Services.Implementations
         }
 
         [GeneratedRegex("^\\d+")]
-        private static partial Regex GetSongNumberFromRow();
+        private static partial Regex GetSongOrderFromRow();
 
         [GeneratedRegex(@"^CD(\d+)")]
         private static partial Regex IsDiscNumber();

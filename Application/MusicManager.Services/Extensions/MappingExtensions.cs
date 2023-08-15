@@ -78,9 +78,9 @@ public static class MappingExtensions
             song.Id,
             song.DiscId,
             song.Name,
-            song.Number,
+            song.Order,
             song.PlaybackInfo?.ExecutableType,
-            song.DiscNumber,
+            song.DiscNumber?.Value,
             song.PlaybackInfo?.SongDuration
             );
     }

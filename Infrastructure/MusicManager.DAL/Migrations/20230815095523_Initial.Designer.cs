@@ -11,7 +11,7 @@ using MusicManager.DAL;
 namespace MusicManager.DAL.Migrations
 {
     [DbContext(typeof(MusicManagerDbContext))]
-    [Migration("20230806165709_Initial")]
+    [Migration("20230815095523_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -154,8 +154,8 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("disc_id");
 
-                    b.Property<string>("DiscNumber")
-                        .HasColumnType("TEXT")
+                    b.Property<int?>("DiscNumber")
+                        .HasColumnType("INTEGER")
                         .HasColumnName("disc_number");
 
                     b.Property<string>("Name")
@@ -163,9 +163,9 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("name");
 
-                    b.Property<int>("Number")
+                    b.Property<int>("Order")
                         .HasColumnType("INTEGER")
-                        .HasColumnName("number");
+                        .HasColumnName("order");
 
                     b.HasKey("Id")
                         .HasName("pk_songs");
