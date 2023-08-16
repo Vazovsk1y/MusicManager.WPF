@@ -5,9 +5,9 @@ using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.Services.Implementations;
 
-public class DirectoryToSongwriterService : 
+public class FolderToSongwriterService : 
     BaseDomainService,
-    IPathToSongwriterService
+    IFolderToSongwriterService
 {
     #region --Fields--
 

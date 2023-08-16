@@ -12,13 +12,13 @@ namespace MusicManager.Services.Implementations;
 public class SongwriterService : ISongwriterService
 {
     private readonly IApplicationDbContext _dbContext;
-    private readonly IPathToSongwriterService _pathToSongwriterService;
+    private readonly IFolderToSongwriterService _pathToSongwriterService;
     private readonly IMovieService _movieService;
     private readonly ICompilationService _compilationService;
     private readonly ISongwriterToFolderService _songwriterToFolderService;
 
     public SongwriterService(
-        IPathToSongwriterService pathToSongwriterService,
+        IFolderToSongwriterService pathToSongwriterService,
         IMovieService movieService,
         ICompilationService compilationService,
         IApplicationDbContext dbContext,

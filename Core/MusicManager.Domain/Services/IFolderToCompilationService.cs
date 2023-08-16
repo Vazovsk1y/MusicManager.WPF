@@ -3,7 +3,7 @@ using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.Services;
 
-public interface IPathToCompilationService
+public interface IFolderToCompilationService
 {
     Task<Result<Compilation>> GetEntityAsync(string compilationPath, SongwriterId songwriterId);
 }

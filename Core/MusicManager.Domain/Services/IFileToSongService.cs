@@ -4,7 +4,7 @@ using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.Services;
 
-public interface IPathToSongService
+public interface IFileToSongService
 {
     Task<Result<Song>> GetEntityAsync(string songPath, DiscId parentId);
 

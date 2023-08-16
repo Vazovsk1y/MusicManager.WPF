@@ -7,9 +7,9 @@ using System.Collections.Concurrent;
 
 namespace MusicManager.Domain.Services.Implementations;
 
-public partial class DirectoryToMovieReleaseService : 
+public partial class FolderToMovieReleaseService : 
     BaseDiscDomainService,
-    IPathToMovieReleaseService
+    IFolderToMovieReleaseService
 {
     #region --Fields--
 

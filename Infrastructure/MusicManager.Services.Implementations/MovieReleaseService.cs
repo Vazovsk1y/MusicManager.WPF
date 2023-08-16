@@ -12,13 +12,13 @@ namespace MusicManager.Services.Implementations;
 
 public class MovieReleaseService : IMovieReleaseService
 {
-    private readonly IPathToMovieReleaseService _pathToMovieReleaseService;
+    private readonly IFolderToMovieReleaseService _pathToMovieReleaseService;
     private readonly ISongService _songService;
     private readonly IApplicationDbContext _dbContext;
     private readonly IMovieReleaseToFolderService _movieReleaseToFolderService;
 
     public MovieReleaseService(
-        IPathToMovieReleaseService pathToMovieReleaseService,
+        IFolderToMovieReleaseService pathToMovieReleaseService,
         ISongService songService,
         IApplicationDbContext dbContext,
         IMovieReleaseToFolderService movieReleaseToFolderService)

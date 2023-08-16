@@ -3,7 +3,7 @@ using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.Services;
 
-public interface IPathToMovieReleaseService
+public interface IFolderToSongwriterService
 {
-    Task<Result<MovieRelease>> GetEntityAsync(string movieReleasePath);
+    Task<Result<Songwriter>> GetEntityAsync(string songwriterPath);
 }

@@ -7,9 +7,9 @@ using System.Collections.Concurrent;
 
 namespace MusicManager.Domain.Services.Implementations;
 
-public partial class DirectoryToCompilationService : 
+public partial class FolderToCompilationService : 
     BaseDiscDomainService,
-    IPathToCompilationService
+    IFolderToCompilationService
 {
     #region --Fields--
 

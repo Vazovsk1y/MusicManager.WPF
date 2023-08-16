@@ -11,12 +11,12 @@ namespace MusicManager.Services.Implementations;
 
 public class SongService : ISongService
 {
-    private readonly IPathToSongService _pathToSongService;
+    private readonly IFileToSongService _pathToSongService;
     private readonly IApplicationDbContext _dbContext;
 
     public SongService(
         IApplicationDbContext dbContext,
-        IPathToSongService pathToSongService)
+        IFileToSongService pathToSongService)
     {
         _dbContext = dbContext;
         _pathToSongService = pathToSongService;

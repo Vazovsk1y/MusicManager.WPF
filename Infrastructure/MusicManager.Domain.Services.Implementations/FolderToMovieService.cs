@@ -6,9 +6,9 @@ using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Services.Implementations;
 
-public class DirectoryToMovieService : 
+public class FolderToMovieService : 
     BaseDomainService,
-    IPathToMovieService
+    IFolderToMovieService
 {
     #region --Fields--
 

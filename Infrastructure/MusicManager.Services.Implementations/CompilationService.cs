@@ -13,13 +13,13 @@ namespace MusicManager.Services.Implementations;
 public class CompilationService : ICompilationService
 {
     private readonly ISongService _songService;
-    private readonly IPathToCompilationService _pathToCompilationService;
+    private readonly IFolderToCompilationService _pathToCompilationService;
     private readonly IApplicationDbContext _dbContext;
     private readonly ICompilationToFolderService _compilationToFolderService;
 
     public CompilationService(
         ISongService songService,
-        IPathToCompilationService pathToCompilationService,
+        IFolderToCompilationService pathToCompilationService,
         IApplicationDbContext dbContext,
         ICompilationToFolderService compilationToFolderService)
     {

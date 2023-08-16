@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace MusicManager.Domain.Services.Implementations
 {
-    public partial class FileToSongService : IPathToSongService
+    public partial class FileToSongService : IFileToSongService
     {
         #region --Fields--
 
