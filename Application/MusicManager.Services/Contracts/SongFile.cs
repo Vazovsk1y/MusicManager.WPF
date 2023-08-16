@@ -1,3 +1,3 @@
 ﻿namespace MusicManager.Services.Contracts;
 
-public record SongFile(string? SongFilePath, string? CueFilePath);
+public record SongFile(string SongFilePath, bool IsCueFile = false);

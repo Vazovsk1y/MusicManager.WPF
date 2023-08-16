@@ -227,6 +227,17 @@ public class Song : IAggregateRoot
         return Result.Success();
     }
 
+    public Result SetDiscNumber(DiscNumber discNumber)
+    {
+        if (discNumber is null)
+        {
+            return Result.Failure(DomainErrors.NullEntityPassed(nameof(discNumber)));
+        }
+
+        DiscNumber = discNumber;
+        return Result.Success();
+    }
+
     #endregion
 }
 

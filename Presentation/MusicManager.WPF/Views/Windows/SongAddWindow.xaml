@@ -33,6 +33,12 @@
                   SelectedItem="{Binding SelectedDisc}"
                   />
 
+        <ComboBox ItemsSource="{Binding DiscNumbers, UpdateSourceTrigger=PropertyChanged}" 
+                  Grid.Row="3"
+                  DisplayMemberPath="Value"
+                  SelectedItem="{Binding SelectedDiscNumber}"
+                  />
+
         <TextBlock Grid.Row="2"
             Text="{Binding SelectedSongPath.FullName}"/>
 

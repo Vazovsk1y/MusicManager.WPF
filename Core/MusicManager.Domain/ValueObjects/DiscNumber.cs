@@ -30,5 +30,10 @@ public class DiscNumber : ValueObject<DiscNumber>
             Digit = number,
         };
     }
+
+    public static IEnumerable<DiscNumber> EnumerateRange(byte count = 5)
+    {
+        return Enumerable.Range(1, count - 1).Select(e => new DiscNumber { Digit = e });
+    }
 }
 

@@ -52,7 +52,7 @@ public partial class DiscType : ValueObject<DiscType>
 
     public static IEnumerable<DiscType> EnumerateRange(byte count = 5)
     {
-        return new List<DiscType>(Enumerable.Range(2, 4).Select(e => new DiscType(e)))
+        return new List<DiscType>(Enumerable.Range(2, count - 1).Select(e => new DiscType(e)))
         {
             CD,
             LP,

@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using MusicManager.Domain.Constants;
+using MusicManager.Domain.ValueObjects;
 using MusicManager.Services;
 using MusicManager.Services.Contracts.Dtos;
 using MusicManager.Services.Contracts.Factories;
@@ -33,9 +34,15 @@ internal partial class SongAddViewModel : DialogViewModel<SongAddWindow>
     private DiscLookupDTO? _selectedDisc;
 
     [ObservableProperty]
+    private DiscNumber? _selectedDiscNumber;
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
     [NotifyCanExecuteChangedFor(nameof(SelectPathCommand))]
     private FileInfo? _selectedSongPath;
+
+    [ObservableProperty]
+    private ObservableCollection<DiscNumber> _discNumbers;
 
     private bool _isFromCue;
 
@@ -87,43 +94,22 @@ internal partial class SongAddViewModel : DialogViewModel<SongAddWindow>
 
     protected override async Task Accept()
     {
-        if (IsFromCue)
+        var songFileResult = _songFileFactory.Create(SelectedSongPath!);
+        if (songFileResult.IsFailure)
         {
-            var dtoResult = _songFileFactory.Create(null, SelectedSongPath);
-            if (dtoResult.IsFailure)
-            {
-                MessageBoxHelper.ShowErrorBox(dtoResult.Error.Message);
-                _dialogService.CloseDialog();
-            }
+            MessageBoxHelper.ShowErrorBox(songFileResult.Error.Message);
+            _dialogService.CloseDialog();
+        }
 
-            var cueResult = await _songService.SaveFromFileAsync(dtoResult.Value, SelectedDisc!.DiscId, false);
-            if (cueResult.IsSuccess)
-            {
-                Messenger.Send(new SongCreatedMessage(SelectedDisc!.DiscId, cueResult.Value.Select(e => e.ToViewModel())));
-            }
-            else
-            {
-                MessageBoxHelper.ShowErrorBox(cueResult.Error.Message);
-            }
+        var dto = new SongAddDTO(SelectedDisc!.DiscId, songFileResult.Value, SelectedDiscNumber);
+        var saveResult = await _songService.SaveAsync(dto);
+        if (saveResult.IsSuccess)
+        {
+            Messenger.Send(new SongCreatedMessage(SelectedDisc!.DiscId, saveResult.Value.Select(e => e.ToViewModel())));
         }
         else
         {
-            var dtoResult = _songFileFactory.Create(SelectedSongPath);
-            if (dtoResult.IsFailure)
-            {
-                MessageBoxHelper.ShowErrorBox(dtoResult.Error.Message);
-                _dialogService.CloseDialog();
-            }
-
-            var result = await _songService.SaveFromFileAsync(dtoResult.Value, SelectedDisc!.DiscId, false);
-            if (result.IsSuccess)
-            {
-                Messenger.Send(new SongCreatedMessage(SelectedDisc!.DiscId, result.Value.Select(e => e.ToViewModel())));
-            }
-            else
-            {
-                MessageBoxHelper.ShowErrorBox(result.Error.Message);
-            }
+            MessageBoxHelper.ShowErrorBox(saveResult.Error.Message);
         }
 
         _dialogService.CloseDialog();
@@ -144,5 +130,7 @@ internal partial class SongAddViewModel : DialogViewModel<SongAddWindow>
                 Discs = new(result.Value);
             });
         }
+
+        DiscNumbers = new (DiscNumber.EnumerateRange());
     }
 }

@@ -73,7 +73,7 @@ public class DiscFolderFactory : IDiscFolderFactory
                     return Result.Failure<DiscFolder>(new($"Couldn't find an executable file for cue file [{cueFile.FullName}]."));
                 }
 
-                var result = _songFileFactory.Create(executableFileForCue, cueFile);
+                var result = _songFileFactory.Create(cueFile);
                 if (result.IsFailure)
                 {
                     return Result.Failure<DiscFolder>(result.Error);
