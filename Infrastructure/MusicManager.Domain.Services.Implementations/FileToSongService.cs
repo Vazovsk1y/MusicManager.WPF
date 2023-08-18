@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
 using System.Collections.Concurrent;
@@ -16,6 +17,8 @@ namespace MusicManager.Domain.Services.Implementations
 
         private readonly ConcurrentDictionary<(string songFilePath, string cueFilePath, DiscId parentId), IEnumerable<Song>> _cueFilesCache = new();
 
+        private readonly IRoot _root;
+
         #endregion
 
         #region --Properties--
@@ -26,9 +29,12 @@ namespace MusicManager.Domain.Services.Implementations
 
         #region --Constructors--
 
-        public FileToSongService(ICueFileInteractor cueFileInteractor)
+        public FileToSongService(
+            ICueFileInteractor cueFileInteractor, 
+            IRoot root)
         {
             _cueFileInteractor = cueFileInteractor;
+            _root = root;
         }
 
         #endregion
@@ -52,7 +58,6 @@ namespace MusicManager.Domain.Services.Implementations
             }
 
             var fileName = Path.GetFileName(songInfo.Name);
-
             var parentDirectoryName = new FileInfo(songInfo.Name).Directory?.Name ?? string.Empty;
             var discNumberMatch = IsDiscNumber().Match(parentDirectoryName);
 
@@ -63,7 +68,7 @@ namespace MusicManager.Domain.Services.Implementations
                     songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
                     songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
                     int.Parse(discNumberMatch.Groups[1].Value),
-                    songFilePath,
+                    songFilePath.GetRelational(_root),
                     songInfo.Properties.Duration
                     );
 
@@ -81,7 +86,7 @@ namespace MusicManager.Domain.Services.Implementations
                 parentId,
                 songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
                 songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
-                songFilePath,
+                songFilePath.GetRelational(_root),
                 songInfo.Properties.Duration
                 );
 
@@ -127,8 +132,8 @@ namespace MusicManager.Domain.Services.Implementations
                 var result = ParseCueFileTracksToSongs(
                     cueFileTracks,
                     parentId,
-                    songFilePath,
-                    cueFilePath,
+                    songFilePath.GetRelational(_root),
+                    cueFilePath.GetRelational(_root),
                     allSongFileDuration,
                     int.Parse(discNumberMatch.Groups[1].Value));
 
@@ -144,8 +149,8 @@ namespace MusicManager.Domain.Services.Implementations
             var resultWithoutDiscNumber = ParseCueFileTracksToSongs(
                     cueFileTracks,
                     parentId,
-                    songFilePath,
-                    cueFilePath,
+                    songFilePath.GetRelational(_root),
+                    cueFilePath.GetRelational(_root),
                     allSongFileDuration);
 
             if (resultWithoutDiscNumber.IsFailure)
@@ -163,23 +168,29 @@ namespace MusicManager.Domain.Services.Implementations
 
         private Result<TagLib.File> GetSongFileInfo(string songPath)
         {
-            TagLib.File songInfo;
+            if (!_root.IsStoresIn(songPath))
+            {
+                return Result.Failure<TagLib.File>(new Error($"Song must be stored in root folder {_root.RootPath}."));
+            }
+
+            TagLib.File songInfo = null;
             try
             {
                 songInfo = TagLib.File.Create(songPath);
+                return songInfo;
             }
             catch (Exception e)
             {
+                songInfo?.Dispose();
                 return Result.Failure<TagLib.File>(new Error(e.GetType().Name + '\n' + e.Message));
             }
-            return songInfo;
         }
 
         private Result<IEnumerable<Song>> ParseCueFileTracksToSongs(
             IEnumerable<CueFileTrack> cueFileTracks,
             DiscId parent,
-            string songFilePath,
-            string cueFilePath,
+            string songRelationalFilePath,
+            string cueRelationalFilePath,
             TimeSpan allSongFileDuration,
             int? discNumber = null)
         {
@@ -196,9 +207,9 @@ namespace MusicManager.Domain.Services.Implementations
                     parent,
                     previousTrack.Title,
                     previousTrack.TrackPosition,
-                    songFilePath,
+                    songRelationalFilePath,
                     currentTrack.Index01 - previousTrack.Index01,
-                    cueFilePath,
+                    cueRelationalFilePath,
                     previousTrack.Index00,
                     previousTrack.Index01)
                     :
@@ -207,9 +218,9 @@ namespace MusicManager.Domain.Services.Implementations
                     previousTrack.Title,
                     previousTrack.TrackPosition,
                     (int)discNumber,
-                    songFilePath,
+                    songRelationalFilePath,
                     currentTrack.Index01 - previousTrack.Index01,
-                    cueFilePath,
+                    cueRelationalFilePath,
                     previousTrack.Index00,
                     previousTrack.Index01
                     );
@@ -228,9 +239,9 @@ namespace MusicManager.Domain.Services.Implementations
                     parent,
                     lastTrack.Title,
                     lastTrack.TrackPosition,
-                    songFilePath,
+                    songRelationalFilePath,
                     allSongFileDuration - lastTrack.Index01,
-                    cueFilePath,
+                    cueRelationalFilePath,
                     lastTrack.Index00,
                     lastTrack.Index01)
                     :
@@ -239,9 +250,9 @@ namespace MusicManager.Domain.Services.Implementations
                     lastTrack.Title,
                     lastTrack.TrackPosition,
                     (int)discNumber,
-                    songFilePath,
+                    songRelationalFilePath,
                     allSongFileDuration - lastTrack.Index01,
-                    cueFilePath,
+                    cueRelationalFilePath,
                     lastTrack.Index00,
                     lastTrack.Index01
                     );

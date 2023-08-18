@@ -1,5 +1,4 @@
-﻿using MusicManager.Domain.Enums;
-using MusicManager.Domain.Extensions;
+﻿using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
@@ -14,6 +13,10 @@ public partial class FolderToMovieReleaseService :
     #region --Fields--
 
     private readonly ConcurrentDictionary<string, MovieRelease> _cache = new();
+
+    public FolderToMovieReleaseService(IRoot userConfig) : base(userConfig)
+    {
+    }
 
     #endregion
 
@@ -50,7 +53,7 @@ public partial class FolderToMovieReleaseService :
             var entityJsonResult = GetEntityInfoFromJsonFile<MovieReleaseEntityJson, MovieRelease>(fileInfo);
             if (entityJsonResult.IsSuccess)
             {
-                var entityResult = entityJsonResult.Value.ToEntity(movieReleasePath);
+                var entityResult = entityJsonResult.Value.ToEntity(movieReleasePath.GetRelational(_root));
                 if (entityResult.IsFailure)
                 {
                     Task.FromResult(Result.Failure<MovieRelease>(entityResult.Error));
@@ -81,7 +84,7 @@ public partial class FolderToMovieReleaseService :
         var diskCreationResult = MovieRelease.Create(
             DiscType.Bootleg,
             discDirectoryInfo.Name,
-            discDirectoryInfo.FullName);
+            discDirectoryInfo.FullName.GetRelational(_root));
 
         return diskCreationResult;
     }
@@ -101,14 +104,14 @@ public partial class FolderToMovieReleaseService :
             return MovieRelease.Create(
                 type,
                 identificator,
-                discDirectoryInfo.FullName
+                discDirectoryInfo.FullName.GetRelational(_root)
                 );
         }
 
         var creationDiscResult = MovieRelease.Create(
             gettingComponentsResult.Value.type,
             gettingComponentsResult.Value.identificator,
-            discDirectoryInfo.FullName,
+            discDirectoryInfo.FullName.GetRelational(_root),
             (int)gettingComponentsResult.Value.prodYear!,
             gettingComponentsResult.Value.prodCountry!);
 

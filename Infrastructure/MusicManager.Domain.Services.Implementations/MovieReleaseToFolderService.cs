@@ -12,10 +12,14 @@ namespace MusicManager.Domain.Services.Implementations;
 public class MovieReleaseToFolderService : IMovieReleaseToFolderService
 {
     private readonly IApplicationDbContext _dbContext;
+    private readonly IRoot _root;
 
-    public MovieReleaseToFolderService(IApplicationDbContext dbContext)
+    public MovieReleaseToFolderService(
+        IApplicationDbContext dbContext, 
+        IRoot root)
     {
         _dbContext = dbContext;
+        _root = root;
     }
 
     public async Task<Result<string>> CreateAssociatedFolderAndFileAsync(MovieRelease movieRelease, Movie parent)
@@ -25,8 +29,8 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
             return Result.Failure<string>(new Error("Parent directory info is not created."));
         }
 
-        var rootPath = parent.EntityDirectoryInfo.FullPath;
-        if (!Directory.Exists(rootPath))
+        var rootDirectory = new DirectoryInfo(_root.CombineWith(parent.EntityDirectoryInfo.Path));
+        if (!rootDirectory.Exists)
         {
             return Result.Failure<string>(new Error("Parent directory is not exists."));
         }
@@ -38,9 +42,11 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
         $"{baseMovieReleaseDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo.Country} " +
         $"{DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo.Year}";
 
-        string createdMovieReleaseDirectoryFullPath = Path.Combine(rootPath, createdMovieReleaseDirectoryName);
+        string createdMovieReleaseDirectoryFullPath = Path.Combine(rootDirectory.FullName, createdMovieReleaseDirectoryName);
+        string createdMovieReleaseRelationalPath = createdMovieReleaseDirectoryFullPath.GetRelational(_root);
+
         if (Directory.Exists(createdMovieReleaseDirectoryFullPath)
-            || await _dbContext.MovieReleases.AnyAsync(e => e.EntityDirectoryInfo == EntityDirectoryInfo.Create(createdMovieReleaseDirectoryFullPath).Value))
+            || await _dbContext.MovieReleases.AnyAsync(e => e.EntityDirectoryInfo == EntityDirectoryInfo.Create(createdMovieReleaseRelationalPath).Value))
         {
             return Result.Failure<string>(new Error("Directory for this movie release is already exists or movie release with that directory info is already added to database."));
         }
@@ -53,18 +59,18 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
             .ToJson()
             .AddSerializedJsonEntityToAsync(jsonFileInfoPath);
 
-        return createdMovieReleaseDirectoryFullPath;
+        return createdMovieReleaseRelationalPath;
     }
 
     public async Task<Result> CreateFolderLinkAsync(Movie addLinkTo, string movieReleaseLinkTargetPath)
     {
         if (addLinkTo.EntityDirectoryInfo is null)
         {
-            return Result.Failure(new Error("Movie directory info is not created. Link not added to this movie."));
+            return Result.Failure(new Error("Movie directory info is not created. Can't add link to this movie."));
         }
 
-        var toDirectory = new DirectoryInfo(addLinkTo.EntityDirectoryInfo.FullPath);
-        var fromDirectory = new DirectoryInfo(movieReleaseLinkTargetPath);
+        var toDirectory = new DirectoryInfo(_root.CombineWith(addLinkTo.EntityDirectoryInfo.Path));
+        var fromDirectory = new DirectoryInfo(_root.CombineWith(movieReleaseLinkTargetPath));
 
         if (!toDirectory.Exists)
         {
@@ -73,16 +79,16 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
 
         if (!fromDirectory.Exists)
         {
-            return Result.Failure(new Error("Movie release directory is not exists."));
+            return Result.Failure(new Error("Target movie release directory is not exists."));
         }
 
-        string sourceDirectory = movieReleaseLinkTargetPath;
-        string linkStorageDirectory = addLinkTo.EntityDirectoryInfo.FullPath;
-        string linkName = Path.GetFileName(movieReleaseLinkTargetPath);
+        string sourceDirectory = fromDirectory.FullName;
+        string linkStorageDirectory = toDirectory.FullName;
+        string linkName = Path.GetFileName(sourceDirectory);
         string linkPath = Path.Combine(linkStorageDirectory, linkName);
-        string cmdArgs = $"/c mklink /D \"{linkPath}\" \"{sourceDirectory}\"";
+        string cmdCommand = $"/c mklink /D \"{linkPath}\" \"{sourceDirectory}\"";
 
-        bool isLinkAlreadyExists = fromDirectory.GetLink(linkName) is not null;
+        bool isLinkAlreadyExists = toDirectory.GetLink(linkName) is not null;
         if (isLinkAlreadyExists)
         {
             return Result.Failure(new Error("Link for this movie release is already exists."));
@@ -90,14 +96,14 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
 
         using var process = new Process
         {
-            StartInfo = new ProcessStartInfo
+            StartInfo = new()
             {
                 FileName = "cmd.exe",
-                Arguments = cmdArgs,
+                Arguments = cmdCommand,
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 RedirectStandardError = true,
-                WorkingDirectory = addLinkTo.EntityDirectoryInfo.FullPath
+                WorkingDirectory = toDirectory.FullName
             }
         };
 
@@ -107,7 +113,7 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
         if (process.ExitCode != 0)
         {
             string messageWithError = await process.StandardError.ReadToEndAsync();
-            return Result.Failure(new Error(messageWithError));
+            return Result.Failure(new (messageWithError));
         }
 
         return Result.Success();

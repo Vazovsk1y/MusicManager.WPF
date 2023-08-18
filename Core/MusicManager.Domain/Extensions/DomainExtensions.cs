@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Enums;
+using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 
@@ -38,4 +39,8 @@ public static class DomainExtensions
         SongFileType.Ape => APE_ROW,
         _ => SongFileType.Unknown.ToString(),
     };
+
+    public static bool IsStoresIn(this IRoot root, string fullPath) => fullPath.StartsWith($"{root.RootPath}");
+
+    public static string CombineWith(this IRoot root, string pathToCombineWith) => Path.Combine(root.RootPath, pathToCombineWith);
 }

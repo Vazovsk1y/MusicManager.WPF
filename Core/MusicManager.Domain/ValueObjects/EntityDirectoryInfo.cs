@@ -6,27 +6,25 @@ namespace MusicManager.Domain.ValueObjects;
 
 public class EntityDirectoryInfo : ValueObject<EntityDirectoryInfo>
 {
-    public string Name => Path.GetFileName(FullPath);
+    public string Path { get; private set; } = null!;
 
-    public string FullPath { get; private set; } = string.Empty;
-
-    private EntityDirectoryInfo(string fullPath)
+    private EntityDirectoryInfo(string path)
     {
-        FullPath = fullPath;
+        Path = path;
     }
 
-    public static Result<EntityDirectoryInfo> Create(string fullPath)
+    public static Result<EntityDirectoryInfo> Create(string Path)
     {
-        if (string.IsNullOrWhiteSpace(fullPath))
+        if (string.IsNullOrWhiteSpace(Path))
         {
-            return Result.Failure<EntityDirectoryInfo>(DomainErrors.NullOrEmptyStringPassed(nameof(fullPath)));
+            return Result.Failure<EntityDirectoryInfo>(DomainErrors.NullOrEmptyStringPassed(nameof(Path)));
         }
 
-        return new EntityDirectoryInfo(fullPath);
+        return new EntityDirectoryInfo(Path);
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()
     {
-        yield return FullPath;
+        yield return Path;
     }
 }

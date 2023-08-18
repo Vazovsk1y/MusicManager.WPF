@@ -29,6 +29,7 @@
 
         <ComboBox ItemsSource="{Binding DiscTypes, UpdateSourceTrigger=PropertyChanged}" 
                   Grid.Row="1"
+                  DisplayMemberPath="Value"
                   SelectedItem="{Binding SelectedDiscType}"
                   />
 

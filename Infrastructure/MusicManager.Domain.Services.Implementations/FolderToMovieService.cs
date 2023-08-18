@@ -24,7 +24,9 @@ public class FolderToMovieService :
 
     #region --Constructors--
 
-
+    public FolderToMovieService(IRoot userConfig) : base(userConfig)
+    {
+    }
 
     #endregion
 
@@ -45,7 +47,7 @@ public class FolderToMovieService :
             return entityJsonResult.IsFailure ?
                 Task.FromResult(Result.Failure<Movie>(entityJsonResult.Error))
                 :
-                Task.FromResult(entityJsonResult.Value.ToEntity(songwriterId, moviePath));
+                Task.FromResult(entityJsonResult.Value.ToEntity(songwriterId, moviePath.GetRelational(_root)));
         }
 
 
@@ -60,7 +62,7 @@ public class FolderToMovieService :
             title!,
             year,
             ProductionInfo.UndefinedCountry,
-            directoryInfo.FullName);
+            moviePath.GetRelational(_root));
 
         if (movieCreationResult.IsFailure)
         {

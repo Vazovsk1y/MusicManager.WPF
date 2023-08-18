@@ -11,10 +11,14 @@ namespace MusicManager.Domain.Services.Implementations;
 public class CompilationToFolderService : ICompilationToFolderService
 {
     private readonly IApplicationDbContext _dbContext;
+    private readonly IRoot _root;
 
-    public CompilationToFolderService(IApplicationDbContext dbContext)
+    public CompilationToFolderService(
+        IApplicationDbContext dbContext, 
+        IRoot root)
     {
         _dbContext = dbContext;
+        _root = root;
     }
 
     public async Task<Result<string>> CreateAssociatedFolderAndFileAsync(Compilation compilation, Songwriter parent)
@@ -24,8 +28,8 @@ public class CompilationToFolderService : ICompilationToFolderService
             return Result.Failure<string>(new Error("Parent directory info is not created."));
         }
 
-        var rootPath = Path.Combine(parent.EntityDirectoryInfo.FullPath, DomainServicesConstants.COMPILATIONS_FOLDER_NAME);
-        if (!Directory.Exists(rootPath))
+        var rootDirectory = new DirectoryInfo(Path.Combine(_root.CombineWith(parent.EntityDirectoryInfo.Path), DomainServicesConstants.COMPILATIONS_FOLDER_NAME));
+        if (!rootDirectory.Exists)
         {
             return Result.Failure<string>(new Error("Parent directory is not exists."));
         }
@@ -37,9 +41,11 @@ public class CompilationToFolderService : ICompilationToFolderService
         $"{baseCompilationDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {compilation.ProductionInfo.Country} " +
         $"{DomainServicesConstants.DiscDirectoryNameSeparator} {compilation.ProductionInfo.Year}";
 
-        string createdCompilationDirectoryFullPath = Path.Combine(rootPath, createdCompilationDirectoryName);
+        string createdCompilationDirectoryFullPath = Path.Combine(rootDirectory.FullName, createdCompilationDirectoryName);
+        string createdCompilationRelationalPath = createdCompilationDirectoryFullPath.GetRelational(_root);
+
         if (Directory.Exists(createdCompilationDirectoryFullPath)
-            || await _dbContext.Compilations.AnyAsync(e => e.EntityDirectoryInfo == EntityDirectoryInfo.Create(createdCompilationDirectoryFullPath).Value))
+            || await _dbContext.Compilations.AnyAsync(e => e.EntityDirectoryInfo == EntityDirectoryInfo.Create(createdCompilationRelationalPath).Value))
         {
             return Result.Failure<string>(new Error("Directory for this compilation is already exists or compilation with that directory info is already added to database."));
         }
@@ -52,6 +58,6 @@ public class CompilationToFolderService : ICompilationToFolderService
             .ToJson()
             .AddSerializedJsonEntityToAsync(jsonFileInfoPath);
 
-        return createdCompilationDirectoryFullPath;
+        return createdCompilationRelationalPath;
     }
 }

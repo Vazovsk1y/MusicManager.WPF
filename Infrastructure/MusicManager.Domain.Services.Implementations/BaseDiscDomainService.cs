@@ -1,6 +1,4 @@
-﻿using MusicManager.Domain.Enums;
-using MusicManager.Domain.Extensions;
-using MusicManager.Domain.Shared;
+﻿using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 using System.Text.RegularExpressions;
 
@@ -8,6 +6,10 @@ namespace MusicManager.Domain.Services.Implementations;
 
 public abstract partial class BaseDiscDomainService : BaseDomainService
 {
+    protected BaseDiscDomainService(IRoot userConfig) : base(userConfig)
+    {
+    }
+
     protected Result<(DiscType type, string identificator, string? prodCountry, int? prodYear)> GetDiscComponentsFromDirectoryName(string discDirectoryName)
     {
         var match = FindAllDiscComponents().Match(discDirectoryName);

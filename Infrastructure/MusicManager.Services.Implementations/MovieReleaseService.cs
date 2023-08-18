@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MusicManager.Domain.Common;
+using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
@@ -16,17 +17,20 @@ public class MovieReleaseService : IMovieReleaseService
     private readonly ISongService _songService;
     private readonly IApplicationDbContext _dbContext;
     private readonly IMovieReleaseToFolderService _movieReleaseToFolderService;
+    private readonly IRoot _root;
 
     public MovieReleaseService(
         IFolderToMovieReleaseService pathToMovieReleaseService,
         ISongService songService,
         IApplicationDbContext dbContext,
-        IMovieReleaseToFolderService movieReleaseToFolderService)
+        IMovieReleaseToFolderService movieReleaseToFolderService,
+        IRoot root)
     {
         _pathToMovieReleaseService = pathToMovieReleaseService;
         _songService = songService;
         _dbContext = dbContext;
         _movieReleaseToFolderService = movieReleaseToFolderService;
+        _root = root;
     }
 
     public async Task<Result<IEnumerable<MovieReleaseDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default)
@@ -92,21 +96,26 @@ public class MovieReleaseService : IMovieReleaseService
         }
 
         var movieRelease = creationResult.Value;
-        var firstMovie = movies.FirstOrDefault();
-        var createMovieReleaseForFirstFilmFolderResult = await _movieReleaseToFolderService.CreateAssociatedFolderAndFileAsync(movieRelease, firstMovie!);
-        if (createMovieReleaseForFirstFilmFolderResult.IsFailure)
+        var addingToMoviesResult = AddToMovies(movies, movieRelease);
+        if (addingToMoviesResult.IsFailure)
         {
-            return Result.Failure<DiscId>(createMovieReleaseForFirstFilmFolderResult.Error);
+            return Result.Failure<DiscId>(addingToMoviesResult.Error);
         }
 
-        var settingLinksResult = await SetLinks(movies.Skip(1).ToList(), createMovieReleaseForFirstFilmFolderResult.Value);
+        var firstMovie = movies.First();
+        var createMovieReleaseFolderResult = await _movieReleaseToFolderService.CreateAssociatedFolderAndFileAsync(movieRelease, firstMovie);
+        if (createMovieReleaseFolderResult.IsFailure)
+        {
+            return Result.Failure<DiscId>(createMovieReleaseFolderResult.Error);
+        }
+
+        var settingLinksResult = await SetLinks(movies.Skip(1), createMovieReleaseFolderResult.Value);     // foreach other movies we create a folder links instead real folder.
         if (settingLinksResult.IsFailure)
         {
             return Result.Failure<DiscId>(settingLinksResult.Error);
         }
 
-        movieRelease.SetDirectoryInfo(createMovieReleaseForFirstFilmFolderResult.Value);
-        AddToAllMovies(movies, movieRelease);
+        movieRelease.SetDirectoryInfo(createMovieReleaseFolderResult.Value);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(movieRelease.Id);
     }
@@ -136,7 +145,10 @@ public class MovieReleaseService : IMovieReleaseService
 
         foreach (var coverPath in movieReleaseFolder.CoversPaths)
         {
-            movieRelease.AddCover(coverPath);
+            if (_root.IsStoresIn(coverPath))
+            {
+                movieRelease.AddCover(coverPath.GetRelational(_root));
+            }
         }
 
         var addingResult = movie.AddRelease(movieRelease);
@@ -166,21 +178,25 @@ public class MovieReleaseService : IMovieReleaseService
         };
     }
 
-    private Result AddToAllMovies(IList<Movie> movies, MovieRelease movieRelease)
+    private Result AddToMovies(IEnumerable<Movie> movies, MovieRelease movieRelease)
     {
         foreach (var movie in movies)
         {
-            movie.AddRelease(movieRelease);
+            var result = movie.AddRelease(movieRelease);
+            if (result.IsFailure)
+            {
+                return result;
+            }
         }
 
         return Result.Success();
     }
 
-    private async Task<Result> SetLinks(IList<Movie> movies, string movieReleaseFullPath)
+    private async Task<Result> SetLinks(IEnumerable<Movie> movies, string movieReleaseRelationalPath)
     {
         foreach (var movie in movies) 
         {
-            var settingLinkResult = await _movieReleaseToFolderService.CreateFolderLinkAsync(movie, movieReleaseFullPath);
+            var settingLinkResult = await _movieReleaseToFolderService.CreateFolderLinkAsync(movie, movieReleaseRelationalPath);
             if (settingLinkResult.IsFailure)
             {
                 return Result.Failure(settingLinkResult.Error);

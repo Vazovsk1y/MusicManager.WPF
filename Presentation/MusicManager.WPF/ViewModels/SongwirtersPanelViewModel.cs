@@ -2,7 +2,9 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
+using MusicManager.Domain.Services;
 using MusicManager.Services;
+using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Factories;
 using MusicManager.Utils;
 using MusicManager.WPF.Messages;
@@ -10,6 +12,7 @@ using MusicManager.WPF.Tools;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -54,6 +57,22 @@ internal partial class SongwirtersPanelViewModel :
         set => SetProperty(ref _selectedSongwriter, value);
     }
 
+    [RelayCommand]
+    private void SelectRoot()
+    {
+        var selectedFolderResult = _fileManagerInteractor.SelectDirectory();
+        if (selectedFolderResult.IsFailure)
+        {
+            MessageBoxHelper.ShowErrorBox(selectedFolderResult.Error.Message);
+            return;
+        }
+
+        using var scope = _serviceScopeFactory.CreateScope();
+        var userConfig = scope.ServiceProvider.GetRequiredService<IAppConfig>();
+        userConfig.RootPath = selectedFolderResult.Value.FullName;
+        userConfig.Save();
+    }
+
     #region --Commands--
 
     private IAsyncRelayCommand _addSongwriterFromFolderCommand;
@@ -63,6 +82,7 @@ internal partial class SongwirtersPanelViewModel :
 
     private async Task OnSongwriterAddFromFolderExecute()
     {
+        using var scope = _serviceScopeFactory.CreateScope();
         var selectedFolderResult = _fileManagerInteractor.SelectDirectory();
         if (selectedFolderResult.IsFailure)
         {
@@ -77,9 +97,7 @@ internal partial class SongwirtersPanelViewModel :
             return;
         }
 
-        using var scope = _serviceScopeFactory.CreateScope();
         var songwriterService = scope.ServiceProvider.GetRequiredService<ISongwriterService>();
-
         var addingResult = await songwriterService.SaveFromFolderAsync(creatingSongwriterFolderResult.Value);
         if (addingResult.IsFailure)
         {

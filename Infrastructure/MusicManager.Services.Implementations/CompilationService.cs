@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MusicManager.Domain.Common;
+using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
@@ -16,17 +17,20 @@ public class CompilationService : ICompilationService
     private readonly IFolderToCompilationService _pathToCompilationService;
     private readonly IApplicationDbContext _dbContext;
     private readonly ICompilationToFolderService _compilationToFolderService;
+    private readonly IRoot _root;
 
     public CompilationService(
         ISongService songService,
         IFolderToCompilationService pathToCompilationService,
         IApplicationDbContext dbContext,
-        ICompilationToFolderService compilationToFolderService)
+        ICompilationToFolderService compilationToFolderService,
+        IRoot root)
     {
         _songService = songService;
         _pathToCompilationService = pathToCompilationService;
         _dbContext = dbContext;
         _compilationToFolderService = compilationToFolderService;
+        _root = root;
     }
 
     public async Task<Result<IEnumerable<CompilationDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default)
@@ -127,7 +131,10 @@ public class CompilationService : ICompilationService
 
         foreach (var coverPath in compilationFolder.CoversPaths)
         {
-            compilation.AddCover(coverPath);
+            if (_root.IsStoresIn(coverPath))
+            {
+                compilation.AddCover(coverPath.GetRelational(_root));
+            }
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);

@@ -11,7 +11,7 @@ public class FolderToSongwriterService :
 {
     #region --Fields--
 
-
+    
 
     #endregion
 
@@ -23,7 +23,7 @@ public class FolderToSongwriterService :
 
     #region --Constructors--
 
-
+    public FolderToSongwriterService(IRoot userConfig) : base(userConfig) { }
 
     #endregion
 
@@ -44,7 +44,7 @@ public class FolderToSongwriterService :
             return entityJsonResult.IsFailure ?
                 Task.FromResult(Result.Failure<Songwriter>(entityJsonResult.Error))
                 :
-                Task.FromResult(entityJsonResult.Value.ToEntity(songwriterPath));
+                Task.FromResult(entityJsonResult.Value.ToEntity(songwriterPath.GetRelational(_root)));
         }
 
         var (isInfoSuccessfullyExtracted, name, surname) = GetSongwriterInfoFromDirectoryName(directoryInfo.Name);
@@ -53,7 +53,7 @@ public class FolderToSongwriterService :
             return Task.FromResult(Result.Failure<Songwriter>(DomainServicesErrors.PassedDirectoryNamedIncorrect(songwriterPath)));
         }
 
-        var songwriterCreationResult = Songwriter.Create(name!, surname!, directoryInfo.FullName);
+        var songwriterCreationResult = Songwriter.Create(name!, surname!, songwriterPath.GetRelational(_root));
         if (songwriterCreationResult.IsFailure)
         {
             return Task.FromResult(Result.Failure<Songwriter>(songwriterCreationResult.Error));
@@ -69,7 +69,6 @@ public class FolderToSongwriterService :
 
         return info.Length < 2 ? (false, null, null) : (true, info[0], info[1]);
     }
-
 
     #endregion
 }

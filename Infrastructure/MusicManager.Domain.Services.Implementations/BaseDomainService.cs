@@ -1,13 +1,20 @@
 ﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
-using MusicManager.Utils;
 using System.Text.Json;
 
 namespace MusicManager.Domain.Services.Implementations;
 
 public abstract class BaseDomainService
 {
+    protected readonly IRoot _root;
+
+    protected BaseDomainService(IRoot root)
+    {
+        _root = root;
+    }
+
     protected Result<TSerializable> GetEntityInfoFromJsonFile<TSerializable, TEntity>(FileInfo fileInfo) 
         where TSerializable : SerializableEntity<TEntity>
         where TEntity : class, IAggregateRoot
@@ -30,9 +37,9 @@ public abstract class BaseDomainService
     protected Result<TFileSystem> IsAbleToMoveNext<TFileSystem>(string songWriterPath)
         where TFileSystem : FileSystemInfo
     {
-        if (!PathValidator.IsValid(songWriterPath))
+        if (!_root.IsStoresIn(songWriterPath))
         {
-            return Result.Failure<TFileSystem>(DomainServicesErrors.PassedDirectoryPathIsInvalid(songWriterPath));
+            return Result.Failure<TFileSystem>(new Error($"Entity must be stored in root folder {_root.RootPath}."));
         }
 
         var fileSystemInfo = (TFileSystem)Activator.CreateInstance(typeof(TFileSystem), songWriterPath);

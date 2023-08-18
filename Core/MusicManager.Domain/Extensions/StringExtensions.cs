@@ -1,7 +1,10 @@
-﻿namespace MusicManager.Domain.Extensions
+﻿using MusicManager.Domain.Services;
+
+namespace MusicManager.Domain.Extensions;
+
+public static class StringExtensions
 {
-    public static class StringExtensions
-    {
-        public static string RemoveAllSpaces(this string row) => row.Replace(" ", string.Empty);
-    }
+    public static string RemoveAllSpaces(this string row) => row.Replace(" ", string.Empty);
+
+    public static string GetRelational(this string fullPath, IRoot relationalBy) => fullPath.Replace($"{relationalBy.RootPath}\\", string.Empty);
 }

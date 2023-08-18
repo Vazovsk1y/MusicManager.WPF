@@ -24,7 +24,7 @@ internal class SongwriterConfiguration : IEntityTypeConfiguration<Songwriter>
         builder
         .Property(e => e.EntityDirectoryInfo)
         .HasConversion(
-            e => e != null ? e.FullPath : null,
+            e => e != null ? e.Path : null,
             e => e != null ? EntityDirectoryInfo.Create(e).Value : null)
         .IsRequired(false);
 

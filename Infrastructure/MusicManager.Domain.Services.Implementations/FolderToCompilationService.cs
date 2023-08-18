@@ -15,6 +15,10 @@ public partial class FolderToCompilationService :
 
     private readonly ConcurrentDictionary<string, Compilation> _cache = new();
 
+    public FolderToCompilationService(IRoot userConfig) : base(userConfig)
+    {
+    }
+
     #endregion
 
     #region --Properties--
@@ -50,7 +54,7 @@ public partial class FolderToCompilationService :
             var entityJsonResult = GetEntityInfoFromJsonFile<CompilationEntityJson, Compilation>(fileInfo);
             if (entityJsonResult.IsSuccess)
             {
-                var entityResult = entityJsonResult.Value.ToEntity(parent, compilationPath);
+                var entityResult = entityJsonResult.Value.ToEntity(parent, compilationPath.GetRelational(_root));
                 if (entityResult.IsFailure)
                 {
                     Task.FromResult(Result.Failure<Compilation>(entityResult.Error));
@@ -82,7 +86,7 @@ public partial class FolderToCompilationService :
             parent,
             DiscType.Bootleg,
             discDirectoryInfo.Name,
-            discDirectoryInfo.FullName);
+            discDirectoryInfo.FullName.GetRelational(_root));
 
         return discCreationResult;
     }
@@ -103,7 +107,7 @@ public partial class FolderToCompilationService :
                 parent,
                 type,
                 identificator,
-                discDirectoryInfo.FullName
+                discDirectoryInfo.FullName.GetRelational(_root)
                 );
         }
 
@@ -111,7 +115,7 @@ public partial class FolderToCompilationService :
             parent,
             gettingComponentsResult.Value.type,
             gettingComponentsResult.Value.identificator,
-            discDirectoryInfo.FullName,
+            discDirectoryInfo.FullName.GetRelational(_root),
             (int)gettingComponentsResult.Value.prodYear!,
             gettingComponentsResult.Value.prodCountry!);
 
