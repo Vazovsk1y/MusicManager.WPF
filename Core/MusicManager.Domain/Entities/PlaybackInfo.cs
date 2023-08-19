@@ -77,7 +77,11 @@ public class PlaybackInfo : ValueObject<PlaybackInfo>
                 SongDuration = duration,
                 ExecutableType = SongFileType.Ape,
             },
-            _ => Result.Failure<PlaybackInfo>(DomainErrors.SongPlayInfo.UndefinedExecutableTypePassed(fileExtension))
+            _ => new PlaybackInfo(fullPath, songId)
+            {
+                SongDuration = duration,
+                ExecutableType = SongFileType.Unknown,
+            }
         };
     }
 
@@ -89,6 +93,11 @@ public class PlaybackInfo : ValueObject<PlaybackInfo>
         TimeSpan index00,
         TimeSpan index01)
     {
+        if (Path.GetDirectoryName(fullPath) != Path.GetDirectoryName(cueFileFullPath)) 
+        {
+            return Result.Failure<PlaybackInfo>(new Error("Cue file and executable must be place in the same folder together."));
+        }
+
         var creationResult = Create(fullPath, songId, duration);
 
         if (creationResult.IsFailure)
@@ -103,9 +112,9 @@ public class PlaybackInfo : ValueObject<PlaybackInfo>
             return Result.Failure<PlaybackInfo>(cueInfoCreationResult.Error);
         }
 
-        var songPlayInfo = creationResult.Value;
-        songPlayInfo.CueInfo = cueInfoCreationResult.Value;
-        return songPlayInfo;
+        var playbackInfo = creationResult.Value;
+        playbackInfo.CueInfo = cueInfoCreationResult.Value;
+        return playbackInfo;
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 
 namespace MusicManager.Domain.Services.Implementations
 {
@@ -19,6 +20,7 @@ namespace MusicManager.Domain.Services.Implementations
             .AddScoped<IMovieToFolderService, MovieToFolderService>()
             .AddScoped<ICompilationToFolderService, CompilationToFolderService>()
             .AddScoped<IMovieReleaseToFolderService, MovieReleaseToFolderService>()
+            .AddScoped<ISongToFileService, SongToFileService>()
             ;
     }
 }

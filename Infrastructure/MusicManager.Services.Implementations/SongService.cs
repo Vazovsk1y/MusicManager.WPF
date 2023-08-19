@@ -14,13 +14,16 @@ public class SongService : ISongService
 {
     private readonly IFileToSongService _pathToSongService;
     private readonly IApplicationDbContext _dbContext;
+    private readonly ISongToFileService _songToFile;
 
     public SongService(
         IApplicationDbContext dbContext,
-        IFileToSongService pathToSongService)
+        IFileToSongService pathToSongService,
+        ISongToFileService songToFileService)
     {
         _dbContext = dbContext;
         _pathToSongService = pathToSongService;
+        _songToFile = songToFileService;
     }
 
     public async Task<Result<IEnumerable<SongDTO>>> GetAllAsync(DiscId discId, CancellationToken cancellationToken = default)
@@ -60,11 +63,31 @@ public class SongService : ISongService
             }
 
             var songs = result.Value;
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            var anySong = songs.First();
+            var movingCueFileResult = await _songToFile.CopyToAsync(anySong.PlaybackInfo!.CueInfo!.CueFilePath, disc, songAddDTO.DiscNumber);
+            if (movingCueFileResult.IsFailure)
+            {
+                return Result.Failure<IEnumerable<SongDTO>>(movingCueFileResult.Error);
+            }
+
+            var movingExecutableFileResult = await _songToFile.CopyToAsync(anySong.PlaybackInfo.ExecutableFileFullPath, disc, songAddDTO.DiscNumber);
+            if (movingExecutableFileResult.IsFailure)
+            {
+                return Result.Failure<IEnumerable<SongDTO>>(movingExecutableFileResult.Error);
+            }
+
             foreach (var item in songs)
             {
                 item.SetDiscNumber(songAddDTO.DiscNumber);
+                item.SetPlaybackInfo(
+                    movingExecutableFileResult.Value, 
+                    item.PlaybackInfo.SongDuration, 
+                    movingCueFileResult.Value, 
+                    item.PlaybackInfo.CueInfo.Index00, 
+                    item.PlaybackInfo.CueInfo.Index01);
             }
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
             return songs.Select(e => e.ToDTO()).ToList();
         }
         else
@@ -76,7 +99,16 @@ public class SongService : ISongService
             }
 
             var song = result.Value;
+            var movingExecutableFileResult = await _songToFile.CopyToAsync(song.PlaybackInfo.ExecutableFileFullPath, disc, songAddDTO.DiscNumber);
+            if (movingExecutableFileResult.IsFailure)
+            {
+                return Result.Failure<IEnumerable<SongDTO>>(movingExecutableFileResult.Error);
+            }
+
             song.SetDiscNumber(songAddDTO.DiscNumber);
+            song.SetPlaybackInfo(
+                movingExecutableFileResult.Value, 
+                song.PlaybackInfo.SongDuration);
             await _dbContext.SaveChangesAsync(cancellationToken);
             return new List<SongDTO> { song.ToDTO() };
         }

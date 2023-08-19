@@ -168,11 +168,6 @@ namespace MusicManager.Domain.Services.Implementations
 
         private Result<TagLib.File> GetSongFileInfo(string songPath)
         {
-            if (!_root.IsStoresIn(songPath))
-            {
-                return Result.Failure<TagLib.File>(new Error($"Song must be stored in root folder {_root.RootPath}."));
-            }
-
             TagLib.File songInfo = null;
             try
             {

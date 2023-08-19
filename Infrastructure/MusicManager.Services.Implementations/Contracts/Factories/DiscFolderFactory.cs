@@ -15,10 +15,10 @@ public class DiscFolderFactory : IDiscFolderFactory
     private readonly string[] _allowedFilesExtensions = new[]
     {
         DomainConstants.WVExtension,
-        DomainConstants.CueExtension,
         DomainConstants.Mp3Extension,
         DomainConstants.ApeExtension,
         DomainConstants.FlacExtension,
+        DomainConstants.CueExtension,
     };
 
     private readonly ISongFileFactory _songFileFactory;
@@ -57,32 +57,29 @@ public class DiscFolderFactory : IDiscFolderFactory
             d.EnumerateFiles().Where(f => _allowedFilesExtensions.Contains(f.Extension)));
 
         var allSongsFiles = songsFromCdFolders
-            .Union(discDirectory.EnumerateFiles().Where(f => _allowedFilesExtensions.Contains(f.Extension)));
+            .Union(discDirectory.EnumerateFiles().Where(f => _allowedFilesExtensions.Contains(f.Extension))).ToList();
 
-        var cueFiles = allSongsFiles.Where(f => f.Extension == DomainConstants.CueExtension).ToList();
+        var cueFiles = allSongsFiles.Where(f => f.Extension == DomainConstants.CueExtension);
 
-        if (cueFiles.Count > 0)
+        foreach (var cueFile in cueFiles)
         {
-            foreach (var cueFile in cueFiles)
+            var executableFileForCue = allSongsFiles
+                .FirstOrDefault(e => e.Name.Contains(Path.GetFileNameWithoutExtension(cueFile.Name)) && e.Extension != DomainConstants.CueExtension);
+
+            if (executableFileForCue is null)
             {
-                var executableFileForCue = allSongsFiles
-                    .FirstOrDefault(e => e.Name.Contains(Path.GetFileNameWithoutExtension(cueFile.Name)) && e.Extension != DomainConstants.CueExtension);
-
-                if (executableFileForCue is null)
-                {
-                    return Result.Failure<DiscFolder>(new($"Couldn't find an executable file for cue file [{cueFile.FullName}]."));
-                }
-
-                var result = _songFileFactory.Create(cueFile);
-                if (result.IsFailure)
-                {
-                    return Result.Failure<DiscFolder>(result.Error);
-                }
-
-                songsFiles.Add(result.Value);
+                return Result.Failure<DiscFolder>(new($"Couldn't find an executable file for cue file [{cueFile.FullName}]."));
             }
 
-            return new DiscFolder(discDirectory.FullName, songsFiles, covers);
+            var result = _songFileFactory.Create(cueFile);
+            if (result.IsFailure)
+            {
+                return Result.Failure<DiscFolder>(result.Error);
+            }
+
+            allSongsFiles.Remove(executableFileForCue);
+            allSongsFiles.Remove(cueFile);
+            songsFiles.Add(result.Value);
         }
 
         foreach (var songFile in allSongsFiles)
