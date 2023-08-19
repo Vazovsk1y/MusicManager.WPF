@@ -15,9 +15,11 @@ internal partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty]
     private bool _deleteAssociatedFolder;
 
+    [ObservableProperty]
+    private bool _createAssociatedFolder;
+
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IFileManagerInteractor _fileManagerInteractor;
-
 
     public SettingsViewModel(
         IServiceScopeFactory serviceScopeFactory, 
@@ -34,6 +36,7 @@ internal partial class SettingsViewModel : ObservableRecipient
         var config = scope.ServiceProvider.GetRequiredService<IAppConfig>();
         config.RootPath = RootPath;
         config.DeleteAssociatedFolder = DeleteAssociatedFolder;
+        config.CreateAssociatedFolder = CreateAssociatedFolder;
         config.Save();
     }
 
@@ -56,5 +59,6 @@ internal partial class SettingsViewModel : ObservableRecipient
         var config = scope.ServiceProvider.GetRequiredService<IAppConfig>();
         RootPath = config.RootPath;
         DeleteAssociatedFolder = config.DeleteAssociatedFolder;
+        CreateAssociatedFolder = config.CreateAssociatedFolder;
     }
 }

@@ -41,7 +41,7 @@ public class SongService : ISongService
             disc.Songs.Select(e => e.ToDTO()).ToList();
     }
 
-    public async Task<Result<IEnumerable<SongDTO>>> SaveAsync(SongAddDTO songAddDTO, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<SongDTO>>> SaveAsync(SongAddDTO songAddDTO, bool moveToParentFolder = true, CancellationToken cancellationToken = default)
     {
         var disc = await _dbContext
            .Discs
@@ -63,30 +63,36 @@ public class SongService : ISongService
             }
 
             var songs = result.Value;
-            var anySong = songs.First();
-            var movingCueFileResult = await _songToFile.CopyToAsync(anySong.PlaybackInfo!.CueInfo!.CueFilePath, disc, songAddDTO.DiscNumber);
-            if (movingCueFileResult.IsFailure)
+            if (moveToParentFolder)
             {
-                return Result.Failure<IEnumerable<SongDTO>>(movingCueFileResult.Error);
+                var anySong = songs.First();
+                var movingCueFileResult = await _songToFile.CopyToAsync(anySong.PlaybackInfo!.CueInfo!.CueFilePath, disc, songAddDTO.DiscNumber);
+                if (movingCueFileResult.IsFailure)
+                {
+                    return Result.Failure<IEnumerable<SongDTO>>(movingCueFileResult.Error);
+                }
+
+                var movingExecutableFileResult = await _songToFile.CopyToAsync(anySong.PlaybackInfo.ExecutableFileFullPath, disc, songAddDTO.DiscNumber);
+                if (movingExecutableFileResult.IsFailure)
+                {
+                    return Result.Failure<IEnumerable<SongDTO>>(movingExecutableFileResult.Error);
+                }
+
+                foreach (var item in songs)
+                {
+                    item.SetPlaybackInfo(
+                        movingExecutableFileResult.Value,
+                        item.PlaybackInfo.SongDuration,
+                        movingCueFileResult.Value,
+                        item.PlaybackInfo.CueInfo.Index00,
+                        item.PlaybackInfo.CueInfo.Index01);
+                }
             }
 
-            var movingExecutableFileResult = await _songToFile.CopyToAsync(anySong.PlaybackInfo.ExecutableFileFullPath, disc, songAddDTO.DiscNumber);
-            if (movingExecutableFileResult.IsFailure)
+            foreach (var song in songs)
             {
-                return Result.Failure<IEnumerable<SongDTO>>(movingExecutableFileResult.Error);
+                song.SetDiscNumber(songAddDTO.DiscNumber);
             }
-
-            foreach (var item in songs)
-            {
-                item.SetDiscNumber(songAddDTO.DiscNumber);
-                item.SetPlaybackInfo(
-                    movingExecutableFileResult.Value, 
-                    item.PlaybackInfo.SongDuration, 
-                    movingCueFileResult.Value, 
-                    item.PlaybackInfo.CueInfo.Index00, 
-                    item.PlaybackInfo.CueInfo.Index01);
-            }
-
             await _dbContext.SaveChangesAsync(cancellationToken);
             return songs.Select(e => e.ToDTO()).ToList();
         }
@@ -99,16 +105,19 @@ public class SongService : ISongService
             }
 
             var song = result.Value;
-            var movingExecutableFileResult = await _songToFile.CopyToAsync(song.PlaybackInfo.ExecutableFileFullPath, disc, songAddDTO.DiscNumber);
-            if (movingExecutableFileResult.IsFailure)
+            if (moveToParentFolder)
             {
-                return Result.Failure<IEnumerable<SongDTO>>(movingExecutableFileResult.Error);
-            }
-
-            song.SetDiscNumber(songAddDTO.DiscNumber);
-            song.SetPlaybackInfo(
-                movingExecutableFileResult.Value, 
+                var movingExecutableFileResult = await _songToFile.CopyToAsync(song.PlaybackInfo.ExecutableFileFullPath, disc, songAddDTO.DiscNumber);
+                if (movingExecutableFileResult.IsFailure)
+                {
+                    return Result.Failure<IEnumerable<SongDTO>>(movingExecutableFileResult.Error);
+                }
+                song.SetPlaybackInfo(
+                movingExecutableFileResult.Value,
                 song.PlaybackInfo.SongDuration);
+            }
+            
+            song.SetDiscNumber(songAddDTO.DiscNumber);
             await _dbContext.SaveChangesAsync(cancellationToken);
             return new List<SongDTO> { song.ToDTO() };
         }

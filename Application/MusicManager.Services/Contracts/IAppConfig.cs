@@ -6,4 +6,6 @@ namespace MusicManager.Services.Contracts;
 public interface IAppConfig : IConfig, IRoot
 {
     bool DeleteAssociatedFolder { get; set; }
+
+    bool CreateAssociatedFolder { get; set; } 
 }

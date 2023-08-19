@@ -20,8 +20,9 @@ internal partial class SongwriterAddViewModel : DialogViewModel<SongwriterAddWin
     private readonly ISongwriterService _songwriterService;
 
     public SongwriterAddViewModel(
-        IUserDialogService<SongwriterAddWindow> dialogService, 
-        ISongwriterService songwriterService) : base(dialogService)
+        IUserDialogService<SongwriterAddWindow> dialogService,
+        ISongwriterService songwriterService,
+        SettingsViewModel settingsViewModel) : base(dialogService, settingsViewModel)
     {
         _songwriterService = songwriterService;
     }
@@ -29,7 +30,7 @@ internal partial class SongwriterAddViewModel : DialogViewModel<SongwriterAddWin
     protected override async Task Accept()
     {
         var dto = new SongwriterAddDTO(Name, LastName);
-        var savingResult = await _songwriterService.SaveAsync(dto);
+        var savingResult = await _songwriterService.SaveAsync(dto, _settingsViewModel.CreateAssociatedFolder);
 
         if (savingResult.IsSuccess)
         {

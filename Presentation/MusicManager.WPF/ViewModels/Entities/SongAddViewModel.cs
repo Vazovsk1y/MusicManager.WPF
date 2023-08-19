@@ -63,7 +63,8 @@ internal partial class SongAddViewModel : DialogViewModel<SongAddWindow>
         IBaseDiscService baseDiscService,
         ISongService songService,
         IFileManagerInteractor fileManagerInteractor,
-        ISongFileFactory songFileFactory) : base(dialogService)
+        ISongFileFactory songFileFactory,
+        SettingsViewModel settingsViewModel) : base(dialogService, settingsViewModel)
     {
         _baseDiscService = baseDiscService;
         _songService = songService;
@@ -102,7 +103,7 @@ internal partial class SongAddViewModel : DialogViewModel<SongAddWindow>
         }
 
         var dto = new SongAddDTO(SelectedDisc!.DiscId, songFileResult.Value, SelectedDiscNumber);
-        var saveResult = await _songService.SaveAsync(dto);
+        var saveResult = await _songService.SaveAsync(dto, _settingsViewModel.CreateAssociatedFolder); // move song file/s or not.
         if (saveResult.IsSuccess)
         {
             Messenger.Send(new SongCreatedMessage(SelectedDisc!.DiscId, saveResult.Value.Select(e => e.ToViewModel())));

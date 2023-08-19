@@ -65,7 +65,7 @@ public class MovieReleaseService : IMovieReleaseService
         return result;
     }
 
-    public async Task<Result<DiscId>> SaveAsync(MovieReleaseAddDTO movieReleaseAddDTO, CancellationToken cancellationToken = default)
+    public async Task<Result<DiscId>> SaveAsync(MovieReleaseAddDTO movieReleaseAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default)
     {
         bool hasDuplicates = movieReleaseAddDTO.MoviesLinks.GroupBy(x => x).Any(g => g.Count() > 1);
         if (hasDuplicates)
@@ -102,20 +102,24 @@ public class MovieReleaseService : IMovieReleaseService
             return Result.Failure<DiscId>(addingToMoviesResult.Error);
         }
 
-        var firstMovie = movies.First();
-        var createMovieReleaseFolderResult = await _movieReleaseToFolderService.CreateAssociatedFolderAndFileAsync(movieRelease, firstMovie);
-        if (createMovieReleaseFolderResult.IsFailure)
+        if (createAssociatedFolder)
         {
-            return Result.Failure<DiscId>(createMovieReleaseFolderResult.Error);
-        }
+            var firstMovie = movies.First();
+            var createMovieReleaseFolderResult = await _movieReleaseToFolderService.CreateAssociatedFolderAndFileAsync(movieRelease, firstMovie);
+            if (createMovieReleaseFolderResult.IsFailure)
+            {
+                return Result.Failure<DiscId>(createMovieReleaseFolderResult.Error);
+            }
 
-        var settingLinksResult = await SetLinks(movies.Skip(1), createMovieReleaseFolderResult.Value);     // foreach other movies we create a folder links instead real folder.
-        if (settingLinksResult.IsFailure)
-        {
-            return Result.Failure<DiscId>(settingLinksResult.Error);
-        }
+            var settingLinksResult = await SetLinks(movies.Skip(1), createMovieReleaseFolderResult.Value);     // foreach other movies we create a folder links instead real folder.
+            if (settingLinksResult.IsFailure)
+            {
+                return Result.Failure<DiscId>(settingLinksResult.Error);
+            }
 
-        movieRelease.SetDirectoryInfo(createMovieReleaseFolderResult.Value);
+            movieRelease.SetDirectoryInfo(createMovieReleaseFolderResult.Value);
+        }
+        
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(movieRelease.Id);
     }

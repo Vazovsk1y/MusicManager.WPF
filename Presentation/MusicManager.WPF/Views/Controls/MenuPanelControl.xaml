@@ -11,18 +11,11 @@
     <Grid>
         <Menu>
             <MenuItem Header="Settings">
-                <MenuItem>
-                    <TextBlock Text="{Binding RootPath}"/>
-                    <Button Content="Select root" Command="{Binding SelectRootCommand}"/>
-                </MenuItem>
-
-                <MenuItem>
-                    <CheckBox IsChecked="{Binding DeleteAssociatedFolder}"/>
-                </MenuItem>
-
-                <MenuItem>
-                    <Button Content="Save" Command="{Binding SaveCommand}"/>
-                </MenuItem>
+                <TextBlock Text="{Binding RootPath}"/>
+                <Button Content="Select root" Command="{Binding SelectRootCommand}"/>
+                <CheckBox Content="DeleteAssociatedFolder" IsChecked="{Binding DeleteAssociatedFolder}"/>
+                <CheckBox Content="CreateAssociatedFolder" IsChecked="{Binding CreateAssociatedFolder}"/>
+                <Button Content="Save" Command="{Binding SaveCommand}"/>
             </MenuItem>
         </Menu>
     </Grid>

@@ -65,7 +65,7 @@ public class CompilationService : ICompilationService
         return result;
     }
 
-    public async Task<Result<DiscId>> SaveAsync(CompilationAddDTO compilationAddDTO, CancellationToken cancellationToken = default)
+    public async Task<Result<DiscId>> SaveAsync(CompilationAddDTO compilationAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default)
     {
         var songwriter = await _dbContext
             .Songwriters
@@ -89,14 +89,23 @@ public class CompilationService : ICompilationService
         }
 
         var compilation = creationResult.Value;
-        var createdAssociatedFolderAndFileResult = await _compilationToFolderService.CreateAssociatedFolderAndFileAsync(compilation, songwriter);
-        if (createdAssociatedFolderAndFileResult.IsFailure)
+        var addingResult = songwriter.AddCompilation(compilation);
+        if (addingResult.IsFailure)
         {
-            return Result.Failure<DiscId>(createdAssociatedFolderAndFileResult.Error);
+            return Result.Failure<DiscId>(addingResult.Error);
         }
 
-        compilation.SetDirectoryInfo(createdAssociatedFolderAndFileResult.Value);
-        songwriter.AddCompilation(compilation);
+        if (createAssociatedFolder)
+        {
+            var createdAssociatedFolderAndFileResult = await _compilationToFolderService.CreateAssociatedFolderAndFileAsync(compilation, songwriter);
+            if (createdAssociatedFolderAndFileResult.IsFailure)
+            {
+                return Result.Failure<DiscId>(createdAssociatedFolderAndFileResult.Error);
+            }
+
+            compilation.SetDirectoryInfo(createdAssociatedFolderAndFileResult.Value);
+        }
+        
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(compilation.Id);
     }

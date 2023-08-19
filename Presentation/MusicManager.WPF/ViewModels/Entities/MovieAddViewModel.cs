@@ -49,7 +49,8 @@ internal partial class MovieAddViewModel : DialogViewModel<MovieAddWindow>
     public MovieAddViewModel(
        ISongwriterService songwriterService,
        IMovieService movieService,
-       IUserDialogService<MovieAddWindow> dialogService) : base(dialogService)
+       IUserDialogService<MovieAddWindow> dialogService,
+       SettingsViewModel settingsViewModel) : base(dialogService, settingsViewModel)
     {
         _songwriterService = songwriterService;
         _movieService = movieService;
@@ -62,7 +63,7 @@ internal partial class MovieAddViewModel : DialogViewModel<MovieAddWindow>
     protected override async Task Accept()
     {
         var dto = new MovieAddDTO(SelectedSongwriter!.Id, (int)SelectedYear!, SelectedCountry!, Title);
-        var saveResult = await _movieService.SaveAsync(dto);
+        var saveResult = await _movieService.SaveAsync(dto, _settingsViewModel.CreateAssociatedFolder);
 
         if (saveResult.IsSuccess)
         {

@@ -10,10 +10,14 @@ internal abstract partial class DialogViewModel<TWindow> : ObservableRecipient
     where TWindow : Window
 {
     protected readonly IUserDialogService<TWindow> _dialogService;
+    protected readonly SettingsViewModel _settingsViewModel;
 
-    protected DialogViewModel(IUserDialogService<TWindow> dialogService) : base()
+    protected DialogViewModel(
+        IUserDialogService<TWindow> dialogService,
+        SettingsViewModel settingsViewModel) : base()
     {
         _dialogService = dialogService;
+        _settingsViewModel = settingsViewModel;
     }
 
     [RelayCommand(CanExecute = nameof(CanAccept))]

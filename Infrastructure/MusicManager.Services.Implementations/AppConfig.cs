@@ -15,6 +15,7 @@ public class AppConfig : IAppConfig
     {
         RootPath = Environment.CurrentDirectory,
         DeleteAssociatedFolder = false,
+        CreateAssociatedFolder = true,
     };
 
     public const string FileName = "appConfig.json";
@@ -24,6 +25,8 @@ public class AppConfig : IAppConfig
     public string RootPath { get; set; } = null!;
 
     public bool DeleteAssociatedFolder { get; set; }
+
+    public bool CreateAssociatedFolder { get; set; }
 
     public void Save()
     {

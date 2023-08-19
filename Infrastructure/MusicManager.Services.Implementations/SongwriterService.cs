@@ -72,7 +72,7 @@ public class SongwriterService : ISongwriterService
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Result<SongwriterId>> SaveAsync(SongwriterAddDTO songwriterAddDTO, CancellationToken cancellationToken = default)
+    public async Task<Result<SongwriterId>> SaveAsync(SongwriterAddDTO songwriterAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default)
     {
         var songwriterCreationResult = Songwriter.Create(songwriterAddDTO.Name, songwriterAddDTO.LastName);
 
@@ -82,13 +82,16 @@ public class SongwriterService : ISongwriterService
         }
 
         var createdSongwriter = songwriterCreationResult.Value;
-        var creatingAssociatedFolderAndFileResult = await _songwriterToFolderService.CreateAssociatedFolderAndFileAsync(createdSongwriter);
-        if (creatingAssociatedFolderAndFileResult.IsFailure)
+        if (createAssociatedFolder)
         {
-            return Result.Failure<SongwriterId>(creatingAssociatedFolderAndFileResult.Error);
+            var creatingAssociatedFolderAndFileResult = await _songwriterToFolderService.CreateAssociatedFolderAndFileAsync(createdSongwriter);
+            if (creatingAssociatedFolderAndFileResult.IsFailure)
+            {
+                return Result.Failure<SongwriterId>(creatingAssociatedFolderAndFileResult.Error);
+            }
+            createdSongwriter.SetDirectoryInfo(creatingAssociatedFolderAndFileResult.Value);
         }
 
-        createdSongwriter.SetDirectoryInfo(creatingAssociatedFolderAndFileResult.Value);
         await _dbContext.Songwriters.AddAsync(createdSongwriter, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return createdSongwriter.Id;

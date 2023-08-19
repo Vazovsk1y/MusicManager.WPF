@@ -1,7 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using MusicManager.Domain.Enums;
-using MusicManager.Domain.Extensions;
 using MusicManager.Domain.ValueObjects;
 using MusicManager.Services;
 using MusicManager.Services.Contracts.Dtos;
@@ -9,9 +7,7 @@ using MusicManager.Utils;
 using MusicManager.WPF.Messages;
 using MusicManager.WPF.Tools;
 using MusicManager.WPF.Views.Windows;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -42,7 +38,8 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
     public CompilationAddViewModel(
         IUserDialogService<CompilationAddWindow> dialogService,
         ISongwriterService songwriterService,
-        ICompilationService compilationService) : base(dialogService)
+        ICompilationService compilationService,
+        SettingsViewModel settingsViewModel) : base(dialogService, settingsViewModel)
     {
         _songwriterService = songwriterService;
         _compilationService = compilationService;
@@ -51,7 +48,7 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
     protected override async Task Accept()
     {
         var dto = new CompilationAddDTO(SelectedSongwriter!.Id, Identifier, SelectedDiscType!);
-        var addingResult = await _compilationService.SaveAsync(dto);
+        var addingResult = await _compilationService.SaveAsync(dto, _settingsViewModel.CreateAssociatedFolder);
         if (addingResult.IsSuccess)
         {
             var message = new CompilationCreatedMessage(new CompilationViewModel

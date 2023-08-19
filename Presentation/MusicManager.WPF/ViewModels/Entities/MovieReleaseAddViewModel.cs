@@ -62,7 +62,8 @@ namespace MusicManager.WPF.ViewModels.Entities
         public MovieReleaseAddViewModel(
             IUserDialogService<MovieReleaseAddWindow> dialogService,
             IMovieReleaseService movieReleaseService,
-            IMovieService movieService) : base(dialogService)
+            IMovieService movieService,
+            SettingsViewModel settingsViewModel) : base(dialogService, settingsViewModel)
         {
             _movieReleaseService = movieReleaseService;
             _movieService = movieService;
@@ -72,7 +73,7 @@ namespace MusicManager.WPF.ViewModels.Entities
         {
             var moviesLinks = SelectedMovies.Select(e => e.MovieId).ToList();
             var dto = new MovieReleaseAddDTO(moviesLinks, Identifier, SelectedDiscType!);
-            var addingResult = await _movieReleaseService.SaveAsync(dto);
+            var addingResult = await _movieReleaseService.SaveAsync(dto, _settingsViewModel.CreateAssociatedFolder);
 
             if (addingResult.IsSuccess)
             {

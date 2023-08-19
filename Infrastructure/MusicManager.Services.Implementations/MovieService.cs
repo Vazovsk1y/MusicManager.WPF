@@ -121,7 +121,7 @@ public class MovieService : IMovieService
             .ToListAsync(cancellationToken); 
     }
 
-    public async Task<Result<MovieId>> SaveAsync(MovieAddDTO movieAddDTO, CancellationToken cancellationToken = default)
+    public async Task<Result<MovieId>> SaveAsync(MovieAddDTO movieAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default)
     {
         var songwriter = await _dbContext
             .Songwriters
@@ -146,15 +146,18 @@ public class MovieService : IMovieService
         }
 
         var movie = movieCreationResult.Value;
-        var createdAssociatedFolderAndFileResult = await _movieToFolderService.CreateAssociatedFolderAndFileAsync(movie, songwriter);
-        if (createdAssociatedFolderAndFileResult.IsFailure)
+        if (createAssociatedFolder)
         {
-            return Result.Failure<MovieId>(createdAssociatedFolderAndFileResult.Error);
+            var createdAssociatedFolderAndFileResult = await _movieToFolderService.CreateAssociatedFolderAndFileAsync(movie, songwriter);
+            if (createdAssociatedFolderAndFileResult.IsFailure)
+            {
+                return Result.Failure<MovieId>(createdAssociatedFolderAndFileResult.Error);
+            }
+
+            movie.SetDirectoryInfo(createdAssociatedFolderAndFileResult.Value);
         }
-
-        movie.SetDirectoryInfo(createdAssociatedFolderAndFileResult.Value);
+       
         songwriter.AddMovie(movie);
-
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(movie.Id);
     }
