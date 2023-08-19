@@ -59,7 +59,7 @@ public class DiscFolderFactory : IDiscFolderFactory
         var allSongsFiles = songsFromCdFolders
             .Union(discDirectory.EnumerateFiles().Where(f => _allowedFilesExtensions.Contains(f.Extension))).ToList();
 
-        var cueFiles = allSongsFiles.Where(f => f.Extension == DomainConstants.CueExtension);
+        var cueFiles = allSongsFiles.Where(f => f.Extension == DomainConstants.CueExtension).ToList();
 
         foreach (var cueFile in cueFiles)
         {

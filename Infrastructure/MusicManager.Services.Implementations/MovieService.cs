@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
@@ -15,17 +16,23 @@ public class MovieService : IMovieService
     private readonly IMovieReleaseService _movieReleaseService;
     private readonly IApplicationDbContext _dbContext;
     private readonly IMovieToFolderService _movieToFolderService;
+    private readonly IMovieReleaseToFolderService _movieReleaseToFolderService;
+    private readonly IRoot _root;
 
     public MovieService(
         IFolderToMovieService pathToMovieService,
         IMovieReleaseService movieReleaseService,
         IApplicationDbContext dbContext,
-        IMovieToFolderService movieToFolderService)
+        IMovieToFolderService movieToFolderService,
+        IMovieReleaseToFolderService movieReleaseToFolderService,
+        IRoot root)
     {
         _pathToMovieService = pathToMovieService;
         _movieReleaseService = movieReleaseService;
         _dbContext = dbContext;
         _movieToFolderService = movieToFolderService;
+        _movieReleaseToFolderService = movieReleaseToFolderService;
+        _root = root;
     }
 
     public async Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, CancellationToken cancellationToken = default)
@@ -56,6 +63,17 @@ public class MovieService : IMovieService
         if (addingResult.IsFailure)
         {
             return addingResult;
+        }
+
+        if (movieRelease.EntityDirectoryInfo is null)
+        {
+            return Result.Failure(new Error("Movie release directory info is not created."));
+        }
+
+        var settingLinkResult = await _movieReleaseToFolderService.CreateFolderLinkAsync(movie, _root.CombineWith(movieRelease.EntityDirectoryInfo!.Path));
+        if (settingLinkResult.IsFailure)
+        {
+            return settingLinkResult;
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
