@@ -23,6 +23,8 @@ internal class MainWindowViewModel : TitledViewModel
 
     public SongsPanelViewModel SongsPanelViewModel { get; }
 
+    public SettingsViewModel SettingsViewModel { get; }
+
     #endregion
 
     #region --Constructors--
@@ -33,15 +35,17 @@ internal class MainWindowViewModel : TitledViewModel
     }
 
     public MainWindowViewModel(
-        SongwirtersPanelViewModel songwirtersPanelViewModel, 
-        MoviesPanelViewModel moviesPanelViewModel, 
-        DiscsPanelViewModel discsPanelViewModel, 
-        SongsPanelViewModel songsPanelViewModel) 
+        SongwirtersPanelViewModel songwirtersPanelViewModel,
+        MoviesPanelViewModel moviesPanelViewModel,
+        DiscsPanelViewModel discsPanelViewModel,
+        SongsPanelViewModel songsPanelViewModel,
+        SettingsViewModel settingsViewModel)
     {
         SongwirtersPanelViewModel = songwirtersPanelViewModel;
         MoviesPanelViewModel = moviesPanelViewModel;
         DiscsPanelViewModel = discsPanelViewModel;
         SongsPanelViewModel = songsPanelViewModel;
+        SettingsViewModel = settingsViewModel;
         ControlTitle = App.Name;
 
         ActivateAllRecipients();

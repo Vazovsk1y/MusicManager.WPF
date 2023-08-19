@@ -20,7 +20,6 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
             <Button Content="Add" Command="{Binding AddSongwriterCommand}"/>
-            <Button Content="UserConf" Command="{Binding SelectRootCommand}"/>
         </StackPanel>
     </Grid>
 </UserControl>

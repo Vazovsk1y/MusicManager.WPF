@@ -10,10 +10,13 @@
         Title="{Binding ControlTitle}" Height="450" Width="800"
         d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel, IsDesignTimeCreatable=True}">
     <DockPanel>
+        <views:MenuPanelControl
+            DockPanel.Dock="Top"
+            DataContext="{Binding SettingsViewModel}"/>
+
         <views:SongwritersPanelControl 
                 DockPanel.Dock="Top"
                 DataContext="{Binding SongwirtersPanelViewModel}"/>
-
 
         <Grid>
             <Grid.ColumnDefinitions>

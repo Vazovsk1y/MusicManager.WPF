@@ -20,6 +20,7 @@ internal static class Registrator
         .AddSingleton<MoviesPanelViewModel>()
         .AddSingleton<DiscsPanelViewModel>()
         .AddSingleton<SongsPanelViewModel>()
+        .AddSingleton<SettingsViewModel>()
         .AddTransient<MovieReleaseAddToMovieViewModel>()
         .AddTransient<MovieReleaseMovieWindow>()
         .AddSingleton(typeof(IWpfWindowService<>), typeof(WpfWindowService<>))
