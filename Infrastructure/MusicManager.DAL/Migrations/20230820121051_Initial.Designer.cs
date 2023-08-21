@@ -11,7 +11,7 @@ using MusicManager.DAL;
 namespace MusicManager.DAL.Migrations
 {
     [DbContext(typeof(MusicManagerDbContext))]
-    [Migration("20230815163958_Initial")]
+    [Migration("20230820121051_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -253,7 +253,7 @@ namespace MusicManager.DAL.Migrations
                                 .HasColumnType("TEXT")
                                 .HasColumnName("production_info_country");
 
-                            b1.Property<int>("Year")
+                            b1.Property<int?>("Year")
                                 .HasColumnType("INTEGER")
                                 .HasColumnName("production_info_year");
 
@@ -339,7 +339,7 @@ namespace MusicManager.DAL.Migrations
                                 .HasColumnType("TEXT")
                                 .HasColumnName("production_info_country");
 
-                            b1.Property<int>("Year")
+                            b1.Property<int?>("Year")
                                 .HasColumnType("INTEGER")
                                 .HasColumnName("production_info_year");
 

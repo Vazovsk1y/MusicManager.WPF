@@ -209,6 +209,31 @@ public class MovieService : IMovieService
             MovieReleasesDTOs = moviesReleasesDtos,
         };
     }
+
+    public async Task<Result> UpdateAsync(MovieUpdateDTO movieUpdateDTO, CancellationToken cancellationToken = default)
+    {
+        var movie = await _dbContext.Movies.SingleOrDefaultAsync(e => e.Id == movieUpdateDTO.Id, cancellationToken);
+
+        if (movie is null)
+        {
+            return Result.Failure(ServicesErrors.MovieWithPassedIdIsNotExists());
+        }
+
+        var originalDTO = movie.ToDTO();
+        var updateActions = new List<Result>()
+        {
+            movie.SetProductionInfo(movieUpdateDTO.ProductionCountry, movieUpdateDTO.ProductionYear),
+            movie.SetDirectorInfo(movieUpdateDTO.DirectorName, movieUpdateDTO.DirectorLastName)
+        };
+
+        if (updateActions.Any(e => e.IsFailure))
+        {
+            return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
 }
 
 

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using MusicManager.WPF.Messages;
+using MusicManager.WPF.Tools;
 using MusicManager.WPF.ViewModels.Base;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;

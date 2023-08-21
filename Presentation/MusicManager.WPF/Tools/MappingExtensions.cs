@@ -1,6 +1,4 @@
 ﻿using MusicManager.Domain.Enums;
-using MusicManager.Domain.Extensions;
-using MusicManager.Domain.ValueObjects;
 using MusicManager.Services.Contracts.Dtos;
 using MusicManager.WPF.ViewModels.Entities;
 using System.Linq;
@@ -22,16 +20,21 @@ internal static class MappingExtensions
 
     public static MovieViewModel ToViewModel(this MovieDTO movieDTO)
     {
-        return new MovieViewModel()
+        var entity = new MovieViewModel()
         {
             MovieId = movieDTO.Id,
             SongwriterId = movieDTO.SongwriterId,
-            DirectorFullName = movieDTO.DirectorName + " " + movieDTO.DirectorLastName,
-            ProductionCountry = movieDTO.ProductionCountry ?? ProductionInfo.UndefinedCountry,
+            DirectorName = movieDTO.DirectorName,
+            DirectorLastName = movieDTO.DirectorLastName,
+            ProductionCountry = movieDTO.ProductionCountry,
             ProductionYear = movieDTO.ProductionYear,
             Title = movieDTO.Title,
             MoviesReleases = new(movieDTO.MovieReleasesDTOs.Select(e => e.ToViewModel())),
         };
+
+        entity.StartTrackingState();
+        entity.SetCurrentAsPrevious();
+        return entity;
     }
 
     public static CompilationViewModel ToViewModel(this CompilationDTO compilationDTO)
@@ -41,7 +44,7 @@ internal static class MappingExtensions
             DiscId = compilationDTO.Id,
             Identificator = compilationDTO.Identifier,
             SongwriterId = compilationDTO.SongwriterId,
-            ProductionCountry = compilationDTO.ProductionCountry ?? ProductionInfo.UndefinedCountry,
+            ProductionCountry = compilationDTO.ProductionCountry,
             ProductionYear = compilationDTO.ProductionYear,
             DiscType = compilationDTO.DiscType.Value,
             Songs = new(compilationDTO.SongDTOs.Select(e => e.ToViewModel())),
@@ -55,7 +58,7 @@ internal static class MappingExtensions
             DiscId = movieReleaseDTO.Id,
             MoviesLinks = movieReleaseDTO.MoviesLinks.ToList(),
             Identificator = movieReleaseDTO.Identifier,
-            ProductionCountry = movieReleaseDTO.ProductionCountry ?? ProductionInfo.UndefinedCountry,
+            ProductionCountry = movieReleaseDTO.ProductionCountry,
             ProductionYear = movieReleaseDTO.ProductionYear,
             DiscType = movieReleaseDTO.DiscType.Value,
             Songs = new (movieReleaseDTO.SongDTOs.Select(e => e.ToViewModel())),

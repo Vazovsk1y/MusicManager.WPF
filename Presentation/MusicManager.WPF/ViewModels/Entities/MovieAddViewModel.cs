@@ -67,16 +67,16 @@ internal partial class MovieAddViewModel : DialogViewModel<MovieAddWindow>
 
         if (saveResult.IsSuccess)
         {
-            var message = new MovieCreatedMessage(
-            new MovieViewModel
+            var vm = new MovieViewModel
             {
                 Title = dto.Title,
                 MovieId = saveResult.Value,
                 SongwriterId = dto.SongwriterId,
                 ProductionCountry = dto.ProductionCountry,
                 ProductionYear = dto.ProductionYear
-            });
+            };
 
+            var message = new MovieCreatedMessage(vm);
             Messenger.Send(message);
         }
         else

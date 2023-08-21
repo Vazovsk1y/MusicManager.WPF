@@ -165,7 +165,7 @@ public class Movie : IAggregateRoot
         return Result.Success();
     }
 
-    public Result SetProductionInfo(string productionCountry, int productionYear)
+    public Result SetProductionInfo(string productionCountry, int? productionYear)
     {
         var result = ProductionInfo.Create(productionCountry, productionYear);
 

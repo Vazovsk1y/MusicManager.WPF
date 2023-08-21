@@ -4,21 +4,56 @@ using System.Collections.ObjectModel;
 
 namespace MusicManager.WPF.ViewModels.Entities;
 
-internal class MovieViewModel : ObservableObject
+internal partial class MovieViewModel : 
+    ObservableObject, 
+    IModifiable<MovieViewModel>
 {
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     private string _title = string.Empty;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     private string? _productionCountry;
 
-    private string? _directorFullName;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
+    private string? _directorName;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
+    private string? _directorLastName;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     private int? _productionYear;
+
+    public MovieViewModel? PreviousState { get; private set; }
+
+    public bool IsModified
+    {
+        get
+        {
+            return PreviousState?.Title != Title
+                || PreviousState?.ProductionCountry != ProductionCountry
+                || PreviousState?.ProductionYear != ProductionYear
+                || PreviousState?.DirectorLastName != DirectorLastName
+                || PreviousState?.DirectorName != DirectorName;
+        }
+    }
+
+    public string? IsUpdatable => IsModified ? "*" : null;
 
     private ObservableCollection<MovieReleaseViewModel>? _moviesReleasesViewsModels;
 
     public required MovieId MovieId { get; init; }
 
-    public required SongwriterId SongwriterId { get; init; }    
+    public required SongwriterId SongwriterId { get; init; }
 
     public ObservableCollection<MovieReleaseViewModel> MoviesReleases
     {
@@ -26,27 +61,33 @@ internal class MovieViewModel : ObservableObject
         init => SetProperty(ref _moviesReleasesViewsModels, value);
     }
 
-    public string Title
+    public void SetCurrentAsPrevious()
     {
-        get => _title;
-        set => SetProperty(ref _title, value);
+        PreviousState = new()
+        {
+            MovieId = MovieId,
+            SongwriterId = SongwriterId,
+            DirectorLastName = DirectorLastName,
+            DirectorName = DirectorName,
+            ProductionCountry = ProductionCountry,
+            ProductionYear = ProductionYear,
+            Title = Title,
+        };
     }
 
-    public int? ProductionYear
+    public void StartTrackingState()
     {
-        get => _productionYear;
-        set => SetProperty(ref _productionYear, value);
+        OnPropertyChanged(nameof(IsModified));
+        OnPropertyChanged(nameof(IsUpdatable));
     }
 
-    public string? ProductionCountry
+    public void RollBackChanges()
     {
-        get => _productionCountry;
-        set => SetProperty(ref _productionCountry, value);
-    }
-
-    public string? DirectorFullName
-    {
-        get => _directorFullName;
-        set => SetProperty(ref _directorFullName, value);
+        DirectorName = PreviousState?.DirectorName;
+        DirectorLastName = PreviousState?.DirectorLastName;
+        ProductionYear= PreviousState?.ProductionYear;
+        ProductionCountry = PreviousState?.ProductionCountry;
+        Title = PreviousState?.Title!;
     }
 }
+

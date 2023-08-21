@@ -16,16 +16,19 @@
                   >
 
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
-                    <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear}"/>
-                    <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry}"/>
-                    <DataGridTextColumn Header="Director" Binding="{Binding DirectorFullName}"/>
-
+                    <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Title" Binding="{Binding Title, Mode=TwoWay}"/>
+                    <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear, Mode=TwoWay}"/>
+                    <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry, Mode=TwoWay}"/>
+                    <DataGridTextColumn Header="DirectorName" Binding="{Binding DirectorName, Mode=TwoWay}"/>
+                    <DataGridTextColumn Header="DirectorLastName" Binding="{Binding DirectorLastName, Mode=TwoWay}"/>
+                    
                 </DataGrid.Columns>
             </DataGrid>
 
             <Button Content="AddMovie" Command="{Binding AddMovieCommand}"/>
             <Button Content="AddMR" Command="{Binding AddMovieReleaseCommand}"/>
+            <Button Content="Save" Command="{Binding SaveCommand}"/>
         </StackPanel>
     </Grid>
 </UserControl>

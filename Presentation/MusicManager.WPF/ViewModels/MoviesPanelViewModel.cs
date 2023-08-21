@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
+using MusicManager.Domain.Shared;
 using MusicManager.Services;
 using MusicManager.Services.Contracts.Dtos;
 using MusicManager.Utils;
@@ -77,6 +78,54 @@ internal partial class MoviesPanelViewModel :
         dialogService.StartDialog(dataContext);
     }
 
+    [RelayCommand]
+    private async Task Save()
+    {
+        if (SaveCommand.IsRunning)
+        {
+            return;
+        }
+
+        using var scope = _serviceScopeFactory.CreateScope();
+        var movieService = scope.ServiceProvider.GetRequiredService<IMovieService>();
+        var moviesToUpdate = SongwritersPanelViewModel.SelectedSongwriter!.Movies.Where(e => e.IsModified);
+
+        var results = new List<Result>();
+        foreach (var item in moviesToUpdate)
+        {
+            var dto = new MovieUpdateDTO(
+                item.MovieId, 
+                item.Title, 
+                item.ProductionCountry, 
+                item.ProductionYear, 
+                item.DirectorName, 
+                item.DirectorLastName);
+
+            var updateResult = await movieService.UpdateAsync(dto);
+            if (updateResult.IsFailure)
+            {
+                item.RollBackChanges();
+            }
+            else
+            {
+                item.SetCurrentAsPrevious();
+                item.StartTrackingState();
+            }
+
+
+            results.Add(updateResult);
+        }
+
+        if (results.Any(e => e.IsFailure))
+        {
+            MessageBoxHelper.ShowErrorBox(string.Join(",", results.Where(e => e.IsFailure).Select(e => e.Error.Message)));
+        }
+        else
+        {
+            MessageBoxHelper.ShowInfoBox("Successfully updated.");
+        }
+    }
+
     private bool CanAddMovieRelease()
     {
         return SelectedMovie is not null;
@@ -110,50 +159,12 @@ internal partial class MoviesPanelViewModel :
             .Songwriters
             .FirstOrDefault(e => e.SongwriterId == message.MovieViewModel.SongwriterId);
 
-            songwriter?.Movies.Add(message.MovieViewModel);
+            if (songwriter is not null)
+            {
+                message.MovieViewModel.StartTrackingState();
+                message.MovieViewModel.SetCurrentAsPrevious();
+                songwriter.Movies.Add(message.MovieViewModel);
+            }
         });
     }
 }
-
-
-
-public interface IWpfWindowService<TWindow> where TWindow : Window
-{
-    void StartDialog<TViewModel>(TViewModel dataContext) where TViewModel : ObservableObject;
-
-    void CloseDialog();
-}
-
-
-public class WpfWindowService<TWindow> : IWpfWindowService<TWindow> where TWindow : Window
-{
-    private TWindow? _window;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-    public WpfWindowService(IServiceScopeFactory serviceScopeFactory)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-    }
-
-    public void StartDialog<TViewModel>(TViewModel dataContext) where TViewModel : ObservableObject
-    {
-        CloseDialog();
-
-        var scope = _serviceScopeFactory.CreateScope();
-        _window = scope.ServiceProvider.GetRequiredService<TWindow>();
-        _window.DataContext = dataContext;
-        _window.Closed += (_, _) => scope.Dispose();
-        _window.ShowDialog();
-    }
-
-    public void CloseDialog()
-    {
-        _window?.Close();
-        _window = null;
-    }
-}
-
-
-
-
-

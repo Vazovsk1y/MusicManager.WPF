@@ -16,13 +16,13 @@ public class ProductionInfo : ValueObject<ProductionInfo>
 
     public string Country { get; private set; } = string.Empty;
 
-    public int Year { get; private set; }
+    public int? Year { get; private set; }
 
     #endregion
 
     #region --Constructors--
 
-    private ProductionInfo(string country, int year)
+    private ProductionInfo(string country, int? year)
     {
         Country = country;
         Year = year;
@@ -32,14 +32,19 @@ public class ProductionInfo : ValueObject<ProductionInfo>
 
     #region --Methods--
 
-    internal static Result<ProductionInfo> Create(string country, int year)
+    internal static Result<ProductionInfo> Create(string country, int? year)
     {
         if (string.IsNullOrWhiteSpace(country))
         {
             return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassed(nameof(country)));
         }
 
-        if (IsYearCorrect(year))
+        if (year is null)
+        {
+            return new ProductionInfo(country, year);
+        }
+
+        if (IsYearCorrect((int)year))
         {
             return new ProductionInfo(country, year);
         }
