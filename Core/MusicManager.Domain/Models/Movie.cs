@@ -207,6 +207,17 @@ public class Movie : IAggregateRoot
         return Result.Success();
     }
 
+    public Result SetTitle(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return Result.Failure(DomainErrors.NullOrEmptyStringPassed(nameof(title)));
+        }
+
+        Title = title;  
+        return Result.Success();
+    }
+
     #endregion
 }
 

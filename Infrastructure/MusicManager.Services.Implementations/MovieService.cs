@@ -148,7 +148,7 @@ public class MovieService : IMovieService
         var movie = movieCreationResult.Value;
         if (createAssociatedFolder)
         {
-            var createdAssociatedFolderAndFileResult = await _movieToFolderService.CreateAssociatedFolderAndFileAsync(movie, songwriter);
+            var createdAssociatedFolderAndFileResult = await _movieToFolderService.CreateAssociatedAsync(movie, songwriter);
             if (createdAssociatedFolderAndFileResult.IsFailure)
             {
                 return Result.Failure<MovieId>(createdAssociatedFolderAndFileResult.Error);
@@ -222,6 +222,7 @@ public class MovieService : IMovieService
         var originalDTO = movie.ToDTO();
         var updateActions = new List<Result>()
         {
+            movie.SetTitle(movieUpdateDTO.Title),
             movie.SetProductionInfo(movieUpdateDTO.ProductionCountry, movieUpdateDTO.ProductionYear),
             movie.SetDirectorInfo(movieUpdateDTO.DirectorName, movieUpdateDTO.DirectorLastName)
         };
@@ -229,6 +230,12 @@ public class MovieService : IMovieService
         if (updateActions.Any(e => e.IsFailure))
         {
             return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
+        }
+
+        var folderUpdatingResult = await _movieToFolderService.UpdateIfExistsAsync(movie);
+        if (folderUpdatingResult.IsSuccess)
+        {
+            movie.SetDirectoryInfo(folderUpdatingResult.Value);
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);

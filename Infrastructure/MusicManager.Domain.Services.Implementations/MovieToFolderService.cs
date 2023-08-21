@@ -19,7 +19,7 @@ public class MovieToFolderService : IMovieToFolderService
         _root = root;
     }
 
-    public async Task<Result<string>> CreateAssociatedFolderAndFileAsync(Movie movie, Songwriter parent)
+    public async Task<Result<string>> CreateAssociatedAsync(Movie movie, Songwriter parent)
     {
         if (parent.EntityDirectoryInfo is null)
         {
@@ -32,7 +32,7 @@ public class MovieToFolderService : IMovieToFolderService
             return Result.Failure<string>(new Error("Parent directory is not exists."));
         }
 
-        string createdMovieDirectoryName = $"{movie.ProductionInfo?.Year} {DomainServicesConstants.MovieDirectoryNameSeparator} {movie.Title}";
+        string createdMovieDirectoryName = GetDirectoryName(movie);
         string createdMovieDirectoryFullPath = Path.Combine(rootDirectory.FullName, createdMovieDirectoryName);
         string createdMovieRelationalPath = createdMovieDirectoryFullPath.GetRelational(_root);
 
@@ -49,5 +49,34 @@ public class MovieToFolderService : IMovieToFolderService
             .AddSerializedJsonEntityToAsync(jsonFileInfoPath);
 
         return createdMovieRelationalPath;
+    }
+
+    public async Task<Result<string>> UpdateIfExistsAsync(Movie movie)
+    {
+        if (movie.EntityDirectoryInfo is null)
+        {
+            return Result.Failure<string>(new Error($"Associated folder isn't created."));
+        }
+
+        var currentDirectory = new DirectoryInfo(_root.CombineWith(movie.EntityDirectoryInfo.Path));
+        if (!currentDirectory.Exists) 
+        {
+            return Result.Failure<string>(new Error($"Associated folder isn't exists."));
+        }
+
+        string newDirectoryName = GetDirectoryName(movie);
+        string newDirecotryFullPath = Path.Combine(Path.GetDirectoryName(currentDirectory.FullName), newDirectoryName);
+        currentDirectory.MoveTo(newDirecotryFullPath);
+
+        await movie
+           .ToJson()
+           .AddSerializedJsonEntityToAsync(Path.Combine(currentDirectory.FullName, MovieEntityJson.FileName));
+
+        return Result.Success(newDirecotryFullPath.GetRelational(_root));
+    }
+
+    private string GetDirectoryName(Movie movie)
+    {
+        return $"{movie.ProductionInfo?.Year} {DomainServicesConstants.MovieDirectoryNameSeparator} {movie.Title}";
     }
 }
