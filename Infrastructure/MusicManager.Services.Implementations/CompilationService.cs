@@ -3,6 +3,7 @@ using MusicManager.Domain.Common;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
+using MusicManager.Domain.Services.Implementations;
 using MusicManager.Domain.Shared;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts.Base;
@@ -184,6 +185,12 @@ public class CompilationService : ICompilationService
         if (updateActions.Any(e => e.IsFailure))
         {
             return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
+        }
+
+        var folderUpdatingResult = await _compilationToFolderService.UpdateIfExistsAsync(compilation);
+        if (folderUpdatingResult.IsSuccess)
+        {
+            compilation.SetDirectoryInfo(folderUpdatingResult.Value);
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);

@@ -16,7 +16,7 @@ namespace MusicManager.Domain.Extensions
 
         public static Result<Compilation> ToEntity(this CompilationEntityJson entityJson, SongwriterId songwriterId, string associatedDirectoryPath)
         {
-            if (entityJson.ProductionCountry is null || entityJson.ProductionYear is null)
+            if (entityJson.ProductionCountry is null)
             {
                 return Compilation.Create(songwriterId, DiscType.Create(entityJson.DiscType).Value, entityJson.Identifier, associatedDirectoryPath);
             }
@@ -26,27 +26,23 @@ namespace MusicManager.Domain.Extensions
                 DiscType.Create(entityJson.DiscType).Value, 
                 entityJson.Identifier, 
                 associatedDirectoryPath,
-                (int)entityJson.ProductionYear, 
+                entityJson.ProductionYear, 
                 entityJson.ProductionCountry);
         }
 
         public static Result<Movie> ToEntity(this MovieEntityJson entityJson, SongwriterId songwriterId, string associatedDirectoryPath)
         {
-            if (entityJson.ProductionCountry is null || entityJson.ProductionYear is null)
-            {
-                return Movie.Create(songwriterId, entityJson.Title, associatedDirectoryPath);
-            }
-
             if (entityJson.DirectorLastName is null || entityJson.DirectorName is null)
             {
-                return Movie.Create(songwriterId, entityJson.Title, (int)entityJson.ProductionYear, entityJson.ProductionCountry, associatedDirectoryPath);
+                return Movie.Create(songwriterId, entityJson.Title, entityJson.ProductionYear, 
+                    entityJson.ProductionCountry ?? ProductionInfo.UndefinedCountry, associatedDirectoryPath);
             }
 
             return Movie.Create(
                 songwriterId,
                 entityJson.Title,
-                (int)entityJson.ProductionYear,
-                entityJson.ProductionCountry,
+                entityJson.ProductionYear,
+                entityJson.ProductionCountry ?? ProductionInfo.UndefinedCountry,
                 associatedDirectoryPath,
                 entityJson.DirectorName,
                 entityJson.DirectorLastName);

@@ -34,13 +34,7 @@ public class CompilationToFolderService : ICompilationToFolderService
             return Result.Failure<string>(new Error("Parent directory is not exists."));
         }
 
-        string baseCompilationDirectoryName = $"{compilation.Type.Value} {compilation.Identifier}";
-        string createdCompilationDirectoryName = compilation.ProductionInfo is null ?
-        baseCompilationDirectoryName
-        :
-        $"{baseCompilationDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {compilation.ProductionInfo.Country} " +
-        $"{DomainServicesConstants.DiscDirectoryNameSeparator} {compilation.ProductionInfo.Year}";
-
+        string createdCompilationDirectoryName = GetDirectoryName(compilation);
         string createdCompilationDirectoryFullPath = Path.Combine(rootDirectory.FullName, createdCompilationDirectoryName);
         string createdCompilationRelationalPath = createdCompilationDirectoryFullPath.GetRelational(_root);
 
@@ -59,5 +53,41 @@ public class CompilationToFolderService : ICompilationToFolderService
             .AddSerializedJsonEntityToAsync(jsonFileInfoPath);
 
         return createdCompilationRelationalPath;
+    }
+
+    public async Task<Result<string>> UpdateIfExistsAsync(Compilation compilation, CancellationToken cancellationToken = default)
+    {
+        if (compilation.EntityDirectoryInfo is null)
+        {
+            return Result.Failure<string>(new Error($"Associated folder isn't created."));
+        }
+
+        var currentDirectory = new DirectoryInfo(_root.CombineWith(compilation.EntityDirectoryInfo.Path));
+        if (!currentDirectory.Exists)
+        {
+            return Result.Failure<string>(new Error($"Associated folder isn't exists."));
+        }
+
+        string newDirectoryName = GetDirectoryName(compilation);
+        string newDirecotryFullPath = Path.Combine(Path.GetDirectoryName(currentDirectory.FullName), newDirectoryName);
+        currentDirectory.MoveTo(newDirecotryFullPath);
+
+        await compilation
+           .ToJson()
+           .AddSerializedJsonEntityToAsync(Path.Combine(currentDirectory.FullName, CompilationEntityJson.FileName));
+
+        return Result.Success(newDirecotryFullPath.GetRelational(_root));
+    }
+
+    private string GetDirectoryName(Compilation compilation)
+    {
+        string baseCompilationDirectoryName = $"{compilation.Type.Value} {compilation.Identifier}";
+        string createdCompilationDirectoryName = compilation.ProductionInfo is null || compilation.ProductionInfo.Year is null ?
+        baseCompilationDirectoryName
+        :
+        $"{baseCompilationDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {compilation.ProductionInfo.Country} " +
+        $"{DomainServicesConstants.DiscDirectoryNameSeparator} {compilation.ProductionInfo.Year}";
+
+        return createdCompilationDirectoryName;
     }
 }

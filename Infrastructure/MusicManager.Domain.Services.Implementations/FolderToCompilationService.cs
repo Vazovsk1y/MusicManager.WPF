@@ -101,7 +101,7 @@ public partial class FolderToCompilationService :
         }
 
         var (type, identificator, prodCountry, prodYear) = gettingComponentsResult.Value;
-        if (prodCountry is null || prodYear is null)
+        if (prodCountry is null)
         {
             return Compilation.Create(
                 parent,
@@ -113,11 +113,11 @@ public partial class FolderToCompilationService :
 
         var creationDiscResult = Compilation.Create(
             parent,
-            gettingComponentsResult.Value.type,
-            gettingComponentsResult.Value.identificator,
+            type,
+            identificator,
             discDirectoryInfo.FullName.GetRelational(_root),
-            (int)gettingComponentsResult.Value.prodYear!,
-            gettingComponentsResult.Value.prodCountry!);
+            prodYear,
+            prodCountry);
 
         return creationDiscResult;
     }

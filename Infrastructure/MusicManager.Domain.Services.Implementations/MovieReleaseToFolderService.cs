@@ -36,7 +36,7 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
         }
 
         string baseMovieReleaseDirectoryName = $"{movieRelease.Type.Value} {movieRelease.Identifier}";
-        string createdMovieReleaseDirectoryName = movieRelease.ProductionInfo is null ?
+        string createdMovieReleaseDirectoryName = movieRelease.ProductionInfo is null || movieRelease.ProductionInfo.Year is null ?
         baseMovieReleaseDirectoryName
         :
         $"{baseMovieReleaseDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo.Country} " +

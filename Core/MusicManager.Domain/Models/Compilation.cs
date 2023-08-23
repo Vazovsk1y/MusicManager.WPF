@@ -72,7 +72,7 @@ public class Compilation : Disc
         DiscType discType,
         string identifier,
         string directoryFullPath,
-        int productionYear,
+        int? productionYear,
         string productionCountry)
     {
         var diskCreationResult = Create(songwriterId, discType, identifier);

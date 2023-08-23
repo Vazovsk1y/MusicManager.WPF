@@ -219,7 +219,6 @@ public class MovieService : IMovieService
             return Result.Failure(ServicesErrors.MovieWithPassedIdIsNotExists());
         }
 
-        var originalDTO = movie.ToDTO();
         var updateActions = new List<Result>()
         {
             movie.SetTitle(movieUpdateDTO.Title),

@@ -99,7 +99,7 @@ public partial class FolderToMovieReleaseService :
         }
 
         var (type, identificator, prodCountry, prodYear) = gettingComponentsResult.Value;
-        if (prodCountry is null || prodYear is null)
+        if (prodCountry is null)
         {
             return MovieRelease.Create(
                 type,
@@ -109,11 +109,11 @@ public partial class FolderToMovieReleaseService :
         }
 
         var creationDiscResult = MovieRelease.Create(
-            gettingComponentsResult.Value.type,
-            gettingComponentsResult.Value.identificator,
+            type,
+            identificator,
             discDirectoryInfo.FullName.GetRelational(_root),
-            (int)gettingComponentsResult.Value.prodYear!,
-            gettingComponentsResult.Value.prodCountry!);
+            prodYear,
+            prodCountry);
 
         return creationDiscResult;
     }
