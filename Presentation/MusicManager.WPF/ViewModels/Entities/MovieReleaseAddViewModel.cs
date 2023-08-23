@@ -81,8 +81,8 @@ namespace MusicManager.WPF.ViewModels.Entities
                 {
                     DiscId = addingResult.Value,
                     MoviesLinks = moviesLinks,
-                    DiscType = SelectedDiscType!.Value,
-                    Identificator = dto.Identifier
+                    SelectedDiscType = SelectedDiscType!,
+                    Identifier = dto.Identifier
                 });
 
                 Messenger.Send(message);

@@ -32,23 +32,25 @@ internal static class MappingExtensions
             MoviesReleases = new(movieDTO.MovieReleasesDTOs.Select(e => e.ToViewModel())),
         };
 
-        entity.StartTrackingState();
         entity.SetCurrentAsPrevious();
         return entity;
     }
 
     public static CompilationViewModel ToViewModel(this CompilationDTO compilationDTO)
     {
-        return new CompilationViewModel()
+        var entity = new CompilationViewModel()
         {
             DiscId = compilationDTO.Id,
-            Identificator = compilationDTO.Identifier,
+            Identifier = compilationDTO.Identifier,
             SongwriterId = compilationDTO.SongwriterId,
             ProductionCountry = compilationDTO.ProductionCountry,
             ProductionYear = compilationDTO.ProductionYear,
-            DiscType = compilationDTO.DiscType.Value,
+            SelectedDiscType = compilationDTO.DiscType,
             Songs = new(compilationDTO.SongDTOs.Select(e => e.ToViewModel())),
         };
+
+        entity.SetCurrentAsPrevious();
+        return entity;
     }
 
     public static MovieReleaseViewModel ToViewModel(this MovieReleaseDTO movieReleaseDTO)
@@ -57,10 +59,10 @@ internal static class MappingExtensions
         {
             DiscId = movieReleaseDTO.Id,
             MoviesLinks = movieReleaseDTO.MoviesLinks.ToList(),
-            Identificator = movieReleaseDTO.Identifier,
+            Identifier = movieReleaseDTO.Identifier,
             ProductionCountry = movieReleaseDTO.ProductionCountry,
             ProductionYear = movieReleaseDTO.ProductionYear,
-            DiscType = movieReleaseDTO.DiscType.Value,
+            SelectedDiscType = movieReleaseDTO.DiscType,
             Songs = new (movieReleaseDTO.SongDTOs.Select(e => e.ToViewModel())),
         };
     }

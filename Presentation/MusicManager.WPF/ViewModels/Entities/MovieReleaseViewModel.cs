@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MusicManager.WPF.ViewModels.Entities;
 
-internal class MovieReleaseViewModel : DiscViewModel
+internal partial class MovieReleaseViewModel : DiscViewModel<MovieReleaseViewModel>
 {
     public required ICollection<MovieId> MoviesLinks { get; init; }
 }

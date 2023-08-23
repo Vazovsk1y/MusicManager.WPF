@@ -88,7 +88,7 @@ internal partial class MoviesPanelViewModel :
 
         using var scope = _serviceScopeFactory.CreateScope();
         var movieService = scope.ServiceProvider.GetRequiredService<IMovieService>();
-        var moviesToUpdate = SongwritersPanelViewModel.SelectedSongwriter!.Movies.Where(e => e.IsModified);
+        var moviesToUpdate = Movies.Where(e => e.IsModified);
 
         var results = new List<Result>();
         foreach (var item in moviesToUpdate)
@@ -109,9 +109,7 @@ internal partial class MoviesPanelViewModel :
             else
             {
                 item.SetCurrentAsPrevious();
-                item.StartTrackingState();
             }
-
 
             results.Add(updateResult);
         }
@@ -161,7 +159,6 @@ internal partial class MoviesPanelViewModel :
 
             if (songwriter is not null)
             {
-                message.MovieViewModel.StartTrackingState();
                 message.MovieViewModel.SetCurrentAsPrevious();
                 songwriter.Movies.Add(message.MovieViewModel);
             }

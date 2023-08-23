@@ -16,14 +16,19 @@
                           SelectedItem="{Binding SelectedDisc}"
                           AutoGenerateColumns="False">
 
+                        <DataGrid.Resources>
+                            <CollectionViewSource x:Key="EnableDiscTypes" Source="{Binding EnableDiscTypes}"/>
+                        </DataGrid.Resources>
+
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Type" Binding="{Binding DiscType}"/>
+                            <DataGridComboBoxColumn Header="Type" 
+                                                    ItemsSource="{Binding Source={StaticResource EnableDiscTypes}}" 
+                                                    SelectedItemBinding="{Binding SelectedDiscType}" DisplayMemberPath="Value"/>
                             <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry}"/>
                             <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear}"/>
-                            <DataGridTextColumn Header="Identificator" Binding="{Binding Identificator}"/>
+                            <DataGridTextColumn Header="Identificator" Binding="{Binding Identifier}"/>
                             <DataGridTextColumn Header="SongsCount" Binding="{Binding Songs.Count}"/>
                         </DataGrid.Columns>
-
 
                     </DataGrid>
 
@@ -37,18 +42,26 @@
                           SelectedItem="{Binding SelectedDisc}"
                           AutoGenerateColumns="False">
 
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Type" Binding="{Binding DiscType}"/>
-                            <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry}"/>
-                            <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear}"/>
-                            <DataGridTextColumn Header="Identificator" Binding="{Binding Identificator}"/>
-                            <DataGridTextColumn Header="SongsCount" Binding="{Binding Songs.Count}"/>
-                        </DataGrid.Columns>
+                        <DataGrid.Resources>
+                            <CollectionViewSource x:Key="EnableDiscTypes" Source="{Binding EnableDiscTypes}"/>
+                        </DataGrid.Resources>
 
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
+
+                            <DataGridComboBoxColumn Header="Type" 
+                                                    ItemsSource="{Binding Source={StaticResource EnableDiscTypes}}" 
+                                                    SelectedItemBinding="{Binding SelectedDiscType}" DisplayMemberPath="Value"/>
+                            <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry, Mode=TwoWay}"/>
+                            <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear, Mode=TwoWay}"/>
+                            <DataGridTextColumn Header="Identificator" Binding="{Binding Identifier, Mode=TwoWay}"/>
+                            <DataGridTextColumn Header="SongsCount" Binding="{Binding Songs.Count}" IsReadOnly="True"/>
+                        </DataGrid.Columns>
 
                     </DataGrid>
 
                     <Button Content="Add" Command="{Binding AddCompilationCommand}"/>
+                    <Button Content="Save" Command="{Binding SaveCompilationsCommand}"/>
                 </StackPanel>
             </TabItem>
         </TabControl>

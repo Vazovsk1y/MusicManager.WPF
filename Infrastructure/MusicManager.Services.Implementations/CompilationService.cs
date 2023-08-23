@@ -165,4 +165,28 @@ public class CompilationService : ICompilationService
             SongDTOs = songsDtos,
         };
     }
+
+    public async Task<Result> UpdateAsync(CompilationUpdateDTO compilationUpdateDTO, CancellationToken cancellationToken = default)
+    {
+        var compilation = await _dbContext.Compilations.SingleOrDefaultAsync(e => e.Id == compilationUpdateDTO.Id, cancellationToken);
+        if (compilation is null)
+        {
+            return Result.Failure(ServicesErrors.CompilationWithPassedIdIsNotExists());
+        }
+
+        var updateActions = new List<Result>()
+        {
+            compilation.SetIdentifier(compilationUpdateDTO.Identifier),
+            compilation.SetDiscType(compilationUpdateDTO.DiscType),
+            compilation.SetProductionInfo(compilationUpdateDTO.ProductionCountry, compilationUpdateDTO.ProductionYear),
+        };
+
+        if (updateActions.Any(e => e.IsFailure))
+        {
+            return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
 }

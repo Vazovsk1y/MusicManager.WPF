@@ -1,14 +1,20 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Extensions.DependencyInjection;
+using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 using MusicManager.Services;
+using MusicManager.Services.Contracts.Dtos;
 using MusicManager.Utils;
 using MusicManager.WPF.Messages;
+using MusicManager.WPF.Tools;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace MusicManager.WPF.ViewModels;
@@ -18,7 +24,7 @@ internal partial class DiscsPanelViewModel :
     IRecipient<CompilationCreatedMessage>,
     IRecipient<MovieReleaseCreatedMessage>
 {
-    public SongwirtersPanelViewModel SongwritersPanelViewModel { get; }
+    public SongwirtersPanelViewModel SongwritersPanelViewModel { get; }  
 
     public MoviesPanelViewModel MoviesPanelViewModel { get; }
 
@@ -28,15 +34,17 @@ internal partial class DiscsPanelViewModel :
     public IReadOnlyCollection<MovieReleaseViewModel> MovieReleases => 
         new ObservableCollection<MovieReleaseViewModel>(MoviesPanelViewModel.Movies.SelectMany(e => e.MoviesReleases));
 
-    public IReadOnlyCollection<DiscViewModel> Discs => new ObservableCollection<DiscViewModel>(
-        MovieReleases.Cast<DiscViewModel>()
-        .Union(Compilations.Cast<DiscViewModel>())
-        );
+    public IReadOnlyCollection<IDiscViewModel> Discs => new ObservableCollection<IDiscViewModel>(
+        MovieReleases.Cast<IDiscViewModel>()
+        .Union(Compilations.Cast<IDiscViewModel>()));
 
     private readonly IUserDialogService<CompilationAddWindow> _compilationDialogService;
     private readonly IUserDialogService<MovieReleaseAddWindow> _movieReleaseDialogService;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    private DiscViewModel? _selectedDisc;
+    private IDiscViewModel? _selectedDisc;
+
+    public IEnumerable<DiscType> EnableDiscTypes => DiscType.EnumerateRange(5);
 
     public DiscsPanelViewModel()
     {
@@ -47,15 +55,17 @@ internal partial class DiscsPanelViewModel :
         SongwirtersPanelViewModel songwritersPanelViewModel,
         MoviesPanelViewModel moviesPanelViewModel,
         IUserDialogService<CompilationAddWindow> dialogService,
-        IUserDialogService<MovieReleaseAddWindow> movieReleaseDialogService) : base()
+        IUserDialogService<MovieReleaseAddWindow> movieReleaseDialogService,
+        IServiceScopeFactory serviceScopeFactory) : base()
     {
         SongwritersPanelViewModel = songwritersPanelViewModel;
         MoviesPanelViewModel = moviesPanelViewModel;
         _compilationDialogService = dialogService;
         _movieReleaseDialogService = movieReleaseDialogService;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
-    public DiscViewModel? SelectedDisc
+    public IDiscViewModel? SelectedDisc
     {
         get => _selectedDisc;
         set => SetProperty(ref _selectedDisc, value);
@@ -73,12 +83,64 @@ internal partial class DiscsPanelViewModel :
         _movieReleaseDialogService.ShowDialog();
     }
 
+    [RelayCommand]
+    private async Task SaveCompilations()
+    {
+        if (SaveCompilationsCommand.IsRunning)
+        {
+            return;
+        }
+
+        using var scope = _serviceScopeFactory.CreateScope();
+        var compilationService = scope.ServiceProvider.GetRequiredService<ICompilationService>();
+        var compilationsToUpdate = Compilations.Where(e => e.IsModified);
+
+        var results = new List<Result>();
+        foreach (var item in compilationsToUpdate)
+        {
+            var dto = new CompilationUpdateDTO
+            (
+                item.DiscId,
+                item.Identifier,
+                item.ProductionCountry,
+                item.ProductionYear,
+                item.SelectedDiscType
+            );
+
+            var updateResult = await compilationService.UpdateAsync(dto);
+            if (updateResult.IsFailure)
+            {
+                item.RollBackChanges();
+            }
+            else
+            {
+                item.SetCurrentAsPrevious();
+            }
+
+            results.Add(updateResult);
+        }
+
+        if (results.Any(e => e.IsFailure))
+        {
+            MessageBoxHelper.ShowErrorBox(string.Join(",", results.Where(e => e.IsFailure).Select(e => e.Error.Message)));
+        }
+        else
+        {
+            MessageBoxHelper.ShowInfoBox("Successfully updated.");
+        }
+    }
+
     public async void Receive(CompilationCreatedMessage message)
     {
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
             var songwriter = SongwritersPanelViewModel.Songwriters.FirstOrDefault(e => e.SongwriterId == message.CompilationViewModel.SongwriterId);
-            songwriter?.Compilations.Add(message.CompilationViewModel);
+
+            if (songwriter is not null)
+            {
+                songwriter?.Compilations.Add(message.CompilationViewModel);
+                message.CompilationViewModel.SetCurrentAsPrevious();
+            }
         });
     }
 

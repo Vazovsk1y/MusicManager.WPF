@@ -55,8 +55,8 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
             {
                 DiscId = addingResult.Value,
                 SongwriterId = dto.SongwriterId,
-                Identificator = dto.Identifier,
-                DiscType = SelectedDiscType!.Value,
+                Identifier = dto.Identifier,
+                SelectedDiscType = SelectedDiscType!,
             });
 
             Messenger.Send(message);

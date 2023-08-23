@@ -99,7 +99,7 @@ public class Disc : IAggregateRoot
         return result;
     }
 
-    public virtual Result SetProductionInfo(string productionCountry, int productionYear)
+    public virtual Result SetProductionInfo(string productionCountry, int? productionYear)
     {
         var result = ProductionInfo.Create(productionCountry, productionYear);
 
@@ -110,6 +110,28 @@ public class Disc : IAggregateRoot
         }
 
         return Result.Failure(result.Error);
+    }
+
+    public virtual Result SetIdentifier(string identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+        {
+            return Result.Failure(DomainErrors.NullOrEmptyStringPassed(nameof(identifier)));
+        }
+
+        Identifier = identifier;
+        return Result.Success();
+    }
+
+    public virtual Result SetDiscType(DiscType discType)
+    {
+        if (discType is null)
+        {
+            return Result.Failure(DomainErrors.NullEntityPassed(nameof(discType)));
+        }
+
+        Type = discType;
+        return Result.Success();
     }
 
     #endregion

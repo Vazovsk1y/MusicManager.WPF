@@ -63,20 +63,7 @@ internal partial class MovieViewModel :
 
     public void SetCurrentAsPrevious()
     {
-        PreviousState = new()
-        {
-            MovieId = MovieId,
-            SongwriterId = SongwriterId,
-            DirectorLastName = DirectorLastName,
-            DirectorName = DirectorName,
-            ProductionCountry = ProductionCountry,
-            ProductionYear = ProductionYear,
-            Title = Title,
-        };
-    }
-
-    public void StartTrackingState()
-    {
+        PreviousState = MemberwiseClone() as MovieViewModel;
         OnPropertyChanged(nameof(IsModified));
         OnPropertyChanged(nameof(IsUpdatable));
     }

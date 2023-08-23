@@ -7,4 +7,6 @@ public interface IModifiable<T> where T : IModifiable<T>
     T? PreviousState { get; }
 
     void RollBackChanges();
+
+    void SetCurrentAsPrevious();
 }
