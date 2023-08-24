@@ -66,7 +66,11 @@ public class MovieToFolderService : IMovieToFolderService
 
         string newDirectoryName = GetDirectoryName(movie);
         string newDirecotryFullPath = Path.Combine(Path.GetDirectoryName(currentDirectory.FullName), newDirectoryName);
-        currentDirectory.MoveTo(newDirecotryFullPath);
+
+        if (currentDirectory.FullName != newDirecotryFullPath)
+        {
+            currentDirectory.MoveTo(newDirecotryFullPath);
+        }
 
         await movie
            .ToJson()

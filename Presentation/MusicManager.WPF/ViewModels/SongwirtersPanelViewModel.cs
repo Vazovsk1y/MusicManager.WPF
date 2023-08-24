@@ -10,6 +10,7 @@ using MusicManager.WPF.Tools;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -88,6 +89,7 @@ internal partial class SongwirtersPanelViewModel :
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
             Songwriters.Add(addingResult.Value.ToViewModel());
+            ReplaceMovieReleasesDuplicates();
         });
         MessageBoxHelper.ShowInfoBox("Success");
     }
@@ -110,6 +112,27 @@ internal partial class SongwirtersPanelViewModel :
             foreach (var songwriterDTO in result.Value)
             {
                 Songwriters.Add(songwriterDTO.ToViewModel());
+            }
+        }
+
+        ReplaceMovieReleasesDuplicates();
+    }
+
+    private void ReplaceMovieReleasesDuplicates()
+    {
+        var duplicates = Songwriters.SelectMany(e => e.Movies).SelectMany(e => e.MoviesReleases).GroupBy(e => e.DiscId).Where(e => e.Count() > 1);
+        var movies = Songwriters.SelectMany(e => e.Movies);
+
+        foreach (var movie in movies)
+        {
+            foreach (var moviesReleases in duplicates)
+            {
+                var mrToSwap = movie.MoviesReleases.FirstOrDefault(e => e.DiscId == moviesReleases.Key);
+                if (mrToSwap is not null)
+                {
+                    int index = movie.MoviesReleases.IndexOf(mrToSwap);
+                    movie.MoviesReleases[index] = moviesReleases.First();
+                }
             }
         }
     }

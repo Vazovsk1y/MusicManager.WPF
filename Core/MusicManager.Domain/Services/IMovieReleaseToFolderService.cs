@@ -8,4 +8,6 @@ public interface IMovieReleaseToFolderService
     Task<Result<string>> CreateAssociatedFolderAndFileAsync(MovieRelease movieRelease, Movie parent);
 
     Task<Result> CreateFolderLinkAsync(Movie addLinkTo, string movieReleaseLinkTargetPath);
+
+    Task<Result<string>> UpdateIfExistsAsync(MovieRelease movieRelease);
 }

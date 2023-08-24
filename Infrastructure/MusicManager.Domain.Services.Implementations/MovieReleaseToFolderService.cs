@@ -6,6 +6,7 @@ using MusicManager.Domain.ValueObjects;
 using MusicManager.Repositories.Data;
 using MusicManager.Utils;
 using System.Diagnostics;
+using System.IO;
 
 namespace MusicManager.Domain.Services.Implementations;
 
@@ -35,13 +36,7 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
             return Result.Failure<string>(new Error("Parent directory is not exists."));
         }
 
-        string baseMovieReleaseDirectoryName = $"{movieRelease.Type.Value} {movieRelease.Identifier}";
-        string createdMovieReleaseDirectoryName = movieRelease.ProductionInfo is null || movieRelease.ProductionInfo.Year is null ?
-        baseMovieReleaseDirectoryName
-        :
-        $"{baseMovieReleaseDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo.Country} " +
-        $"{DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo.Year}";
-
+        string createdMovieReleaseDirectoryName = GetDirectoryName(movieRelease);
         string createdMovieReleaseDirectoryFullPath = Path.Combine(rootDirectory.FullName, createdMovieReleaseDirectoryName);
         string createdMovieReleaseRelationalPath = createdMovieReleaseDirectoryFullPath.GetRelational(_root);
 
@@ -117,5 +112,72 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
         }
 
         return Result.Success();
+    }
+
+    public async Task<Result<string>> UpdateIfExistsAsync(MovieRelease movieRelease)
+    {
+        if (movieRelease.EntityDirectoryInfo is null)
+        {
+            return Result.Failure<string>(new Error("Movie release directory info is not created."));
+        }
+
+        var previousDirectory = new DirectoryInfo(_root.CombineWith(movieRelease.EntityDirectoryInfo!.Path));
+        string previousDirectoryName = previousDirectory.Name;
+        if (!previousDirectory.Exists)
+        {
+            return Result.Failure<string>(new Error("Original directory is not exists."));
+        }
+
+        string newDirectoryName = GetDirectoryName(movieRelease);
+        string newDirectoryFullPath = Path.Combine(previousDirectory.Parent!.FullName, newDirectoryName);
+
+        if (previousDirectory.FullName != newDirectoryFullPath)
+        {
+            previousDirectory.MoveTo(newDirectoryFullPath);
+        }
+
+        await movieRelease
+            .ToJson()
+            .AddSerializedJsonEntityToAsync(Path.Combine(newDirectoryFullPath, MovieReleaseEntityJson.FileName));
+
+        await UpdateAllExistingLinks(movieRelease.Movies, previousDirectoryName, newDirectoryFullPath);
+        return Result.Success(newDirectoryFullPath.GetRelational(_root));
+    }
+
+    private async Task UpdateAllExistingLinks(IEnumerable<Movie> movies, string previousDirectoryName, string newDirectoryFullPath)
+    {
+        var moviesToUpdateLinksIn = movies.Where(e => e.EntityDirectoryInfo is not null);
+
+        foreach (var item in moviesToUpdateLinksIn)
+        {
+            string rootPath = _root.CombineWith(item.EntityDirectoryInfo!.Path);
+
+            var linkInfo = new DirectoryInfo(Path.Combine(rootPath, previousDirectoryName));
+            if (linkInfo.Exists && linkInfo.LinkTarget is not null)
+            {
+                linkInfo.Delete();
+                await CreateFolderLinkAsync(item, newDirectoryFullPath);
+                continue;
+            }
+
+            var shortcutInfo = new DirectoryInfo(rootPath).EnumerateFiles().FirstOrDefault(e => e.Exists && e.Name.Contains(previousDirectoryName) && e.Extension == ".lnk");
+            if (shortcutInfo is not null)
+            {
+                shortcutInfo.Delete();
+                await CreateFolderLinkAsync(item, newDirectoryFullPath);
+            }
+        }
+    }
+
+    private string GetDirectoryName(MovieRelease movieRelease)
+    {
+        string baseMovieReleaseDirectoryName = $"{movieRelease.Type.Value} {movieRelease.Identifier}";
+        string createdMovieReleaseDirectoryName = movieRelease.ProductionInfo is null || movieRelease.ProductionInfo.Year is null ?
+        baseMovieReleaseDirectoryName
+        :
+        $"{baseMovieReleaseDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo.Country} " +
+        $"{DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo.Year}";
+
+        return createdMovieReleaseDirectoryName;
     }
 }

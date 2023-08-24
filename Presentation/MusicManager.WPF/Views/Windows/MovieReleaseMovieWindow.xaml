@@ -12,7 +12,7 @@
         <StackPanel>
             <ComboBox ItemsSource="{Binding MoviesReleasesToSelectFrom}"
                       SelectedItem="{Binding SelectedViewModel}"
-                      DisplayMemberPath="Identificator"/>
+                      DisplayMemberPath="Identifier"/>
             <Button Content="Ok" Command="{Binding AcceptCommand}"/>
         </StackPanel>
     </Grid>

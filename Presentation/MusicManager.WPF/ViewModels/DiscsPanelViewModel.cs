@@ -6,6 +6,7 @@ using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 using MusicManager.Services;
 using MusicManager.Services.Contracts.Dtos;
+using MusicManager.Services.Implementations;
 using MusicManager.Utils;
 using MusicManager.WPF.Messages;
 using MusicManager.WPF.Tools;
@@ -44,7 +45,7 @@ internal partial class DiscsPanelViewModel :
 
     private IDiscViewModel? _selectedDisc;
 
-    public IEnumerable<DiscType> EnableDiscTypes => DiscType.EnumerateRange(5);
+    public IEnumerable<DiscType> EnableDiscTypes => DiscType.EnumerateRange();
 
     public DiscsPanelViewModel()
     {
@@ -130,6 +131,53 @@ internal partial class DiscsPanelViewModel :
         }
     }
 
+    [RelayCommand]
+    private async Task SaveMoviesReleases()
+    {
+        if (SaveMoviesReleasesCommand.IsRunning)
+        {
+            return;
+        }
+
+        using var scope = _serviceScopeFactory.CreateScope();
+        var movieReleaseService = scope.ServiceProvider.GetRequiredService<IMovieReleaseService>();
+        var moviesReleasesToUpdate = MovieReleases.Where(e => e.IsModified);
+
+        var results = new List<Result>();
+        foreach (var item in moviesReleasesToUpdate)
+        {
+            var dto = new MovieReleaseUpdateDTO
+            (
+                item.DiscId,
+                item.Identifier,
+                item.ProductionCountry,
+                item.ProductionYear,
+                item.SelectedDiscType
+            );
+
+            var updateResult = await movieReleaseService.UpdateAsync(dto);
+            if (updateResult.IsFailure)
+            {
+                item.RollBackChanges();
+            }
+            else
+            {
+                item.SetCurrentAsPrevious();
+            }
+
+            results.Add(updateResult);
+        }
+
+        if (results.Any(e => e.IsFailure))
+        {
+            MessageBoxHelper.ShowErrorBox(string.Join(",", results.Where(e => e.IsFailure).Select(e => e.Error.Message)));
+        }
+        else
+        {
+            MessageBoxHelper.ShowInfoBox("Successfully updated.");
+        }
+    }
+
     public async void Receive(CompilationCreatedMessage message)
     {
         await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -153,6 +201,7 @@ internal partial class DiscsPanelViewModel :
             foreach (var movie in movies)
             {
                 movie.MoviesReleases.Add(message.MovieReleaseViewModel);
+                message.MovieReleaseViewModel.SetCurrentAsPrevious();
             }
         });
     }

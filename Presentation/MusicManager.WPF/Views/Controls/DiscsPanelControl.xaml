@@ -21,6 +21,8 @@
                         </DataGrid.Resources>
 
                         <DataGrid.Columns>
+                            <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
+                            
                             <DataGridComboBoxColumn Header="Type" 
                                                     ItemsSource="{Binding Source={StaticResource EnableDiscTypes}}" 
                                                     SelectedItemBinding="{Binding SelectedDiscType}" DisplayMemberPath="Value"/>
@@ -33,6 +35,7 @@
                     </DataGrid>
 
                     <Button Content="Add" Command="{Binding AddMovieReleaseCommand}"/>
+                    <Button Content="Save" Command="{Binding SaveMoviesReleasesCommand}"/>
                 </StackPanel>
             </TabItem>
             

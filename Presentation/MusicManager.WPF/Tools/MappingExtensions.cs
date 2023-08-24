@@ -55,7 +55,7 @@ internal static class MappingExtensions
 
     public static MovieReleaseViewModel ToViewModel(this MovieReleaseDTO movieReleaseDTO)
     {
-        return new MovieReleaseViewModel()
+        var entity = new MovieReleaseViewModel()
         {
             DiscId = movieReleaseDTO.Id,
             MoviesLinks = movieReleaseDTO.MoviesLinks.ToList(),
@@ -65,6 +65,9 @@ internal static class MappingExtensions
             SelectedDiscType = movieReleaseDTO.DiscType,
             Songs = new (movieReleaseDTO.SongDTOs.Select(e => e.ToViewModel())),
         };
+
+        entity.SetCurrentAsPrevious();
+        return entity;
     }
 
     public static SongViewModel ToViewModel(this SongDTO songDTO)

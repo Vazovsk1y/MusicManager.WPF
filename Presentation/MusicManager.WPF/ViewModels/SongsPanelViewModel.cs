@@ -57,12 +57,8 @@ internal partial class SongsPanelViewModel :
     {
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            var discs = DiscsPanelViewModel.Discs.Where(e => e.DiscId == message.DiscId);
-
-            foreach (var item in discs)
-            {
-                item.Songs.AddRange(message.SongsViewsModels);
-            }
+            var disc = DiscsPanelViewModel.Discs.FirstOrDefault(e => e.DiscId == message.DiscId);
+            disc?.Songs.AddRange(message.SongsViewsModels);
         });
     }
 }

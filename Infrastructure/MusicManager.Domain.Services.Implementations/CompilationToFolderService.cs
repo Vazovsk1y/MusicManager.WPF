@@ -70,7 +70,11 @@ public class CompilationToFolderService : ICompilationToFolderService
 
         string newDirectoryName = GetDirectoryName(compilation);
         string newDirecotryFullPath = Path.Combine(Path.GetDirectoryName(currentDirectory.FullName), newDirectoryName);
-        currentDirectory.MoveTo(newDirecotryFullPath);
+
+        if (currentDirectory.FullName != newDirecotryFullPath)
+        {
+            currentDirectory.MoveTo(newDirecotryFullPath);
+        }
 
         await compilation
            .ToJson()

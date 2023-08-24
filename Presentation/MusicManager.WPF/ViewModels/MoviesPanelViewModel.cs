@@ -69,7 +69,7 @@ internal partial class MoviesPanelViewModel :
         var movieReleasesToSelectFrom = Movies
             .SelectMany(e => e.MoviesReleases)
             .DistinctBy(e => e.DiscId)
-            .Where(e => !e.MoviesLinks.Contains(SelectedMovie!.MovieId));
+            .Where(e => !e.MoviesLinks.Contains(SelectedMovie!.MovieId) || !SelectedMovie.MoviesReleases.Contains(e));
 
         using var scope = _serviceScopeFactory.CreateScope();
         var dialogService = scope.ServiceProvider.GetRequiredService<IWpfWindowService<MovieReleaseMovieWindow>>();

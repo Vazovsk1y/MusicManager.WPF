@@ -3,6 +3,7 @@ using MusicManager.Domain.Common;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
+using MusicManager.Domain.Services.Implementations;
 using MusicManager.Domain.Shared;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts.Base;
@@ -180,6 +181,40 @@ public class MovieReleaseService : IMovieReleaseService
         {
             SongDTOs = songsDtos,
         };
+    }
+
+    public async Task<Result> UpdateAsync(MovieReleaseUpdateDTO movieReleaseUpdateDTO, CancellationToken cancellationToken = default)
+    {
+        var movieRelease = await _dbContext
+            .MovieReleases
+            .Include(e => e.Movies)
+            .SingleOrDefaultAsync(e => e.Id == movieReleaseUpdateDTO.Id, cancellationToken);
+
+        if (movieRelease is null)
+        {
+            return Result.Failure(ServicesErrors.MovieReleaseWithPassedIdIsNotExists());
+        }
+
+        var updateActions = new List<Result>()
+        {
+            movieRelease.SetIdentifier(movieReleaseUpdateDTO.Identifier),
+            movieRelease.SetDiscType(movieReleaseUpdateDTO.DiscType),
+            movieRelease.SetProductionInfo(movieReleaseUpdateDTO.ProductionCountry, movieReleaseUpdateDTO.ProductionYear),
+        };
+
+        if (updateActions.Any(e => e.IsFailure))
+        {
+            return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
+        }
+
+        var folderUpdatingResult = await _movieReleaseToFolderService.UpdateIfExistsAsync(movieRelease);
+        if (folderUpdatingResult.IsSuccess)
+        {
+            movieRelease.SetDirectoryInfo(folderUpdatingResult.Value);
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result.Success();
     }
 
     private Result AddToMovies(IEnumerable<Movie> movies, MovieRelease movieRelease)
