@@ -11,7 +11,7 @@ using MusicManager.DAL;
 namespace MusicManager.DAL.Migrations
 {
     [DbContext(typeof(MusicManagerDbContext))]
-    [Migration("20230820121051_Initial")]
+    [Migration("20230825074343_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -428,7 +428,8 @@ namespace MusicManager.DAL.Migrations
 
             modelBuilder.Entity("MusicManager.Domain.Models.Song", b =>
                 {
-                    b.Navigation("PlaybackInfo");
+                    b.Navigation("PlaybackInfo")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Models.Songwriter", b =>

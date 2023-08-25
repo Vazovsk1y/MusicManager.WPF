@@ -425,7 +425,8 @@ namespace MusicManager.DAL.Migrations
 
             modelBuilder.Entity("MusicManager.Domain.Models.Song", b =>
                 {
-                    b.Navigation("PlaybackInfo");
+                    b.Navigation("PlaybackInfo")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Models.Songwriter", b =>

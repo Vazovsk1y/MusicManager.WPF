@@ -22,7 +22,7 @@ public class Song : IAggregateRoot
 
     public DiscNumber? DiscNumber { get; private set; }
 
-    public PlaybackInfo? PlaybackInfo { get; private set; }
+    public PlaybackInfo PlaybackInfo { get; private set; }
 
     public string Name { get; private set; } = string.Empty;
 
@@ -43,7 +43,7 @@ public class Song : IAggregateRoot
 
     #region --Methods--
 
-    public static Result<Song> Create(
+    private static Result<Song> Create(
         DiscId discId,
         string name,
         int order)
@@ -64,7 +64,7 @@ public class Song : IAggregateRoot
         };
     }
 
-    public static Result<Song> Create(
+    private static Result<Song> Create(
         DiscId discId, 
         string name,
         int order,

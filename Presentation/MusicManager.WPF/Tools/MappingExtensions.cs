@@ -79,10 +79,7 @@ internal static class MappingExtensions
             Number = songDTO.SongNumber,
             DiscNumber = songDTO.DiscNumber,
             Title = songDTO.Name,
-            ExecutableType = songDTO.ExecutableType is null ? 
-            SongFileType.Unknown.ToString() 
-            : 
-            songDTO.ExecutableType.ToString(),
+            ExecutableType = songDTO.ExecutableType.ToString(),
         };
     }
 }
