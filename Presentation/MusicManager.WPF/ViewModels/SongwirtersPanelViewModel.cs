@@ -3,16 +3,21 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using MusicManager.Services;
+using MusicManager.Services.Contracts;
+using MusicManager.Services.Contracts.Dtos;
 using MusicManager.Services.Contracts.Factories;
 using MusicManager.Utils;
 using MusicManager.WPF.Messages;
 using MusicManager.WPF.Tools;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
 
 namespace MusicManager.WPF.ViewModels;
 
@@ -25,6 +30,7 @@ internal partial class SongwirtersPanelViewModel :
     private readonly IFileManagerInteractor _fileManagerInteractor;
     private readonly ISongwriterFolderFactory _songwriterFolderFactory;
     private readonly IUserDialogService<SongwriterAddWindow> _dialogService;
+    private readonly SettingsViewModel _settingsViewModel;
 
     public SongwirtersPanelViewModel() 
     {
@@ -35,13 +41,15 @@ internal partial class SongwirtersPanelViewModel :
         IServiceScopeFactory serviceScopeFactory,
         IFileManagerInteractor fileManagerInteractor,
         ISongwriterFolderFactory songwriterFolderFactory,
-        IUserDialogService<SongwriterAddWindow> dialogService) : base()
+        IUserDialogService<SongwriterAddWindow> dialogService,
+        SettingsViewModel settingsViewModel) : base()
     {
 
         _serviceScopeFactory = serviceScopeFactory;
         _fileManagerInteractor = fileManagerInteractor;
         _songwriterFolderFactory = songwriterFolderFactory;
         _dialogService = dialogService;
+        _settingsViewModel = settingsViewModel;
     }
 
     private SongwriterViewModel? _selectedSongwriter;
@@ -59,39 +67,52 @@ internal partial class SongwirtersPanelViewModel :
     private IAsyncRelayCommand _addSongwriterFromFolderCommand;
 
     public IAsyncRelayCommand AddSongwriterFromFolderCommand => _addSongwriterFromFolderCommand ??=
-        new AsyncRelayCommand(OnSongwriterAddFromFolderExecute, () => !AddSongwriterFromFolderCommand.IsRunning);
+        new AsyncRelayCommand(OnSongwriterAddFromFolderExecute, () => !AddSongwriterFromFolderCommand.IsRunning && Songwriters.Count == 0);
 
     private async Task OnSongwriterAddFromFolderExecute()
     {
         using var scope = _serviceScopeFactory.CreateScope();
-        var selectedFolderResult = _fileManagerInteractor.SelectDirectory();
-        if (selectedFolderResult.IsFailure)
+        var folders = new List<SongwriterFolder>();
+        foreach (var item in new DirectoryInfo(_settingsViewModel.RootPath).EnumerateDirectories())
         {
-            MessageBoxHelper.ShowErrorBox(selectedFolderResult.Error.Message);
-            return;
+            var creatingSongwriterFolderResult = _songwriterFolderFactory.Create(item);
+            if (creatingSongwriterFolderResult.IsFailure)
+            {
+                MessageBoxHelper.ShowErrorBox(creatingSongwriterFolderResult.Error.Message);
+                break;
+            }
+            else
+            {
+                folders.Add(creatingSongwriterFolderResult.Value);
+            }
         }
 
-        var creatingSongwriterFolderResult = _songwriterFolderFactory.Create(selectedFolderResult.Value);
-        if (creatingSongwriterFolderResult.IsFailure)
+        var dtos = new List<SongwriterDTO>();
+        foreach (var item in folders)
         {
-            MessageBoxHelper.ShowErrorBox(creatingSongwriterFolderResult.Error.Message);
-            return;
-        }
-
-        var songwriterService = scope.ServiceProvider.GetRequiredService<ISongwriterService>();
-        var addingResult = await songwriterService.SaveFromFolderAsync(creatingSongwriterFolderResult.Value);
-        if (addingResult.IsFailure)
-        {
-            MessageBoxHelper.ShowErrorBox(addingResult.Error.Message);
-            return;
+            var songwriterService = scope.ServiceProvider.GetRequiredService<ISongwriterService>();
+            var addingResult = await songwriterService.SaveFromFolderAsync(item);
+            if (addingResult.IsFailure)
+            {
+                MessageBoxHelper.ShowErrorBox(addingResult.Error.Message);
+                break;
+            }
+            else
+            {
+                dtos.Add(addingResult.Value);   
+            }
         }
 
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            Songwriters.Add(addingResult.Value.ToViewModel());
+            Songwriters.AddRange(dtos.Select(e => e.ToViewModel()));
             ReplaceMovieReleasesDuplicates();
         });
-        MessageBoxHelper.ShowInfoBox("Success");
+
+        if (folders.Count > 0 && dtos.Count > 0) 
+        {
+            MessageBoxHelper.ShowInfoBox("Success");
+        }
     }
 
     [RelayCommand]

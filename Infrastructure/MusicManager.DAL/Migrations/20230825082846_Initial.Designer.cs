@@ -11,7 +11,7 @@ using MusicManager.DAL;
 namespace MusicManager.DAL.Migrations
 {
     [DbContext(typeof(MusicManagerDbContext))]
-    [Migration("20230825074343_Initial")]
+    [Migration("20230825082846_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -306,6 +306,11 @@ namespace MusicManager.DAL.Migrations
                             b1.Property<TimeSpan>("Index01")
                                 .HasColumnType("TEXT")
                                 .HasColumnName("cue_info_index01");
+
+                            b1.Property<string>("SongNameInCue")
+                                .IsRequired()
+                                .HasColumnType("TEXT")
+                                .HasColumnName("cue_info_song_name_in_cue");
 
                             b1.HasKey("PlaybackInfoSongId");
 

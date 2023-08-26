@@ -1,5 +1,6 @@
 ﻿using MusicManager.Domain.Common;
 using MusicManager.Domain.Extensions;
+using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 using MusicManager.Utils;
@@ -60,5 +61,34 @@ public class SongToFileService : ISongToFileService
 
         var newFileLocation = currentFileLocation.CopyTo(copyFilePath);
         return Task.FromResult(Result.Success(newFileLocation.FullName.GetRelational(_root)));
+    }
+
+    public Task<Result<string>> UpdateIfExistsAsync(Song song, CancellationToken cancellationToken = default)
+    {
+        if (song.IsFromCue)
+        {
+            return Task.FromResult(Result.Failure<string>(new Error("Unable to modify the songFile from cue.")));
+        }
+
+        var previousFile = new FileInfo(_root.CombineWith(song.PlaybackInfo.ExecutableFileFullPath));
+        if (!previousFile.Exists)
+        {
+            return Task.FromResult(Result.Failure<string>(new Error("Executable song file is not exists.")));
+        }
+
+        string newFileName = $"{song.Order} {song.Name}{previousFile.Extension}";
+        string newFileFullPath = Path.Combine(previousFile.DirectoryName!, newFileName);
+
+        if (previousFile.Name != newFileName)
+        {
+            previousFile.MoveTo(newFileFullPath);
+        }
+
+        using var songFileInfo = TagLib.File.Create(newFileFullPath);
+        songFileInfo.Tag.Title = song.Name;
+        songFileInfo.Tag.Track = (uint)song.Order;
+        songFileInfo.Save();
+
+        return Task.FromResult(Result.Success(newFileFullPath.GetRelational(_root)));
     }
 }

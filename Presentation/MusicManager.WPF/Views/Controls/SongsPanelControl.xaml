@@ -16,15 +16,18 @@
                   AutoGenerateColumns="False">
 
                 <DataGrid.Columns>
+                    <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
+                    
                     <DataGridTextColumn Header="SongNumber" Binding="{Binding Number}"/>
-                    <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}"/>
+                    <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}" IsReadOnly="True"/>
                     <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
-                    <DataGridTextColumn Header="SongType" Binding="{Binding ExecutableType}"/>
+                    <DataGridTextColumn Header="SongType" Binding="{Binding Type}" IsReadOnly="True"/>
                 </DataGrid.Columns>
 
             </DataGrid>
 
             <Button Content="Add" Command="{Binding AddSongCommand}"/>
+            <Button Content="Save" Command="{Binding SaveCommand}"/>
         </StackPanel>
     </Grid>
 </UserControl>

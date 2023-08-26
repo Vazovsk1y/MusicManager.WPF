@@ -12,5 +12,7 @@ namespace MusicManager.Services
         Task<Result<IEnumerable<SongDTO>>> GetAllAsync(DiscId discId, CancellationToken cancellationToken = default);
 
         Task<Result<IEnumerable<SongDTO>>> SaveAsync(SongAddDTO songAddDTO, bool moveToParentFolder = true, CancellationToken cancellationToken = default);
+
+        Task<Result> UpdateAsync(SongUpdateDTO songUpdateDTO, CancellationToken cancellationToken = default);
     }
 }

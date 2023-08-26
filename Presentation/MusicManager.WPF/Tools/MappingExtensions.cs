@@ -72,14 +72,17 @@ internal static class MappingExtensions
 
     public static SongViewModel ToViewModel(this SongDTO songDTO)
     {
-        return new SongViewModel() 
+        var entity = new SongViewModel() 
         { 
             SongId = songDTO.Id,
             DiscId= songDTO.DiscId,
             Number = songDTO.SongNumber,
             DiscNumber = songDTO.DiscNumber,
             Title = songDTO.Name,
-            ExecutableType = songDTO.ExecutableType.ToString(),
+            Type = songDTO.ExecutableType.ToString(),
         };
+
+        entity.SetCurrentAsPrevious();
+        return entity;
     }
 }

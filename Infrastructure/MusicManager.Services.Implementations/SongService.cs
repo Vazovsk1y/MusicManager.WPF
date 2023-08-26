@@ -2,6 +2,7 @@
 using MusicManager.Domain.Common;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
+using MusicManager.Domain.Services.Implementations;
 using MusicManager.Domain.Shared;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts;
@@ -85,7 +86,8 @@ public class SongService : ISongService
                         item.PlaybackInfo.SongDuration,
                         movingCueFileResult.Value,
                         item.PlaybackInfo.CueInfo.Index00,
-                        item.PlaybackInfo.CueInfo.Index01);
+                        item.PlaybackInfo.CueInfo.Index01,
+                        item.PlaybackInfo.CueInfo.SongNameInCue);
                 }
             }
 
@@ -160,6 +162,38 @@ public class SongService : ISongService
             await _dbContext.SaveChangesAsync(cancellationToken);
             return new List<SongDTO> { song.ToDTO() };
         }
+    }
+
+    public async Task<Result> UpdateAsync(SongUpdateDTO songUpdateDTO, CancellationToken cancellationToken = default)
+    {
+        var song = await _dbContext.Songs
+            .Include(e => e.PlaybackInfo)
+            .SingleOrDefaultAsync(e => e.Id == songUpdateDTO.SongId, cancellationToken);
+
+        if (song is null)
+        {
+            return Result.Failure(ServicesErrors.SongWithPassedIdIsNotExists());
+        }
+
+        var updateActions = new List<Result>()
+        {
+            song.SetName(songUpdateDTO.Name),
+            song.SetOrder(songUpdateDTO.SongOrder)
+        };
+
+        if (updateActions.Any(e => e.IsFailure))
+        {
+            return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
+        }
+
+        var fileUpdatingResult = await _songToFile.UpdateIfExistsAsync(song, cancellationToken);
+        if (fileUpdatingResult.IsSuccess)
+        {
+            song.SetPlaybackInfo(fileUpdatingResult.Value, song.PlaybackInfo.SongDuration);
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result.Success();
     }
 
     private async Task<Result<IEnumerable<Song>>> AddToDiscFromCue(string cueFilePath, Disc disc, bool ignoreAddingResult, CancellationToken cancellationToken)

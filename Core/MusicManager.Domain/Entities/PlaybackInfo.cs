@@ -91,7 +91,8 @@ public class PlaybackInfo : ValueObject<PlaybackInfo>
         TimeSpan duration,
         string cueFileFullPath,
         TimeSpan index00,
-        TimeSpan index01)
+        TimeSpan index01,
+        string songNameInCue)
     {
         if (Path.GetDirectoryName(fullPath) != Path.GetDirectoryName(cueFileFullPath)) 
         {
@@ -105,7 +106,7 @@ public class PlaybackInfo : ValueObject<PlaybackInfo>
             return creationResult;
         }
 
-        var cueInfoCreationResult = CueInfo.Create(cueFileFullPath, index00, index01);
+        var cueInfoCreationResult = CueInfo.Create(cueFileFullPath, index00, index01, songNameInCue);
 
         if (cueInfoCreationResult.IsFailure)
         {

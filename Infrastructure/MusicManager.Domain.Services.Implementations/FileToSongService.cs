@@ -206,7 +206,8 @@ namespace MusicManager.Domain.Services.Implementations
                     currentTrack.Index01 - previousTrack.Index01,
                     cueRelationalFilePath,
                     previousTrack.Index00,
-                    previousTrack.Index01)
+                    previousTrack.Index01,
+                    previousTrack.Title)
                     :
                     Song.Create(
                     parent, 
@@ -217,7 +218,8 @@ namespace MusicManager.Domain.Services.Implementations
                     currentTrack.Index01 - previousTrack.Index01,
                     cueRelationalFilePath,
                     previousTrack.Index00,
-                    previousTrack.Index01
+                    previousTrack.Index01,
+                    previousTrack.Title
                     );
 
                 if (songCreationResult.IsFailure)
@@ -238,7 +240,8 @@ namespace MusicManager.Domain.Services.Implementations
                     allSongFileDuration - lastTrack.Index01,
                     cueRelationalFilePath,
                     lastTrack.Index00,
-                    lastTrack.Index01)
+                    lastTrack.Index01,
+                    lastTrack.Title)
                     :
                     Song.Create(
                     parent,
@@ -249,7 +252,8 @@ namespace MusicManager.Domain.Services.Implementations
                     allSongFileDuration - lastTrack.Index01,
                     cueRelationalFilePath,
                     lastTrack.Index00,
-                    lastTrack.Index01
+                    lastTrack.Index01,
+                    lastTrack.Title
                     );
 
             if (lastSongCreationResult.IsSuccess)

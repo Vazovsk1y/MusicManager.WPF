@@ -304,6 +304,11 @@ namespace MusicManager.DAL.Migrations
                                 .HasColumnType("TEXT")
                                 .HasColumnName("cue_info_index01");
 
+                            b1.Property<string>("SongNameInCue")
+                                .IsRequired()
+                                .HasColumnType("TEXT")
+                                .HasColumnName("cue_info_song_name_in_cue");
+
                             b1.HasKey("PlaybackInfoSongId");
 
                             b1.ToTable("playback_info");
