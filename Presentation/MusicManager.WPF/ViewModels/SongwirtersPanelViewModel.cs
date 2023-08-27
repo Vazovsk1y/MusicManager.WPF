@@ -32,6 +32,8 @@ internal partial class SongwirtersPanelViewModel :
     private readonly IUserDialogService<SongwriterAddWindow> _dialogService;
     private readonly SettingsViewModel _settingsViewModel;
 
+    private bool _wasClicked = false;
+
     public SongwirtersPanelViewModel() 
     {
         InvalidOperationExceptionHelper.ThrowIfTrue(!App.IsInDesignMode, "Parametrless ctor is only for design time.");
@@ -63,7 +65,7 @@ internal partial class SongwirtersPanelViewModel :
     private IAsyncRelayCommand _addSongwriterFromFolderCommand;
 
     public IAsyncRelayCommand AddSongwriterFromFolderCommand => _addSongwriterFromFolderCommand ??=
-        new AsyncRelayCommand(OnSongwriterAddFromFolderExecute, () => !AddSongwriterFromFolderCommand.IsRunning && Songwriters.Count == 0);
+        new AsyncRelayCommand(OnSongwriterAddFromFolderExecute, () => !AddSongwriterFromFolderCommand.IsRunning && Songwriters.Count == 0 && !_wasClicked);
 
     private async Task OnSongwriterAddFromFolderExecute()
     {
@@ -109,6 +111,9 @@ internal partial class SongwirtersPanelViewModel :
         {
             MessageBoxHelper.ShowInfoBox("Success");
         }
+
+        _wasClicked = true;
+        AddSongwriterFromFolderCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand]
@@ -117,7 +122,7 @@ internal partial class SongwirtersPanelViewModel :
     [RelayCommand(CanExecute = nameof(CanDeleteSongwriter))]
     private async Task DeleteSongwriter()
     {
-        var dialog = MessageBoxHelper.ShowDialogBox($"Delete {SelectedSongwriter!.FullName} from list?");
+        var dialog = MessageBoxHelper.ShowDialogBoxYesNo($"Delete {SelectedSongwriter!.FullName} from list?");
         if (dialog == MessageBoxResult.Yes)
         {
             using var scope = _serviceScopeFactory.CreateScope();

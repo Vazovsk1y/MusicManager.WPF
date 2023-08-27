@@ -15,5 +15,7 @@ namespace MusicManager.Services
         Task<Result<DiscId>> SaveAsync(CompilationAddDTO compilationAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default);
 
         Task<Result> UpdateAsync(CompilationUpdateDTO compilationUpdateDTO, CancellationToken cancellationToken = default);
+
+        Task<Result> DeleteAsync(SongwriterId parentId, DiscId discId, CancellationToken cancellationToken = default);
     }
 }

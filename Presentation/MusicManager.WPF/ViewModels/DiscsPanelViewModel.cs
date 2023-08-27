@@ -6,7 +6,6 @@ using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 using MusicManager.Services;
 using MusicManager.Services.Contracts.Dtos;
-using MusicManager.Services.Implementations;
 using MusicManager.Utils;
 using MusicManager.WPF.Messages;
 using MusicManager.WPF.Tools;
@@ -66,10 +65,43 @@ internal partial class DiscsPanelViewModel :
         _serviceScopeFactory = serviceScopeFactory;
     }
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteCompilationCommand))]
+    private CompilationViewModel? _selectedCompilation;
+
+    [ObservableProperty]
+    private MovieReleaseViewModel? _selectedMovieRelease;
+
     public IDiscViewModel? SelectedDisc
     {
         get => _selectedDisc;
-        set => SetProperty(ref _selectedDisc, value);
+        set
+        {
+            if (SetProperty(ref _selectedDisc, value))
+            {
+                switch(value)
+                {
+                    case CompilationViewModel compilationViewModel:
+                        {
+                            SelectedCompilation = compilationViewModel;
+                            SelectedMovieRelease = null;
+                        }
+                        break;
+                    case MovieReleaseViewModel movieReleaseViewModel:
+                        {
+                            SelectedMovieRelease = movieReleaseViewModel;
+                            SelectedCompilation = null;
+                        }
+                        break;
+                    default:
+                        {
+                            SelectedMovieRelease = null;
+                            SelectedCompilation = null;
+                        }
+                        break;
+                }
+            }
+        }
     }
 
     [RelayCommand]
@@ -83,6 +115,31 @@ internal partial class DiscsPanelViewModel :
     {
         _movieReleaseDialogService.ShowDialog();
     }
+
+    [RelayCommand(CanExecute = nameof(CanDeleteCompilation))]
+    private async Task DeleteCompilation()
+    {
+        var dialog = MessageBoxHelper.ShowDialogBoxYesNo($"Delete {SelectedCompilation!.Identifier} from list?");
+        if (dialog == MessageBoxResult.Yes)
+        {
+            using var scope = _serviceScopeFactory.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ICompilationService>();
+            var result = await service.DeleteAsync(SelectedCompilation!.SongwriterId, SelectedCompilation!.DiscId);
+            if (result.IsFailure)
+            {
+                MessageBoxHelper.ShowErrorBox(result.Error.Message);
+                return;
+            }
+
+            await App.Current.Dispatcher.InvokeAsync(() =>
+            {
+                var songwriter = SongwritersPanelViewModel.Songwriters.FirstOrDefault(e => e.SongwriterId == SelectedCompilation.SongwriterId);
+                songwriter?.Compilations.Remove(SelectedCompilation);
+            });
+        }
+    }
+
+    private bool CanDeleteCompilation() => SelectedCompilation is not null;
 
     [RelayCommand]
     private async Task SaveCompilations()
@@ -180,7 +237,7 @@ internal partial class DiscsPanelViewModel :
 
     public async void Receive(CompilationCreatedMessage message)
     {
-        await Application.Current.Dispatcher.InvokeAsync(() =>
+        await App.Current.Dispatcher.InvokeAsync(() =>
         {
             var songwriter = SongwritersPanelViewModel.Songwriters.FirstOrDefault(e => e.SongwriterId == message.CompilationViewModel.SongwriterId);
 
@@ -194,7 +251,7 @@ internal partial class DiscsPanelViewModel :
 
     public async void Receive(MovieReleaseCreatedMessage message)
     {
-        await Application.Current.Dispatcher.InvokeAsync(() =>
+        await App.Current.Dispatcher.InvokeAsync(() =>
         {
             var movies = MoviesPanelViewModel.Movies.Where(e => message.MoviesLinks.Contains(e.MovieId));
 

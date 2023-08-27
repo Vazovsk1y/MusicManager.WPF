@@ -135,6 +135,18 @@ public class Songwriter : IAggregateRoot
         return Result.Success();
     }
 
+    public Result RemoveCompilation(DiscId discId)
+    {
+        var compilation = _compilations.SingleOrDefault(e => e.Id == discId);
+        if (compilation is null)
+        {
+            return Result.Failure(new Error("Unable to remove compilation because it with this id is not exists."));
+        }
+
+        _compilations.Remove(compilation);
+        return Result.Success();
+    }
+
     #endregion
 }
 

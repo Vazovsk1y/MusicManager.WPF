@@ -42,7 +42,7 @@ public class DiscFolderFactory : IDiscFolderFactory
         List<string> covers = coversFolder is null ? new List<string>() : coversFolder.EnumerateFiles().Select(f => f.FullName).ToList();
         var folderJPGfile = discDirectory
             .EnumerateFiles()
-            .FirstOrDefault(f => f.Name == DomainServicesConstants.FolderJPG);
+            .FirstOrDefault(f => string.Equals(f.Name, DomainServicesConstants.FolderJPG, StringComparison.OrdinalIgnoreCase));
 
         if (folderJPGfile is not null)
         {

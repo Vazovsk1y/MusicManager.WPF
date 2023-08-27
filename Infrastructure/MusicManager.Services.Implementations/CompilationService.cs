@@ -34,6 +34,27 @@ public class CompilationService : ICompilationService
         _root = root;
     }
 
+    public async Task<Result> DeleteAsync(SongwriterId parentId, DiscId discId, CancellationToken cancellationToken = default)
+    {
+        var songwriter = await _dbContext.Songwriters
+            .Include(e => e.Compilations)
+            .SingleOrDefaultAsync(e => e.Id == parentId, cancellationToken);
+
+        if (songwriter is null)
+        {
+            return Result.Failure(ServicesErrors.SongwriterWithPassedIdIsNotExists());
+        }
+
+        var removingResult = songwriter.RemoveCompilation(discId);
+        if (removingResult.IsFailure)
+        {
+            return removingResult;
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
     public async Task<Result<IEnumerable<CompilationDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default)
     {
         var result = new List<CompilationDTO>();

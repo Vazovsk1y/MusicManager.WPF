@@ -65,6 +65,7 @@
 
                     <Button Content="Add" Command="{Binding AddCompilationCommand}"/>
                     <Button Content="Save" Command="{Binding SaveCompilationsCommand}"/>
+                    <Button Content="Delete" Command="{Binding DeleteCompilationCommand}"/>
                 </StackPanel>
             </TabItem>
         </TabControl>
