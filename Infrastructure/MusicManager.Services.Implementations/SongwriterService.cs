@@ -31,6 +31,38 @@ public class SongwriterService : ISongwriterService
         _songwriterToFolderService = songwriterToFolderService;
     }
 
+    public async Task<Result> DeleteAsync(SongwriterId songwriterId, CancellationToken cancellationToken = default)
+    {
+        var songwriter = await _dbContext.Songwriters
+            .Include(e => e.Compilations)
+            .Include(e => e.Movies)
+            .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellationToken);
+
+        if (songwriter is null)
+        {
+            return Result.Failure(ServicesErrors.SongwriterWithPassedIdIsNotExists());
+        }
+
+        IEnumerable<MovieId> deletedMoviesIds = songwriter.Movies.Select(e => e.Id);
+        var movieReleasesToRemove = _dbContext.MovieReleases
+            .Include(e => e.Movies)
+            .Where(Filter);
+
+        _dbContext.Songwriters.Remove(songwriter);
+        _dbContext.Discs.RemoveRange(movieReleasesToRemove);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+
+        bool Filter(MovieRelease movieRelease)
+        {
+            var moviesIds = movieRelease.Movies.Select(e => e.Id);
+            bool mainCondition = moviesIds.Any(e => deletedMoviesIds.Contains(e)) && movieRelease.Movies.Count == 1;
+            bool secondaryCondition = moviesIds.All(e => deletedMoviesIds.Contains(e));
+
+            return mainCondition || secondaryCondition;
+        }
+    }
+
     public async Task<Result<IEnumerable<SongwriterDTO>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var result = new List<SongwriterDTO>();

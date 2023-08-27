@@ -58,7 +58,6 @@ internal static class MappingExtensions
         var entity = new MovieReleaseViewModel()
         {
             DiscId = movieReleaseDTO.Id,
-            MoviesLinks = movieReleaseDTO.MoviesLinks.ToList(),
             Identifier = movieReleaseDTO.Identifier,
             ProductionCountry = movieReleaseDTO.ProductionCountry,
             ProductionYear = movieReleaseDTO.ProductionYear,

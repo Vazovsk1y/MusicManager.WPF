@@ -13,5 +13,10 @@ public static class MessageBoxHelper
     {
         MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
     }
+
+    public static MessageBoxResult ShowDialogBox(string message, string caption = "Question")
+    {
+        return MessageBox.Show(message, caption, MessageBoxButton.YesNo, MessageBoxImage.Question);
+    }
 }
 

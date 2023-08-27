@@ -40,11 +40,13 @@ internal class DiscConfiguration : IEntityTypeConfiguration<Disc>
         entityBuilder
             .HasMany(e => e.Covers)
             .WithOne()
-            .HasForeignKey(e => e.DiscId);
+            .HasForeignKey(e => e.DiscId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         entityBuilder
             .HasMany(e => e.Songs)
             .WithOne()
-            .HasForeignKey(e => e.DiscId);
+            .HasForeignKey(e => e.DiscId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

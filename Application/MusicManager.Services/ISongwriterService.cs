@@ -14,5 +14,7 @@ namespace MusicManager.Services
         Task<Result<IEnumerable<SongwriterLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken= default);
 
         Task<Result<SongwriterId>> SaveAsync(SongwriterAddDTO songwriterAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default);
+
+        Task<Result> DeleteAsync(SongwriterId songwriterId, CancellationToken cancellationToken = default);
     }
 }

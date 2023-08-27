@@ -31,11 +31,13 @@ internal class SongwriterConfiguration : IEntityTypeConfiguration<Songwriter>
         builder
         .HasMany(e => e.Movies)
         .WithOne()
-        .HasForeignKey(e => e.SongwriterId);
+        .HasForeignKey(e => e.SongwriterId)
+        .OnDelete(DeleteBehavior.Cascade);
 
         builder
         .HasMany(e => e.Compilations)
         .WithOne()
-        .HasForeignKey(e => e.SongwriterId);
+        .HasForeignKey(e => e.SongwriterId)
+        .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -69,7 +69,7 @@ internal partial class MoviesPanelViewModel :
         var movieReleasesToSelectFrom = Movies
             .SelectMany(e => e.MoviesReleases)
             .DistinctBy(e => e.DiscId)
-            .Where(e => !e.MoviesLinks.Contains(SelectedMovie!.MovieId) || !SelectedMovie.MoviesReleases.Contains(e));
+            .Where(e => !SelectedMovie!.MoviesReleases.Contains(e));
 
         using var scope = _serviceScopeFactory.CreateScope();
         var dialogService = scope.ServiceProvider.GetRequiredService<IWpfWindowService<MovieReleaseMovieWindow>>();
@@ -139,7 +139,7 @@ internal partial class MoviesPanelViewModel :
         {
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                request.MovieReleaseViewModel.MoviesLinks.Add(SelectedMovie.MovieId);
+                //request.MoviesLinks.Add(SelectedMovie.MovieId);
                 SelectedMovie.MoviesReleases.Add(request.MovieReleaseViewModel);
             });
         }

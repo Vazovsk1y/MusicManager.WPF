@@ -52,15 +52,11 @@ internal partial class SongwirtersPanelViewModel :
         _settingsViewModel = settingsViewModel;
     }
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteSongwriterCommand))]
     private SongwriterViewModel? _selectedSongwriter;
 
     public ObservableCollection<SongwriterViewModel> Songwriters => _songwriters;
-
-    public SongwriterViewModel? SelectedSongwriter
-    {
-        get => _selectedSongwriter;
-        set => SetProperty(ref _selectedSongwriter, value);
-    }
 
     #region --Commands--
 
@@ -117,6 +113,31 @@ internal partial class SongwirtersPanelViewModel :
 
     [RelayCommand]
     private void AddSongwriter() => _dialogService.ShowDialog();
+
+    [RelayCommand(CanExecute = nameof(CanDeleteSongwriter))]
+    private async Task DeleteSongwriter()
+    {
+        var dialog = MessageBoxHelper.ShowDialogBox($"Delete {SelectedSongwriter!.FullName} from list?");
+        if (dialog == MessageBoxResult.Yes)
+        {
+            using var scope = _serviceScopeFactory.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ISongwriterService>();
+            var result = await service.DeleteAsync(SelectedSongwriter.SongwriterId);
+            if (result.IsFailure)
+            {
+                MessageBoxHelper.ShowErrorBox(result.Error.Message);
+                return;
+            }
+
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                Songwriters.Remove(SelectedSongwriter);
+                AddSongwriterFromFolderCommand.NotifyCanExecuteChanged();
+            });
+        }
+    }
+
+    private bool CanDeleteSongwriter() => SelectedSongwriter is not null;
 
     #endregion
 

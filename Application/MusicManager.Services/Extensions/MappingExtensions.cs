@@ -63,7 +63,6 @@ public static class MappingExtensions
     {
         return new MovieReleaseDTO(
             movieRelease.Id,
-            movieRelease.Movies.Select(e => e.Id),
             movieRelease.Identifier,
             movieRelease.ProductionInfo?.Country,
             movieRelease.ProductionInfo?.Year,

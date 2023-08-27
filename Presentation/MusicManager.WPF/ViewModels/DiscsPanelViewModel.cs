@@ -196,7 +196,7 @@ internal partial class DiscsPanelViewModel :
     {
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            var movies = MoviesPanelViewModel.Movies.Where(e => message.MovieReleaseViewModel.MoviesLinks.Contains(e.MovieId));
+            var movies = MoviesPanelViewModel.Movies.Where(e => message.MoviesLinks.Contains(e.MovieId));
 
             foreach (var movie in movies)
             {

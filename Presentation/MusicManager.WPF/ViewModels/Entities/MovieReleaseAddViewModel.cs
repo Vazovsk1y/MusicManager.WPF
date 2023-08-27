@@ -80,10 +80,9 @@ namespace MusicManager.WPF.ViewModels.Entities
                 var message = new MovieReleaseCreatedMessage(new MovieReleaseViewModel
                 {
                     DiscId = addingResult.Value,
-                    MoviesLinks = moviesLinks,
                     SelectedDiscType = SelectedDiscType!,
                     Identifier = dto.Identifier
-                });
+                }, moviesLinks);
 
                 Messenger.Send(message);
             }
