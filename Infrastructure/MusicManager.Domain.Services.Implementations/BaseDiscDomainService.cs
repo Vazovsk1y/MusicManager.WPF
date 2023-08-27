@@ -28,6 +28,6 @@ public abstract partial class BaseDiscDomainService : BaseDomainService
         return Result.Failure<(DiscType, string, string?, int?)>(new Error($"Unable to get some of the required components from disc directory name [{discDirectoryName}]."));
     }
 
-    [GeneratedRegex(@"^(\S+)\s+(.*?)(?:\s+-\s+(\S+)(?:\s+-\s+(\d{4}))?.*?)?$")]
+    [GeneratedRegex(@"^(\S+)\s+(.*?)(?:\s+-\s+([^-\n]+)(?:\s+-\s+(\d{4})).*?)?$")]
     private partial Regex FindAllDiscComponents();
 }
