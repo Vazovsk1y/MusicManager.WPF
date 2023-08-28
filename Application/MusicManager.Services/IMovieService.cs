@@ -18,4 +18,6 @@ public interface IMovieService
     Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, CancellationToken cancellationToken = default);
 
     Task<Result> UpdateAsync(MovieUpdateDTO movieUpdateDTO, CancellationToken cancellationToken = default);
+
+    Task<Result> DeleteAsync(SongwriterId songwriterId, MovieId movieId, CancellationToken cancellationToken = default);
 }

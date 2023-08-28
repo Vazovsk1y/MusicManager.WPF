@@ -24,7 +24,6 @@ internal partial class MoviesPanelViewModel :
     IRecipient<MovieCreatedMessage>,
     IRecipient<ExistingMovieReleaseAddToMovieRequest>
 {
-    private MovieViewModel? _selectedMovie;
 
     public SongwirtersPanelViewModel SongwritersPanelViewModel { get; }
 
@@ -48,20 +47,38 @@ internal partial class MoviesPanelViewModel :
         _serviceScopeFactory = serviceScopeFactory;
     }
 
-    public MovieViewModel? SelectedMovie
-    {
-        get => _selectedMovie;
-        set
-        {
-            if (SetProperty(ref _selectedMovie, value))
-            {
-                AddMovieReleaseCommand.NotifyCanExecuteChanged();
-            }
-        }
-    }
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddMovieReleaseCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteMovieCommand))]
+    private MovieViewModel? _selectedMovie;
 
     [RelayCommand]
     private void AddMovie() => _movieAddDialogService.ShowDialog();
+
+    [RelayCommand(CanExecute = nameof(CanDelete))]
+    private async Task DeleteMovie()
+    {
+        var dialog = MessageBoxHelper.ShowDialogBoxYesNo($"Delete {SelectedMovie!.Title} from list?");
+        if (dialog == MessageBoxResult.Yes)
+        {
+            using var scope = _serviceScopeFactory.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IMovieService>();
+            var result = await service.DeleteAsync(SelectedMovie!.SongwriterId, SelectedMovie!.MovieId);
+            if (result.IsFailure)
+            {
+                MessageBoxHelper.ShowErrorBox(result.Error.Message);
+                return;
+            }
+
+            await App.Current.Dispatcher.InvokeAsync(() =>
+            {
+                var songwriter = SongwritersPanelViewModel.Songwriters.FirstOrDefault(e => e.SongwriterId == SelectedMovie.SongwriterId);
+                songwriter?.Movies.Remove(SelectedMovie);
+            });
+        }
+    }
+
+    private bool CanDelete() => SelectedMovie is not null;
 
     [RelayCommand(CanExecute = nameof(CanAddMovieRelease))]
     private void AddMovieRelease()

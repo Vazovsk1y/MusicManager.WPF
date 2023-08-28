@@ -29,6 +29,7 @@
             <Button Content="AddMovie" Command="{Binding AddMovieCommand}"/>
             <Button Content="AddMR" Command="{Binding AddMovieReleaseCommand}"/>
             <Button Content="Save" Command="{Binding SaveCommand}"/>
+            <Button Content="Delete" Command="{Binding DeleteMovieCommand}"/>
         </StackPanel>
     </Grid>
 </UserControl>

@@ -147,6 +147,18 @@ public class Songwriter : IAggregateRoot
         return Result.Success();
     }
 
+    public Result RemoveMovie(MovieId movieId)
+    {
+        var movie = _movies.SingleOrDefault(e => e.Id == movieId);
+        if (movie is null)
+        {
+            return Result.Failure(new Error("Unable to remove movie because it with this id is not exists."));
+        }
+
+        _movies.Remove(movie);
+        return Result.Success();
+    }
+
     #endregion
 }
 

@@ -80,6 +80,32 @@ public class MovieService : IMovieService
         return Result.Success();
     }
 
+    public async Task<Result> DeleteAsync(SongwriterId songwriterId, MovieId movieId, CancellationToken cancellationToken = default)
+    {
+        var sonwriter = await _dbContext.Songwriters
+            .Include(e => e.Movies)
+            .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellationToken);
+
+        if (sonwriter is null)
+        {
+            return Result.Failure(ServicesErrors.SongwriterWithPassedIdIsNotExists());
+        }
+
+        var removingResult = sonwriter.RemoveMovie(movieId);
+        if (removingResult.IsFailure)
+        {
+            return removingResult;
+        }
+
+        var moviesReleasesToRemove = _dbContext.MovieReleases
+            .Include(e => e.Movies)
+            .Where(e => e.Movies.Select(e => e.Id).Contains(movieId) && e.Movies.Count == 1);
+
+        _dbContext.Discs.RemoveRange(moviesReleasesToRemove);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
     public async Task<Result<IEnumerable<MovieDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default)
     {
         var result = new List<MovieDTO>();
