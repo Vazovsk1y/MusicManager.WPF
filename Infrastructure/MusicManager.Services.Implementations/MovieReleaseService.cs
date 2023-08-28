@@ -34,7 +34,22 @@ public class MovieReleaseService : IMovieReleaseService
         _root = root;
     }
 
-    public async Task<Result<IEnumerable<MovieReleaseDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default)
+	public async Task<Result> DeleteAsync(DiscId discId, CancellationToken cancellationToken = default)
+	{
+        var movieRelease = await _dbContext.MovieReleases
+            .SingleOrDefaultAsync(e => e.Id == discId, cancellationToken);
+
+        if (movieRelease is null)
+        {
+            return Result.Failure(ServicesErrors.MovieReleaseWithPassedIdIsNotExists());
+        }
+
+        _dbContext.MovieReleases.Remove(movieRelease);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+	}
+
+	public async Task<Result<IEnumerable<MovieReleaseDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default)
     {
         var result = new List<MovieReleaseDTO>();
         var movie = await _dbContext

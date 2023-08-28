@@ -70,7 +70,8 @@ internal partial class DiscsPanelViewModel :
     private CompilationViewModel? _selectedCompilation;
 
     [ObservableProperty]
-    private MovieReleaseViewModel? _selectedMovieRelease;
+	[NotifyCanExecuteChangedFor(nameof(DeleteMovieReleaseCommand))]
+	private MovieReleaseViewModel? _selectedMovieRelease;
 
     public IDiscViewModel? SelectedDisc
     {
@@ -141,7 +142,35 @@ internal partial class DiscsPanelViewModel :
 
     private bool CanDeleteCompilation() => SelectedCompilation is not null;
 
-    [RelayCommand]
+	[RelayCommand(CanExecute = nameof(CanDeleteMovieRelease))]
+	private async Task DeleteMovieRelease()
+	{
+		var dialog = MessageBoxHelper.ShowDialogBoxYesNo($"Delete {SelectedMovieRelease!.Identifier} from list?");
+		if (dialog == MessageBoxResult.Yes)
+		{
+			using var scope = _serviceScopeFactory.CreateScope();
+			var service = scope.ServiceProvider.GetRequiredService<IMovieReleaseService>();
+			var result = await service.DeleteAsync(SelectedMovieRelease!.DiscId);
+			if (result.IsFailure)
+			{
+				MessageBoxHelper.ShowErrorBox(result.Error.Message);
+				return;
+			}
+
+			await App.Current.Dispatcher.InvokeAsync(() =>
+			{
+                var movies = MoviesPanelViewModel.Movies.Where(e => e.MoviesReleases.Contains(SelectedMovieRelease));
+                foreach (var movie in movies)
+                {
+                    movie.MoviesReleases.Remove(SelectedMovieRelease);
+                }
+			});
+		}
+	}
+
+	private bool CanDeleteMovieRelease() => SelectedMovieRelease is not null;
+
+	[RelayCommand]
     private async Task SaveCompilations()
     {
         if (SaveCompilationsCommand.IsRunning)

@@ -36,6 +36,7 @@
 
                     <Button Content="Add" Command="{Binding AddMovieReleaseCommand}"/>
                     <Button Content="Save" Command="{Binding SaveMoviesReleasesCommand}"/>
+                    <Button Content="Delete" Command="{Binding DeleteMovieReleaseCommand}"/>
                 </StackPanel>
             </TabItem>
             

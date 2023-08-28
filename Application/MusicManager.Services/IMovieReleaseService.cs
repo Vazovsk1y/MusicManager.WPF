@@ -15,5 +15,7 @@ namespace MusicManager.Services
         Task<Result<DiscId>> SaveAsync(MovieReleaseAddDTO movieReleaseAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default);
 
         Task<Result> UpdateAsync(MovieReleaseUpdateDTO movieReleaseUpdateDTO, CancellationToken cancellationToken = default);
+
+        Task<Result> DeleteAsync(DiscId discId, CancellationToken cancellationToken = default);
     }
 }
