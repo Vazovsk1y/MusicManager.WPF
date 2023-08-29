@@ -23,7 +23,7 @@ internal class MainWindowViewModel : TitledViewModel
 
     public SongsPanelViewModel SongsPanelViewModel { get; }
 
-    public SettingsViewModel SettingsViewModel { get; }
+    public UserConfigViewModel SettingsViewModel { get; }
 
     #endregion
 
@@ -39,7 +39,7 @@ internal class MainWindowViewModel : TitledViewModel
         MoviesPanelViewModel moviesPanelViewModel,
         DiscsPanelViewModel discsPanelViewModel,
         SongsPanelViewModel songsPanelViewModel,
-        SettingsViewModel settingsViewModel)
+        UserConfigViewModel settingsViewModel)
     {
         SongwirtersPanelViewModel = songwirtersPanelViewModel;
         MoviesPanelViewModel = moviesPanelViewModel;

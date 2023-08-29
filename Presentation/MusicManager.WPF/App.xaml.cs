@@ -4,6 +4,7 @@ using MusicManager.DAL;
 using MusicManager.Domain.Services.Implementations;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Implementations;
+using MusicManager.Utils;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -19,11 +20,15 @@ public partial class App : Application
 
     public const string Name = "MusicManager";
 
-    #endregion
+	public const string CompanyName = "Vazovskiy";
 
-    #region --Properties--
+	public static readonly string AssociatedAppFolderFullPath = Path.Combine(DirectoryHelper.LocalApplicationDataPath, CompanyName, App.Name);
 
-    public static string WorkingDirectory => IsInDesignMode ? Path.GetDirectoryName(GetSourceCodePath())! : Environment.CurrentDirectory;
+	#endregion
+
+	#region --Properties--
+
+	public static string WorkingDirectory => IsInDesignMode ? Path.GetDirectoryName(GetSourceCodePath())! : Environment.CurrentDirectory;
 
     public static bool IsInDesignMode { get; private set; } = true;
 

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using MusicManager.Utils;
+using MusicManager.Domain.Services;
 using MusicManager.WPF.Tools;
 using MusicManager.WPF.ViewModels;
 using MusicManager.WPF.ViewModels.Entities;
@@ -20,9 +20,14 @@ internal static class Registrator
         .AddSingleton<MoviesPanelViewModel>()
         .AddSingleton<DiscsPanelViewModel>()
         .AddSingleton<SongsPanelViewModel>()
-        .AddSingleton<SettingsViewModel>()
+        .AddSingleton<UserConfigViewModel>()
         .AddTransient<MovieReleaseAddToMovieViewModel>()
         .AddTransient<MovieReleaseMovieWindow>()
         .AddSingleton(typeof(IWpfWindowService<>), typeof(WpfWindowService<>))
+        .AddTransient<IRoot>(s =>
+        {
+            var configVm = s.GetRequiredService<UserConfigViewModel>();
+            return configVm.CurrentConfig;
+        })
         ;
 }

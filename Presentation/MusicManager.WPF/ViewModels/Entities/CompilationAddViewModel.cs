@@ -39,7 +39,7 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
         IUserDialogService<CompilationAddWindow> dialogService,
         ISongwriterService songwriterService,
         ICompilationService compilationService,
-        SettingsViewModel settingsViewModel) : base(dialogService, settingsViewModel)
+        UserConfigViewModel settingsViewModel) : base(dialogService, settingsViewModel)
     {
         _songwriterService = songwriterService;
         _compilationService = compilationService;

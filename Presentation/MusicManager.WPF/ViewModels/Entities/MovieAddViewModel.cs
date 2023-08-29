@@ -50,7 +50,7 @@ internal partial class MovieAddViewModel : DialogViewModel<MovieAddWindow>
        ISongwriterService songwriterService,
        IMovieService movieService,
        IUserDialogService<MovieAddWindow> dialogService,
-       SettingsViewModel settingsViewModel) : base(dialogService, settingsViewModel)
+       UserConfigViewModel settingsViewModel) : base(dialogService, settingsViewModel)
     {
         _songwriterService = songwriterService;
         _movieService = movieService;

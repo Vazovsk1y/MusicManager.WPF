@@ -10,11 +10,11 @@ internal abstract partial class DialogViewModel<TWindow> : ObservableRecipient
     where TWindow : Window
 {
     protected readonly IUserDialogService<TWindow> _dialogService;
-    protected readonly SettingsViewModel _settingsViewModel;
+    protected readonly UserConfigViewModel _settingsViewModel;
 
     protected DialogViewModel(
         IUserDialogService<TWindow> dialogService,
-        SettingsViewModel settingsViewModel) : base()
+        UserConfigViewModel settingsViewModel) : base()
     {
         _dialogService = dialogService;
         _settingsViewModel = settingsViewModel;

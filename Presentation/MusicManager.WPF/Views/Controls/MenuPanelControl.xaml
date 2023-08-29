@@ -13,7 +13,6 @@
             <MenuItem Header="Settings">
                 <TextBlock Text="{Binding RootPath}"/>
                 <Button Content="Select root" Command="{Binding SelectRootCommand}"/>
-                <CheckBox Content="DeleteAssociatedFolder" IsChecked="{Binding DeleteAssociatedFolder}"/>
                 <CheckBox Content="CreateAssociatedFolder" IsChecked="{Binding CreateAssociatedFolder}"/>
                 <Button Content="Save" Command="{Binding SaveCommand}"/>
             </MenuItem>

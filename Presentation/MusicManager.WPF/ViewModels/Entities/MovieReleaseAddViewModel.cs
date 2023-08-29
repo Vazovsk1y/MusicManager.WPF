@@ -63,7 +63,7 @@ namespace MusicManager.WPF.ViewModels.Entities
             IUserDialogService<MovieReleaseAddWindow> dialogService,
             IMovieReleaseService movieReleaseService,
             IMovieService movieService,
-            SettingsViewModel settingsViewModel) : base(dialogService, settingsViewModel)
+            UserConfigViewModel settingsViewModel) : base(dialogService, settingsViewModel)
         {
             _movieReleaseService = movieReleaseService;
             _movieService = movieService;

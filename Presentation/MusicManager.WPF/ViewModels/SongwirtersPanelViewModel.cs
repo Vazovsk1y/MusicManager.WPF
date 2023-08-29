@@ -30,9 +30,7 @@ internal partial class SongwirtersPanelViewModel :
     private readonly IFileManagerInteractor _fileManagerInteractor;
     private readonly ISongwriterFolderFactory _songwriterFolderFactory;
     private readonly IUserDialogService<SongwriterAddWindow> _dialogService;
-    private readonly SettingsViewModel _settingsViewModel;
-
-    private bool _wasClicked = false;
+    private readonly UserConfigViewModel _settingsViewModel;
 
     public SongwirtersPanelViewModel() 
     {
@@ -44,7 +42,7 @@ internal partial class SongwirtersPanelViewModel :
         IFileManagerInteractor fileManagerInteractor,
         ISongwriterFolderFactory songwriterFolderFactory,
         IUserDialogService<SongwriterAddWindow> dialogService,
-        SettingsViewModel settingsViewModel) : base()
+        UserConfigViewModel settingsViewModel) : base()
     {
 
         _serviceScopeFactory = serviceScopeFactory;
@@ -65,7 +63,7 @@ internal partial class SongwirtersPanelViewModel :
     private IAsyncRelayCommand _addSongwriterFromFolderCommand;
 
     public IAsyncRelayCommand AddSongwriterFromFolderCommand => _addSongwriterFromFolderCommand ??=
-        new AsyncRelayCommand(OnSongwriterAddFromFolderExecute, () => !AddSongwriterFromFolderCommand.IsRunning && Songwriters.Count == 0 && !_wasClicked);
+        new AsyncRelayCommand(OnSongwriterAddFromFolderExecute, () => !AddSongwriterFromFolderCommand.IsRunning && Songwriters.Count == 0);
 
     private async Task OnSongwriterAddFromFolderExecute()
     {
@@ -112,7 +110,6 @@ internal partial class SongwirtersPanelViewModel :
             MessageBoxHelper.ShowInfoBox("Success");
         }
 
-        _wasClicked = true;
         AddSongwriterFromFolderCommand.NotifyCanExecuteChanged();
     }
 
@@ -137,7 +134,6 @@ internal partial class SongwirtersPanelViewModel :
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 Songwriters.Remove(SelectedSongwriter);
-                AddSongwriterFromFolderCommand.NotifyCanExecuteChanged();
             });
         }
     }

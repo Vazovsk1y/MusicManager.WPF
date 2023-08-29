@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using MusicManager.WPF.Tools;
 using System;
 
 namespace MusicManager.WPF;
@@ -29,6 +30,7 @@ internal class Program
 
         return Host
             .CreateDefaultBuilder(args)
+            .CreateAssociatedFolderInAppData()
             .ConfigureAppConfiguration((appConfig, _) =>
             {
                 appConfig.HostingEnvironment.ApplicationName = App.Name;

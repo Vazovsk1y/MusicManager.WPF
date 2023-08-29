@@ -1,6 +1,6 @@
 ﻿namespace MusicManager.Services.Contracts.Base;
 
-public interface IConfig
+public interface ISaveable
 {
     void Save();
 }

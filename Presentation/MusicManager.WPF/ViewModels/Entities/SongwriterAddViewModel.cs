@@ -22,7 +22,7 @@ internal partial class SongwriterAddViewModel : DialogViewModel<SongwriterAddWin
     public SongwriterAddViewModel(
         IUserDialogService<SongwriterAddWindow> dialogService,
         ISongwriterService songwriterService,
-        SettingsViewModel settingsViewModel) : base(dialogService, settingsViewModel)
+        UserConfigViewModel settingsViewModel) : base(dialogService, settingsViewModel)
     {
         _songwriterService = songwriterService;
     }

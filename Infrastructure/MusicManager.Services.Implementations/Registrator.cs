@@ -23,20 +23,6 @@ public static class Registrator
         .AddSingleton<IDiscFolderFactory, DiscFolderFactory>()
         .AddSingleton<ISongFileFactory, SongFileFactory>()
         .AddSingleton(typeof(IUserDialogService<>), typeof(BaseUserDialogService<>))
-        .AddTransient<IAppConfig, AppConfig>(_ =>
-        {
-            var fileInfo = new FileInfo(AppConfig.FullPath);
-            if (!fileInfo.Exists)
-            {
-                return AppConfig.Default;
-            }
-
-            using var stream = fileInfo.OpenRead();
-            return JsonSerializer.Deserialize<AppConfig>(stream) ?? AppConfig.Default;
-        })
-        .AddTransient<IRoot>(s =>
-        {
-            return s.GetRequiredService<IAppConfig>();
-        })
+        
         ;
 }

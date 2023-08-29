@@ -64,7 +64,7 @@ internal partial class SongAddViewModel : DialogViewModel<SongAddWindow>
         ISongService songService,
         IFileManagerInteractor fileManagerInteractor,
         ISongFileFactory songFileFactory,
-        SettingsViewModel settingsViewModel) : base(dialogService, settingsViewModel)
+        UserConfigViewModel settingsViewModel) : base(dialogService, settingsViewModel)
     {
         _baseDiscService = baseDiscService;
         _songService = songService;
