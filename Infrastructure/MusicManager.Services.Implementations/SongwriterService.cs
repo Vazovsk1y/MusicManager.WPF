@@ -34,7 +34,6 @@ public class SongwriterService : ISongwriterService
     public async Task<Result> DeleteAsync(SongwriterId songwriterId, CancellationToken cancellationToken = default)
     {
         var songwriter = await _dbContext.Songwriters
-            .Include(e => e.Compilations)
             .Include(e => e.Movies)
             .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellationToken);
 

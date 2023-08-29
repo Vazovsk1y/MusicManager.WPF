@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MusicManager.DAL.Configurations.Base;
 using MusicManager.Domain.Common;
-using MusicManager.Domain.Entities;
 using MusicManager.Domain.Models;
 using MusicManager.Repositories.Data;
 

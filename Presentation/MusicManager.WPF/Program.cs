@@ -1,6 +1,10 @@
 ﻿using Microsoft.Extensions.Hosting;
+using MusicManager.Utils;
 using MusicManager.WPF.Tools;
+using Serilog;
+using Serilog.Events;
 using System;
+using System.IO;
 
 namespace MusicManager.WPF;
 
@@ -20,8 +24,9 @@ internal class Program
 #endif
 
         App app = new();
+        app.StartGlobalExceptionsHandling();
         app.InitializeComponent();
-        app.Run();
+		app.Run();
     }
 
     public static IHostBuilder CreateHostBuilder(string[] args)
@@ -31,6 +36,26 @@ internal class Program
         return Host
             .CreateDefaultBuilder(args)
             .CreateAssociatedFolderInAppData()
+            .UseSerilog((host, loggingConfiguration) =>
+            {
+                if (host.HostingEnvironment.IsDevelopment())
+                {
+                    loggingConfiguration.MinimumLevel.Debug();
+                    loggingConfiguration.WriteTo.Debug();
+                }
+                else
+                {
+					loggingConfiguration.MinimumLevel.Information();
+                    loggingConfiguration.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Error);
+
+					string logFileName = "log.txt";
+                    string logsStoragePath = Path.Combine(App.AssociatedAppFolderFullPath, "logs");
+                    string logFileFullPath = Path.Combine(logsStoragePath, logFileName);
+
+					DirectoryHelper.CreateIfNotExists(logsStoragePath);
+                    loggingConfiguration.WriteTo.File(logFileFullPath, rollingInterval: RollingInterval.Hour);
+				}
+            })
             .ConfigureAppConfiguration((appConfig, _) =>
             {
                 appConfig.HostingEnvironment.ApplicationName = App.Name;

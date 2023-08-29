@@ -3,7 +3,6 @@ using MusicManager.Domain.Common;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
-using MusicManager.Domain.Services.Implementations;
 using MusicManager.Domain.Shared;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts.Base;
@@ -55,7 +54,6 @@ public class MovieReleaseService : IMovieReleaseService
         var movie = await _dbContext
             .Movies
             .Include(e => e.Releases)
-            .ThenInclude(e => e.Movies)
             .SingleOrDefaultAsync(e => e.Id == movieId, cancellationToken);
 
         if (movie is null)

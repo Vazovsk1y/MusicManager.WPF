@@ -22,7 +22,7 @@ public class DbInitializer : IDbInitializer
 
         _logger.LogInformation("-----Start migration process------");
         await _context.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
-        _logger.LogInformation("------Times spend [{timer.Elapsed.TotalSeconds}]-------", timer.Elapsed.TotalSeconds);
+        _logger.LogInformation("------Times spend [{timerElapsedTotalSeconds}]-------", timer.Elapsed.TotalSeconds);
     }
 }
 
