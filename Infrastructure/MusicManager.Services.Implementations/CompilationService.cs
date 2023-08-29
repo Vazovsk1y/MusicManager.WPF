@@ -208,13 +208,18 @@ public class CompilationService : ICompilationService
             return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
         }
 
-        var folderUpdatingResult = await _compilationToFolderService.UpdateIfExistsAsync(compilation);
-        if (folderUpdatingResult.IsSuccess)
+        if (compilation.EntityDirectoryInfo is not null)
         {
-            compilation.SetDirectoryInfo(folderUpdatingResult.Value);
-        }
+			var folderUpdatingResult = await _compilationToFolderService.UpdateIfExistsAsync(compilation);
+			if (folderUpdatingResult.IsFailure)
+			{
+                return folderUpdatingResult;
+			}
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+			compilation.SetDirectoryInfo(folderUpdatingResult.Value);
+		}
+
+		await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using MusicManager.Services;
 using MusicManager.WPF.Tools;
 using System.IO;
@@ -18,28 +19,23 @@ internal partial class UserConfigViewModel :
     private bool _createAssociatedFolder;
 
     private readonly IFileManagerInteractor _fileManagerInteractor;
-
-    public UserConfig CurrentConfig => new()
-	{
-		CreateAssociatedFolder = CreateAssociatedFolder,
-		RootPath = RootPath,
-	};
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
 	public UserConfigViewModel(
-        IFileManagerInteractor fileManagerInteractor)
-    {
-        _fileManagerInteractor = fileManagerInteractor;
-    }
+		IFileManagerInteractor fileManagerInteractor, IServiceScopeFactory serviceScopeFactory)
+	{
+		_fileManagerInteractor = fileManagerInteractor;
+		_serviceScopeFactory = serviceScopeFactory;
+	}
 
-    [RelayCommand(CanExecute = nameof(CanSave))]
+	[RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
     {
-        var settingsModel = new UserConfig
-        {
-            CreateAssociatedFolder = CreateAssociatedFolder,
-            RootPath = RootPath,
-        };
-        settingsModel.Save();
+		using var scope = _serviceScopeFactory.CreateScope();
+		var config = scope.ServiceProvider.GetRequiredService<IUserConfig>();
+        config.CreateAssociatedFolder = CreateAssociatedFolder;
+        config.RootPath = RootPath;
+        config.Save();
 	}
 
     private bool CanSave() => RootPath is not null;
@@ -59,16 +55,8 @@ internal partial class UserConfigViewModel :
 
     protected override void OnActivated()
     {
-        var fileInfo = new FileInfo(UserConfig.SettingsFileFullPath);
-        if (!fileInfo.Exists)
-        {
-            RootPath = UserConfig.Default.RootPath;
-            CreateAssociatedFolder = UserConfig.Default.CreateAssociatedFolder;
-            return;
-        }
-
-        using var stream = fileInfo.OpenRead();
-        var config = JsonSerializer.Deserialize<UserConfig>(stream) ?? UserConfig.Default;   
+        using var scope = _serviceScopeFactory.CreateScope();
+        var config = scope.ServiceProvider.GetRequiredService<IUserConfig>();
         RootPath = config.RootPath;
         CreateAssociatedFolder = config.CreateAssociatedFolder;
     }

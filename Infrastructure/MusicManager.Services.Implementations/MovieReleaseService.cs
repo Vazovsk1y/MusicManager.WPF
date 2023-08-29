@@ -222,13 +222,18 @@ public class MovieReleaseService : IMovieReleaseService
             return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
         }
 
-        var folderUpdatingResult = await _movieReleaseToFolderService.UpdateIfExistsAsync(movieRelease);
-        if (folderUpdatingResult.IsSuccess)
-        {
-            movieRelease.SetDirectoryInfo(folderUpdatingResult.Value);
-        }
+		if (movieRelease.EntityDirectoryInfo is not null)
+		{
+			var folderUpdatingResult = await _movieReleaseToFolderService.UpdateIfExistsAsync(movieRelease);
+			if (folderUpdatingResult.IsFailure)
+			{
+                return folderUpdatingResult;
+			}
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+			movieRelease.SetDirectoryInfo(folderUpdatingResult.Value);
+		}
+
+		await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 

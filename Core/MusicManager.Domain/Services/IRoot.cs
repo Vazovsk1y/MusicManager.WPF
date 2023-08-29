@@ -2,5 +2,5 @@
 
 public interface IRoot
 {
-    string RootPath { get; }
+    string RootPath { get; set; }
 }

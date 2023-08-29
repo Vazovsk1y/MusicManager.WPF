@@ -4,6 +4,8 @@ using MusicManager.WPF.Tools;
 using MusicManager.WPF.ViewModels;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
+using System.IO;
+using System.Text.Json;
 
 namespace MusicManager.WPF;
 
@@ -24,10 +26,21 @@ internal static class Registrator
         .AddTransient<MovieReleaseAddToMovieViewModel>()
         .AddTransient<MovieReleaseMovieWindow>()
         .AddSingleton(typeof(IWpfWindowService<>), typeof(WpfWindowService<>))
+        .AddTransient<IUserConfig, UserConfig>(_ =>
+        {
+			var fileInfo = new FileInfo(UserConfig.SettingsFileFullPath);
+			if (!fileInfo.Exists)
+			{
+				return UserConfig.Default;
+			}
+
+			using var stream = fileInfo.OpenRead();
+			var config = JsonSerializer.Deserialize<UserConfig>(stream) ?? UserConfig.Default;
+			return config;
+		})
         .AddTransient<IRoot>(s =>
         {
-            var configVm = s.GetRequiredService<UserConfigViewModel>();
-            return configVm.CurrentConfig;
-        })
+            return s.GetRequiredService<IUserConfig>();
+		})
         ;
 }

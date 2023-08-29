@@ -8,11 +8,11 @@ namespace MusicManager.Domain.Services.Implementations
             .AddTransient<ICueFileInteractor, CueFileInteractor>()
 
             // Folder or file to entities converting services.
-            .AddSingleton<IFolderToSongwriterService, FolderToSongwriterService>()
-            .AddSingleton<IFolderToMovieService, FolderToMovieService>()
-            .AddSingleton<IFolderToCompilationService, FolderToCompilationService>()
-            .AddSingleton<IFolderToMovieReleaseService, FolderToMovieReleaseService>()
-            .AddSingleton<IFileToSongService, FileToSongService>()
+            .AddScoped<IFolderToSongwriterService, FolderToSongwriterService>()
+            .AddScoped<IFolderToMovieService, FolderToMovieService>()
+            .AddScoped<IFolderToCompilationService, FolderToCompilationService>()
+            .AddScoped<IFolderToMovieReleaseService, FolderToMovieReleaseService>()
+            .AddScoped<IFileToSongService, FileToSongService>()
 
             // Entities to folder or file converting services.
             .AddScoped<ISongwriterToFolderService, SongwriterToFolderService>()
