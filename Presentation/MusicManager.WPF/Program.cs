@@ -5,6 +5,7 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.IO;
+using System.Threading;
 
 namespace MusicManager.WPF;
 
@@ -12,11 +13,20 @@ internal class Program
 {
     public static bool IsInDebug { get; private set; }
 
+    private static Mutex? _mutex;
+
     public const double REGEX_DEFAULT_MATCH_TIMEOUT_Milliseconds = 50d;
 
     [STAThread]
     public static void Main(string[] args)
     {
+        _mutex = new Mutex(true, App.Name, out bool createdNew);
+        if (!createdNew)
+        {
+            MessageBoxHelper.ShowErrorBox("App is already running.");
+            return;
+        }
+
         AppDomain.CurrentDomain.SetData("REGEX_DEFAULT_MATCH_TIMEOUT", TimeSpan.FromMilliseconds(REGEX_DEFAULT_MATCH_TIMEOUT_Milliseconds));
 
 #if DEBUG
