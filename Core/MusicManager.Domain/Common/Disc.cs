@@ -134,6 +134,18 @@ public class Disc : IAggregateRoot
         return Result.Success();
     }
 
+    public Result RemoveSong(SongId songId)
+    {
+		var song = _songs.SingleOrDefault(e => e.Id == songId);
+		if (song is null)
+		{
+			return Result.Failure(new Error("Unable to remove song because it with this id is not exists."));
+		}
+
+		_songs.Remove(song);
+		return Result.Success();
+	}
+
     #endregion
 }
 

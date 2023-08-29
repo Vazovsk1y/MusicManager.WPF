@@ -31,7 +31,6 @@ internal partial class SongsPanelViewModel :
         .SelectMany(e => e.Songs)
         .Union(DiscsPanelViewModel.MovieReleases.SelectMany(e => e.Songs)));
 
-    private SongViewModel? _selectedSong;
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public SongsPanelViewModel() 
@@ -49,13 +48,11 @@ internal partial class SongsPanelViewModel :
         _serviceScopeFactory = serviceScopeFactory;
     }
 
-    public SongViewModel? SelectedSong
-    {
-        get => _selectedSong;
-        set => SetProperty(ref _selectedSong, value);
-    }
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteSongCommand))]
+	private SongViewModel? _selectedSong;
 
-    [RelayCommand]
+	[RelayCommand]
     private void AddSong()
     {
         _dialogService.ShowDialog();
@@ -104,7 +101,35 @@ internal partial class SongsPanelViewModel :
         }
     }
 
-    public async void Receive(SongCreatedMessage message)
+	[RelayCommand(CanExecute = nameof(CanDeleteSong))]
+	private async Task DeleteSong()
+	{
+		var dialog = MessageBoxHelper.ShowDialogBoxYesNo($"Delete {SelectedSong!.Title} from list?");
+		if (dialog == MessageBoxResult.Yes)
+		{
+			using var scope = _serviceScopeFactory.CreateScope();
+			var service = scope.ServiceProvider.GetRequiredService<ISongService>();
+			var result = await service.DeleteAsync(SelectedSong!.DiscId, SelectedSong!.SongId);
+			if (result.IsFailure)
+			{
+				MessageBoxHelper.ShowErrorBox(result.Error.Message);
+				return;
+			}
+
+			await App.Current.Dispatcher.InvokeAsync(() =>
+			{
+                var discs = DiscsPanelViewModel.Discs.Where(e => e.Songs.Contains(SelectedSong));
+                foreach (var disc in discs)
+                {
+                    disc.Songs.Remove(SelectedSong);
+                }
+			});
+		}
+	}
+
+	private bool CanDeleteSong() => SelectedSong is not null;
+
+	public async void Receive(SongCreatedMessage message)
     {
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {

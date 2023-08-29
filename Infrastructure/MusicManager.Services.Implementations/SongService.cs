@@ -27,7 +27,28 @@ public class SongService : ISongService
         _songToFile = songToFileService;
     }
 
-    public async Task<Result<IEnumerable<SongDTO>>> GetAllAsync(DiscId discId, CancellationToken cancellationToken = default)
+	public async Task<Result> DeleteAsync(DiscId discId, SongId songId, CancellationToken cancellationToken = default)
+	{
+        var disc = await _dbContext.Discs
+            .Include(e => e.Songs)
+            .SingleOrDefaultAsync(e => e.Id == discId, cancellationToken);
+
+        if (disc is null)
+        {
+            return Result.Failure(ServicesErrors.DiscWithPassedIdIsNotExists());
+        }
+
+        var removingResult = disc.RemoveSong(songId);
+        if (removingResult.IsFailure)
+        {
+            return removingResult;
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+	}
+
+	public async Task<Result<IEnumerable<SongDTO>>> GetAllAsync(DiscId discId, CancellationToken cancellationToken = default)
     {
         var disc = await _dbContext
             .Discs
