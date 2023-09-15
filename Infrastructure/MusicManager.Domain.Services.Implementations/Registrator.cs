@@ -5,14 +5,14 @@ namespace MusicManager.Domain.Services.Implementations
     public static class Registrator
     {
         public static IServiceCollection AddDomainServices(this IServiceCollection services) => services
-            .AddTransient<ICueFileInteractor, CueFileInteractor>()
+            .AddSingleton<ICueFileInteractor, CueFileInteractor>()
 
             // Folder or file to entities converting services.
-            .AddScoped<IFolderToSongwriterService, FolderToSongwriterService>()
-            .AddScoped<IFolderToMovieService, FolderToMovieService>()
-            .AddScoped<IFolderToCompilationService, FolderToCompilationService>()
-            .AddScoped<IFolderToMovieReleaseService, FolderToMovieReleaseService>()
-            .AddScoped<IFileToSongService, FileToSongService>()
+            .AddSingleton<IFolderToSongwriterService, FolderToSongwriterService>()
+            .AddSingleton<IFolderToMovieService, FolderToMovieService>()
+            .AddSingleton<IFolderToCompilationService, FolderToCompilationService>()
+            .AddSingleton<IFolderToMovieReleaseService, FolderToMovieReleaseService>()
+            .AddSingleton<IFileToSongService, FileToSongService>()
 
             // Entities to folder or file converting services.
             .AddScoped<ISongwriterToFolderService, SongwriterToFolderService>()

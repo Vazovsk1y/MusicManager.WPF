@@ -30,7 +30,7 @@ public class SongToFileService : ISongToFileService
             return Task.FromResult(Result.Failure<string>(new Error("Parent directory info isn't exists, unable to copy files.")));
         }
 
-        var currentFileLocation = new FileInfo(fileFullPath);
+        var currentFileLocation = new FileInfo(_root.CombineWith(fileFullPath));
         if (!currentFileLocation.Exists)
         {
             return Task.FromResult(Result.Failure<string>(new Error("Passed file isn't exists, unable to copy that.")));

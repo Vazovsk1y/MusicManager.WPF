@@ -88,7 +88,7 @@ public class SongService : ISongService
             if (moveToParentFolder)
             {
                 var anySong = songs.First();
-                var movingCueFileResult = await _songToFile.CopyToAsync(anySong.PlaybackInfo!.CueInfo!.CueFilePath, disc, songAddDTO.DiscNumber);
+                var movingCueFileResult = await _songToFile.CopyToAsync(anySong.PlaybackInfo.CueInfo!.CueFilePath, disc, songAddDTO.DiscNumber);
                 if (movingCueFileResult.IsFailure)
                 {
                     return Result.Failure<IEnumerable<SongDTO>>(movingCueFileResult.Error);

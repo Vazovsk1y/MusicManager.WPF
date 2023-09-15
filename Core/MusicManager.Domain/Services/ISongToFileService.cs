@@ -7,7 +7,7 @@ namespace MusicManager.Domain.Services;
 
 public interface ISongToFileService
 {
-    Task<Result<string>> CopyToAsync(string songFileFullPath, Disc parent, DiscNumber? discNumber = null);
+    Task<Result<string>> CopyToAsync(string songFilePath, Disc parent, DiscNumber? discNumber = null);
 
     Task<Result<string>> UpdateIfExistsAsync(Song song, CancellationToken cancellationToken = default);
 }

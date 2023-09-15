@@ -24,6 +24,7 @@ internal partial class DiscsPanelViewModel :
     IRecipient<CompilationCreatedMessage>,
     IRecipient<MovieReleaseCreatedMessage>
 {
+    private const int DiscTypeMaxCount = 15;
     public SongwirtersPanelViewModel SongwritersPanelViewModel { get; }  
 
     public MoviesPanelViewModel MoviesPanelViewModel { get; }
@@ -44,7 +45,7 @@ internal partial class DiscsPanelViewModel :
 
     private IDiscViewModel? _selectedDisc;
 
-    public IEnumerable<DiscType> EnableDiscTypes => DiscType.EnumerateRange();
+    public IEnumerable<DiscType> EnableDiscTypes => DiscType.EnumerateRange(DiscTypeMaxCount);
 
     public DiscsPanelViewModel()
     {

@@ -22,10 +22,12 @@ public class DiscFolderFactory : IDiscFolderFactory
     };
 
     private readonly ISongFileFactory _songFileFactory;
+    private readonly ICueFileInteractor _cueFileInteractor;
 
-    public DiscFolderFactory(ISongFileFactory songFileFactory)
+    public DiscFolderFactory(ISongFileFactory songFileFactory, ICueFileInteractor cueFileInteractor)
     {
         _songFileFactory = songFileFactory;
+        _cueFileInteractor = cueFileInteractor;
     }
 
     public Result<DiscFolder> Create(DirectoryInfo discDirectory)
@@ -63,8 +65,14 @@ public class DiscFolderFactory : IDiscFolderFactory
 
         foreach (var cueFile in cueFiles)
         {
+            var cueInteractorResult = _cueFileInteractor.GetCueSheet(cueFile.FullName);
+            if (cueInteractorResult.IsFailure)
+            {
+                return Result.Failure<DiscFolder>(cueInteractorResult.Error);
+            }
+
             var executableFileForCue = allSongsFiles
-                .FirstOrDefault(e => e.Name.Contains(Path.GetFileNameWithoutExtension(cueFile.Name)) && e.Extension != DomainConstants.CueExtension);
+                .FirstOrDefault(e => e.Name == cueInteractorResult.Value.ExecutableFileName);
 
             if (executableFileForCue is null)
             {

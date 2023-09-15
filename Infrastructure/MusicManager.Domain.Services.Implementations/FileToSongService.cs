@@ -61,11 +61,12 @@ namespace MusicManager.Domain.Services.Implementations
             var parentDirectoryName = new FileInfo(songInfo.Name).Directory?.Name ?? string.Empty;
             var discNumberMatch = IsDiscNumber().Match(parentDirectoryName);
 
+            string songName = songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName);
             if (discNumberMatch.Success)
             {
                 var songCreationResult = Song.Create(
                     parentId,
-                    songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
+                    songName,
                     songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
                     int.Parse(discNumberMatch.Groups[1].Value),
                     songFilePath.GetRelational(_root),
@@ -84,7 +85,7 @@ namespace MusicManager.Domain.Services.Implementations
 
             var songCreationResultWithoutDiscNumber = Song.Create(
                 parentId,
-                songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName),
+                songName,
                 songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
                 songFilePath.GetRelational(_root),
                 songInfo.Properties.Duration

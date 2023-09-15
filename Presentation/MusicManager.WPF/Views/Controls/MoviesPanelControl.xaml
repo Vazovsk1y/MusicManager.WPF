@@ -9,27 +9,29 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <StackPanel>
-            <DataGrid ItemsSource="{Binding SongwritersPanelViewModel.SelectedSongwriter.Movies}"
-                  SelectedItem="{Binding SelectedMovie}"
-                  AutoGenerateColumns="False"
-                  >
+        <ScrollViewer>
+            <StackPanel>
+                <DataGrid ItemsSource="{Binding SongwritersPanelViewModel.SelectedSongwriter.Movies}"
+          SelectedItem="{Binding SelectedMovie}"
+          AutoGenerateColumns="False"
+          >
 
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Title" Binding="{Binding Title, Mode=TwoWay}"/>
-                    <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear, Mode=TwoWay}"/>
-                    <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry, Mode=TwoWay}"/>
-                    <DataGridTextColumn Header="DirectorName" Binding="{Binding DirectorName, Mode=TwoWay}"/>
-                    <DataGridTextColumn Header="DirectorLastName" Binding="{Binding DirectorLastName, Mode=TwoWay}"/>
-                    
-                </DataGrid.Columns>
-            </DataGrid>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Title" Binding="{Binding Title, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="DirectorName" Binding="{Binding DirectorName, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="DirectorLastName" Binding="{Binding DirectorLastName, Mode=TwoWay}"/>
 
-            <Button Content="AddMovie" Command="{Binding AddMovieCommand}"/>
-            <Button Content="AddMR" Command="{Binding AddMovieReleaseCommand}"/>
-            <Button Content="Save" Command="{Binding SaveCommand}"/>
-            <Button Content="Delete" Command="{Binding DeleteMovieCommand}"/>
-        </StackPanel>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <Button Content="AddMovie" Command="{Binding AddMovieCommand}"/>
+                <Button Content="AddMR" Command="{Binding AddMovieReleaseCommand}"/>
+                <Button Content="Save" Command="{Binding SaveCommand}"/>
+                <Button Content="Delete" Command="{Binding DeleteMovieCommand}"/>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

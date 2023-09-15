@@ -42,12 +42,12 @@ public partial class DiscType : ValueObject<DiscType>
             LP_Row => LP,
             BOOTLEG_Row => Bootleg,
             UNKNOWN_ROW => Unknown,
-            _ when IsDiscTypeStartingFromNumber().IsMatch(value) => new DiscType(IsDiscTypeStartingFromNumber().Match(value).Value),
+            _ when IsDiscTypeStartingFromNumber().IsMatch(value) => new DiscType(value),
             _ => Unknown,
         };
     }
 
-    [GeneratedRegex(@"^[2-9]\d*CD$")]
+    [GeneratedRegex(@"^([2-9]|[1-9]\d+)\d*CD$")]
     private static partial Regex IsDiscTypeStartingFromNumber();
 
     public static IEnumerable<DiscType> EnumerateRange(byte count = 5)

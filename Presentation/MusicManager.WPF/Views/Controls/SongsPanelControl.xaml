@@ -9,26 +9,28 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <StackPanel>
+        <ScrollViewer>
+            <StackPanel>
 
-            <DataGrid ItemsSource="{Binding DiscsPanelViewModel.SelectedDisc.Songs}"
-                      SelectedItem="{Binding SelectedSong}"
-                  AutoGenerateColumns="False">
+                <DataGrid ItemsSource="{Binding DiscsPanelViewModel.SelectedDisc.Songs}"
+              SelectedItem="{Binding SelectedSong}"
+          AutoGenerateColumns="False">
 
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
-                    
-                    <DataGridTextColumn Header="SongNumber" Binding="{Binding Number}"/>
-                    <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
-                    <DataGridTextColumn Header="SongType" Binding="{Binding Type}" IsReadOnly="True"/>
-                </DataGrid.Columns>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
 
-            </DataGrid>
+                        <DataGridTextColumn Header="SongNumber" Binding="{Binding Number}"/>
+                        <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
+                        <DataGridTextColumn Header="SongType" Binding="{Binding Type}" IsReadOnly="True"/>
+                    </DataGrid.Columns>
 
-            <Button Content="Add" Command="{Binding AddSongCommand}"/>
-            <Button Content="Save" Command="{Binding SaveCommand}"/>
-            <Button Content="Delete" Command="{Binding DeleteSongCommand}"/>
-        </StackPanel>
+                </DataGrid>
+
+                <Button Content="Add" Command="{Binding AddSongCommand}"/>
+                <Button Content="Save" Command="{Binding SaveCommand}"/>
+                <Button Content="Delete" Command="{Binding DeleteSongCommand}"/>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

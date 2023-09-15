@@ -35,6 +35,7 @@ public class SongwriterService : ISongwriterService
     {
         var songwriter = await _dbContext.Songwriters
             .Include(e => e.Movies)
+            .Include(e => e.Compilations)
             .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellationToken);
 
         if (songwriter is null)

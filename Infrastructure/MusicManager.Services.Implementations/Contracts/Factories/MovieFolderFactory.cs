@@ -1,10 +1,13 @@
 ﻿using IWshRuntimeLibrary;
+using MusicManager.Domain.Extensions;
+using MusicManager.Domain.Services;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Base;
 using MusicManager.Services.Contracts.Factories;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 
 namespace MusicManager.Services.Implementations.Contracts.Factories;
@@ -12,10 +15,11 @@ namespace MusicManager.Services.Implementations.Contracts.Factories;
 public class MovieFolderFactory : IMovieFolderFactory
 {
     private readonly IDiscFolderFactory _movieReleaseFolderFactory;
-
-    public MovieFolderFactory(IDiscFolderFactory movieReleaseFolderFactory)
+    private readonly IRoot _root;
+    public MovieFolderFactory(IDiscFolderFactory movieReleaseFolderFactory, IRoot root)
     {
         _movieReleaseFolderFactory = movieReleaseFolderFactory;
+        _root = root;
     }
 
     public Result<MovieFolder> Create(DirectoryInfo movieDirectory)
@@ -25,7 +29,7 @@ public class MovieFolderFactory : IMovieFolderFactory
             return Result.Failure<MovieFolder>(DomainServicesErrors.PassedDirectoryIsNotExists(movieDirectory.FullName));
         }
 
-        List<DiscFolder> moviesReleasesFolders = new();
+        List<DiscFolder> movieReleases = new();
         var moviesReleasesDirectories = new List<DirectoryInfo>();
 
         // if shortcut file with .lnk extension, if link directory with not null link target.
@@ -37,7 +41,19 @@ public class MovieFolderFactory : IMovieFolderFactory
             {
                 WshShell shell = new();
                 WshShortcut shortcut = (WshShortcut)shell.CreateShortcut(fileSystemInfo.FullName);
-                moviesReleasesDirectories.Add(new DirectoryInfo(shortcut.TargetPath));
+                if (shortcut.TargetPath.Contains(DomainServicesConstants.COMPILATIONS_FOLDER_NAME))
+                {
+                    // asked to skip, he will delete it by himself
+                    continue;
+                }
+
+                var shorcut = Shortcut(fileSystemInfo, shortcut);
+                if (shorcut.IsFailure)
+                {
+                    return Result.Failure<MovieFolder>(shorcut.Error);
+                }
+
+                moviesReleasesDirectories.Add(shorcut.Value);
             }
             else
             {
@@ -55,10 +71,51 @@ public class MovieFolderFactory : IMovieFolderFactory
                 return Result.Failure<MovieFolder>(result.Error);
             }
 
-            moviesReleasesFolders.Add(result.Value);
+            movieReleases.Add(result.Value);
         }
 
-        return new MovieFolder(movieDirectory.FullName, moviesReleasesFolders);
+        return new MovieFolder(movieDirectory.FullName, movieReleases);
+    }
+
+    private Result<DirectoryInfo> Shortcut(FileSystemInfo currentShortcut, WshShortcut actualShorcut)
+    {
+        if (!Directory.Exists(actualShorcut.TargetPath))
+        {
+            // three level back  {SomeCompositor}/movies/{SomeMovie}/{CurrentShorcutFile}
+
+            string pathAfterMoviesWord = actualShorcut.TargetPath[actualShorcut.TargetPath.IndexOf(DomainServicesConstants.MOVIES_FOLDER_NAME)..];
+            string pathBeforeMoviesFolder =
+                actualShorcut.TargetPath[..(actualShorcut.TargetPath.Length - pathAfterMoviesWord.Length - 1)];
+
+            var songwriterBuilder = new StringBuilder();
+            foreach (var item in pathBeforeMoviesFolder.Reverse())
+            {
+                if (item == '\\')
+                {
+                    break;
+                }
+
+                songwriterBuilder.Append(item);
+            }
+            
+            string songwriterName = new(songwriterBuilder.ToString().Reverse().ToArray());
+            string newTargetPath = Path.Combine(
+                _root.CombineWith(songwriterName),
+                pathAfterMoviesWord
+                );
+
+            if (!Directory.Exists(newTargetPath))
+            {
+                return Result.Failure<DirectoryInfo>(new Error($"The target path of lnk file {currentShortcut.Name} is not exists\n." +
+                    $"Target path {newTargetPath}."));
+            }
+
+            actualShorcut.TargetPath = newTargetPath;
+            actualShorcut.Save();
+            return new DirectoryInfo(newTargetPath);
+        }
+
+        return new DirectoryInfo(actualShorcut.TargetPath);
     }
 }
 
