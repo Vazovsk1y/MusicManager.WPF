@@ -212,7 +212,7 @@ public class MovieReleaseService : IMovieReleaseService
         {
             movieRelease.SetIdentifier(movieReleaseUpdateDTO.Identifier),
             movieRelease.SetDiscType(movieReleaseUpdateDTO.DiscType),
-            movieRelease.SetProductionInfo(movieReleaseUpdateDTO.ProductionCountry, movieReleaseUpdateDTO.ProductionYear),
+            movieRelease.SetProductionInfo(movieReleaseUpdateDTO.ProductionCountry, movieReleaseUpdateDTO.ProductionYear)
         };
 
         if (updateActions.Any(e => e.IsFailure))

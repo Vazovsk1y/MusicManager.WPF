@@ -101,7 +101,7 @@ public class MovieService : IMovieService
             .Include(e => e.Movies)
             .Where(e => e.Movies.Select(e => e.Id).Contains(movieId) && e.Movies.Count == 1);
 
-        _dbContext.Discs.RemoveRange(moviesReleasesToRemove);
+        _dbContext.MovieReleases.RemoveRange(moviesReleasesToRemove);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
@@ -113,6 +113,7 @@ public class MovieService : IMovieService
             .Songwriters
             .AsNoTracking()
             .Include(e => e.Movies)
+            .ThenInclude(e => e.Director)
             .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellation);
 
         if (songwriter is null)
@@ -238,7 +239,11 @@ public class MovieService : IMovieService
 
     public async Task<Result> UpdateAsync(MovieUpdateDTO movieUpdateDTO, CancellationToken cancellationToken = default)
     {
-        var movie = await _dbContext.Movies.SingleOrDefaultAsync(e => e.Id == movieUpdateDTO.Id, cancellationToken);
+        var movie = await _dbContext
+            .Movies
+            .Include(e => e.Director)
+            .ThenInclude(e => e == null ? null : e.Movies)
+            .SingleOrDefaultAsync(e => e.Id == movieUpdateDTO.Id, cancellationToken);
 
         if (movie is null)
         {
@@ -249,8 +254,22 @@ public class MovieService : IMovieService
         {
             movie.SetTitle(movieUpdateDTO.Title),
             movie.SetProductionInfo(movieUpdateDTO.ProductionCountry, movieUpdateDTO.ProductionYear),
-            movie.SetDirectorInfo(movieUpdateDTO.DirectorName, movieUpdateDTO.DirectorLastName)
         };
+
+        if (movieUpdateDTO.DirectorId != null)
+        {
+            var director = await _dbContext
+                .Directors
+                .Include(e => e.Movies)
+                .SingleOrDefaultAsync(e => e.Id == movieUpdateDTO.DirectorId, cancellationToken);
+
+            if (director is null)
+            {
+                return Result.Failure(new Error("Director with passed id isnt exists."));
+            }
+
+            updateActions.Add(movie.SetDirector(director));
+        }
 
         if (updateActions.Any(e => e.IsFailure))
         {

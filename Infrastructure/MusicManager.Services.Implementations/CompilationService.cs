@@ -3,7 +3,6 @@ using MusicManager.Domain.Common;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
-using MusicManager.Domain.Services.Implementations;
 using MusicManager.Domain.Shared;
 using MusicManager.Repositories.Data;
 using MusicManager.Services.Contracts.Base;
@@ -200,7 +199,7 @@ public class CompilationService : ICompilationService
         {
             compilation.SetIdentifier(compilationUpdateDTO.Identifier),
             compilation.SetDiscType(compilationUpdateDTO.DiscType),
-            compilation.SetProductionInfo(compilationUpdateDTO.ProductionCountry, compilationUpdateDTO.ProductionYear),
+            compilation.SetProductionInfo(compilationUpdateDTO.ProductionCountry, compilationUpdateDTO.ProductionYear)
         };
 
         if (updateActions.Any(e => e.IsFailure))
