@@ -1,10 +1,10 @@
 ﻿namespace MusicManager.WPF.ViewModels.Entities;
 
-public interface IModifiable<T> where T : IModifiable<T>
+public interface IUpdatable<T> where T : IUpdatable<T>
 {
-    bool IsModified { get; }
+    bool IsUpdatable { get; }
 
-    T? PreviousState { get; }
+    T PreviousState { get; }
 
     void RollBackChanges();
 

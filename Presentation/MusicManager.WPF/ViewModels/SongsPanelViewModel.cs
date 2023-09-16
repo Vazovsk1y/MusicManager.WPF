@@ -68,7 +68,7 @@ internal partial class SongsPanelViewModel :
 
         using var scope = _serviceScopeFactory.CreateScope();
         var songService = scope.ServiceProvider.GetRequiredService<ISongService>();
-        var songsToUpdate = Songs.Where(e => e.IsModified);
+        var songsToUpdate = Songs.Where(e => e.IsUpdatable);
 
         var results = new List<Result>();
         foreach (var item in songsToUpdate)

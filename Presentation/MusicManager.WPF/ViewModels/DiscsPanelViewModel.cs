@@ -19,20 +19,20 @@ using System.Windows;
 
 namespace MusicManager.WPF.ViewModels;
 
-internal partial class DiscsPanelViewModel : 
+internal partial class DiscsPanelViewModel :
     ObservableRecipient,
     IRecipient<CompilationCreatedMessage>,
     IRecipient<MovieReleaseCreatedMessage>
 {
     private const int DiscTypeMaxCount = 15;
-    public SongwirtersPanelViewModel SongwritersPanelViewModel { get; }  
+    public SongwirtersPanelViewModel SongwritersPanelViewModel { get; }
 
     public MoviesPanelViewModel MoviesPanelViewModel { get; }
 
-    public IReadOnlyCollection<CompilationViewModel> Compilations => 
+    public IReadOnlyCollection<CompilationViewModel> Compilations =>
         new ObservableCollection<CompilationViewModel>(SongwritersPanelViewModel.Songwriters.SelectMany(e => e.Compilations));
 
-    public IReadOnlyCollection<MovieReleaseViewModel> MovieReleases => 
+    public IReadOnlyCollection<MovieReleaseViewModel> MovieReleases =>
         new ObservableCollection<MovieReleaseViewModel>(MoviesPanelViewModel.Movies.SelectMany(e => e.MoviesReleases));
 
     public IReadOnlyCollection<IDiscViewModel> Discs => new ObservableCollection<IDiscViewModel>(
@@ -46,6 +46,7 @@ internal partial class DiscsPanelViewModel :
     private IDiscViewModel? _selectedDisc;
 
     public IEnumerable<DiscType> EnableDiscTypes => DiscType.EnumerateRange(DiscTypeMaxCount);
+
 
     public DiscsPanelViewModel()
     {
@@ -181,7 +182,7 @@ internal partial class DiscsPanelViewModel :
 
         using var scope = _serviceScopeFactory.CreateScope();
         var compilationService = scope.ServiceProvider.GetRequiredService<ICompilationService>();
-        var compilationsToUpdate = Compilations.Where(e => e.IsModified);
+        var compilationsToUpdate = Compilations.Where(e => e.IsUpdatable);
 
         var results = new List<Result>();
         foreach (var item in compilationsToUpdate)
@@ -228,7 +229,7 @@ internal partial class DiscsPanelViewModel :
 
         using var scope = _serviceScopeFactory.CreateScope();
         var movieReleaseService = scope.ServiceProvider.GetRequiredService<IMovieReleaseService>();
-        var moviesReleasesToUpdate = MovieReleases.Where(e => e.IsModified);
+        var moviesReleasesToUpdate = MovieReleases.Where(e => e.IsUpdatable);
 
         var results = new List<Result>();
         foreach (var item in moviesReleasesToUpdate)

@@ -32,6 +32,8 @@ internal partial class MoviesPanelViewModel :
     private readonly IUserDialogService<MovieAddWindow> _movieAddDialogService;
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
+    public ObservableCollection<DirectorViewModel> EnableDirectors { get; } = new ObservableCollection<DirectorViewModel>();
+
     public MoviesPanelViewModel()
     {
         InvalidOperationExceptionHelper.ThrowIfTrue(!App.IsInDesignMode, "Parametrless ctor is only for design time.");
@@ -105,18 +107,17 @@ internal partial class MoviesPanelViewModel :
 
         using var scope = _serviceScopeFactory.CreateScope();
         var movieService = scope.ServiceProvider.GetRequiredService<IMovieService>();
-        var moviesToUpdate = Movies.Where(e => e.IsModified);
+        var moviesToUpdate = Movies.Where(e => e.IsUpdatable);
 
         var results = new List<Result>();
         foreach (var item in moviesToUpdate)
         {
             var dto = new MovieUpdateDTO(
-                item.MovieId, 
-                item.Title, 
-                item.ProductionCountry, 
-                item.ProductionYear, 
-                item.DirectorName, 
-                item.DirectorLastName);
+                item.MovieId,
+                item.Title,
+                item.ProductionCountry,
+                item.ProductionYear,
+                item.Director?.Id);
 
             var updateResult = await movieService.UpdateAsync(dto);
             if (updateResult.IsFailure)
@@ -138,6 +139,34 @@ internal partial class MoviesPanelViewModel :
         else
         {
             MessageBoxHelper.ShowInfoBox("Successfully updated.");
+        }
+    }
+
+    [RelayCommand]
+    private async Task AddDirector(string fullName)
+    {
+        if (AddDirectorCommand.IsRunning)
+        {
+            return;
+        }
+
+        using var scope = _serviceScopeFactory.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<IDirectorService>();
+        var result = await service.SaveAsync(fullName);
+        if (result.IsSuccess)
+        {
+            await App.Current.Dispatcher.InvokeAsync(() =>
+            {
+                EnableDirectors.Add(new DirectorViewModel
+                {
+                    Id = result.Value,
+                    FullName = fullName,
+                });
+            });
+        }
+        else
+        {
+            MessageBoxHelper.ShowErrorBox(result.Error.Message);
         }
     }
 
@@ -180,5 +209,16 @@ internal partial class MoviesPanelViewModel :
                 songwriter.Movies.Add(message.MovieViewModel);
             }
         });
+    }
+    protected override async void OnActivated()
+    {
+        using var scope = _serviceScopeFactory.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<IDirectorService>();
+        var result = await service.GetAllAsync();
+
+        if (result.IsSuccess)
+        {
+            EnableDirectors.AddRange(result.Value.Select(e => e.ToViewModel()));
+        }
     }
 }

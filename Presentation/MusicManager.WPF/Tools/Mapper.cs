@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace MusicManager.WPF.Tools;
 
-internal static class MappingExtensions
+internal static class Mapper
 {
     public static SongwriterViewModel ToViewModel(this SongwriterDTO songwriterDTO)
     {
@@ -24,12 +24,23 @@ internal static class MappingExtensions
         {
             MovieId = movieDTO.Id,
             SongwriterId = movieDTO.SongwriterId,
-            DirectorName = movieDTO.DirectorName,
-            DirectorLastName = movieDTO.DirectorLastName,
+            Director = movieDTO.Director?.ToViewModel(),
             ProductionCountry = movieDTO.ProductionCountry,
             ProductionYear = movieDTO.ProductionYear,
             Title = movieDTO.Title,
             MoviesReleases = new(movieDTO.MovieReleasesDTOs.Select(e => e.ToViewModel())),
+        };
+
+        entity.SetCurrentAsPrevious();
+        return entity;
+    }
+
+    public static DirectorViewModel ToViewModel(this DirectorDTO directorDTO)
+    {
+        var entity = new DirectorViewModel()
+        {
+            Id = directorDTO.Id,
+            FullName = directorDTO.FullName,
         };
 
         entity.SetCurrentAsPrevious();

@@ -6,59 +6,57 @@ namespace MusicManager.WPF.ViewModels.Entities;
 
 internal partial class SongViewModel : 
 	ObservableObject, 
-	IModifiable<SongViewModel>
+	IUpdatable<SongViewModel>
 {
 	[ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsUpdatable))]
-    [NotifyPropertyChangedFor(nameof(IsModified))]
+    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
     private string? _discNumber;
 
 	[ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsUpdatable))]
-    [NotifyPropertyChangedFor(nameof(IsModified))]
+    [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string _title = string.Empty;
 
 	[ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsUpdatable))]
-    [NotifyPropertyChangedFor(nameof(IsModified))]
+    [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string? _type;
 
 	[ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsUpdatable))]
-    [NotifyPropertyChangedFor(nameof(IsModified))]
+    [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private int _number;
 
     public required SongId SongId { get; init; }
 
     public required DiscId DiscId { get; init; }
 
-    public bool IsModified
+    public bool IsUpdatable
     {
         get
         {
-            return PreviousState?.Title != Title
-                || PreviousState?.Type != Type
-                || PreviousState?.Number != Number
-                || PreviousState?.DiscNumber != DiscNumber;
+            return PreviousState.Title != Title
+                || PreviousState.Number != Number;
         }
     }
 
-    public string? IsUpdatable => IsModified ? "*" : null;
+    public string? UpdatableSign => IsUpdatable ? "*" : null;
 
-    public SongViewModel? PreviousState { get; private set; }
+    public SongViewModel PreviousState { get; private set; } = null!;
 
     public void RollBackChanges()
     {
-        DiscNumber = PreviousState?.DiscNumber;
-        Title = PreviousState?.Title;
-        Type = PreviousState?.Type;
-        Number = (int)PreviousState?.Number;
+        DiscNumber = PreviousState.DiscNumber;
+        Title = PreviousState.Title;
+        Type = PreviousState.Type;
+        Number = PreviousState.Number;
     }
 
     public void SetCurrentAsPrevious()
     {
-        PreviousState = MemberwiseClone() as SongViewModel;
-        OnPropertyChanged(nameof(IsModified));
+        PreviousState = (SongViewModel)MemberwiseClone();
         OnPropertyChanged(nameof(IsUpdatable));
+        OnPropertyChanged(nameof(UpdatableSign));
     }
 }

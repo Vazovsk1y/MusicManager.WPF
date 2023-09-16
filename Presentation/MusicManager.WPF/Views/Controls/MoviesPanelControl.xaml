@@ -16,13 +16,19 @@
           AutoGenerateColumns="False"
           >
 
+                    <DataGrid.Resources>
+                        <CollectionViewSource x:Key="EnableDirectors" Source="{Binding EnableDirectors}"/>
+                    </DataGrid.Resources>
+
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="IsUpdatable" Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
                         <DataGridTextColumn Header="Title" Binding="{Binding Title, Mode=TwoWay}"/>
                         <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear, Mode=TwoWay}"/>
                         <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry, Mode=TwoWay}"/>
-                        <DataGridTextColumn Header="DirectorName" Binding="{Binding DirectorName, Mode=TwoWay}"/>
-                        <DataGridTextColumn Header="DirectorLastName" Binding="{Binding DirectorLastName, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Director" Binding="{Binding Director.FullName}" IsReadOnly="True"/>
+                        <DataGridComboBoxColumn Header="Swap director" 
+    ItemsSource="{Binding Source={StaticResource EnableDirectors}}" 
+    SelectedItemBinding="{Binding Director}" DisplayMemberPath="FullName"/>
 
                     </DataGrid.Columns>
                 </DataGrid>
@@ -31,6 +37,9 @@
                 <Button Content="AddMR" Command="{Binding AddMovieReleaseCommand}"/>
                 <Button Content="Save" Command="{Binding SaveCommand}"/>
                 <Button Content="Delete" Command="{Binding DeleteMovieCommand}"/>
+
+                <TextBox x:Name="directorFullName"/>
+                <Button Content="AddDirector" Command="{Binding AddDirectorCommand}" CommandParameter="{Binding Text, ElementName=directorFullName}"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>

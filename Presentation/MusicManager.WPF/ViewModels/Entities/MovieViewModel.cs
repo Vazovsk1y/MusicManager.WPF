@@ -6,48 +6,40 @@ namespace MusicManager.WPF.ViewModels.Entities;
 
 internal partial class MovieViewModel : 
     ObservableObject, 
-    IModifiable<MovieViewModel>
+    IUpdatable<MovieViewModel>
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsUpdatable))]
-    [NotifyPropertyChangedFor(nameof(IsModified))]
+    [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string _title = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsUpdatable))]
-    [NotifyPropertyChangedFor(nameof(IsModified))]
+    [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string? _productionCountry;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
-    [NotifyPropertyChangedFor(nameof(IsModified))]
-    private string? _directorName;
+    private DirectorViewModel? _director;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsUpdatable))]
-    [NotifyPropertyChangedFor(nameof(IsModified))]
-    private string? _directorLastName;
+    [NotifyPropertyChangedFor(nameof(UpdatableSign))]
+    private int _productionYear;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
-    [NotifyPropertyChangedFor(nameof(IsModified))]
-    private int? _productionYear;
+    public MovieViewModel PreviousState { get; private set; } = null!;
 
-    public MovieViewModel? PreviousState { get; private set; }
-
-    public bool IsModified
+    public bool IsUpdatable
     {
         get
         {
-            return PreviousState?.Title != Title
-                || PreviousState?.ProductionCountry != ProductionCountry
-                || PreviousState?.ProductionYear != ProductionYear
-                || PreviousState?.DirectorLastName != DirectorLastName
-                || PreviousState?.DirectorName != DirectorName;
+            return PreviousState.Title != Title
+                || PreviousState.ProductionCountry != ProductionCountry
+                || PreviousState.ProductionYear != ProductionYear
+                || PreviousState.Director?.Id != Director?.Id;
         }
     }
 
-    public string? IsUpdatable => IsModified ? "*" : null;
+    public string? UpdatableSign => IsUpdatable ? "*" : null;
 
     private ObservableCollection<MovieReleaseViewModel>? _moviesReleasesViewsModels;
 
@@ -63,18 +55,16 @@ internal partial class MovieViewModel :
 
     public void SetCurrentAsPrevious()
     {
-        PreviousState = MemberwiseClone() as MovieViewModel;
-        OnPropertyChanged(nameof(IsModified));
+        PreviousState = (MovieViewModel)MemberwiseClone();
         OnPropertyChanged(nameof(IsUpdatable));
+        OnPropertyChanged(nameof(UpdatableSign));
     }
 
     public void RollBackChanges()
     {
-        DirectorName = PreviousState?.DirectorName;
-        DirectorLastName = PreviousState?.DirectorLastName;
-        ProductionYear= PreviousState?.ProductionYear;
-        ProductionCountry = PreviousState?.ProductionCountry;
-        Title = PreviousState?.Title!;
+        ProductionYear= PreviousState.ProductionYear;
+        ProductionCountry = PreviousState.ProductionCountry;
+        Title = PreviousState.Title;
+        Director = PreviousState.Director;
     }
 }
-

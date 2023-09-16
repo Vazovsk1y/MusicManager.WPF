@@ -22,7 +22,7 @@
                             </DataGrid.Resources>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="IsUpdatable" Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
 
                                 <DataGridComboBoxColumn Header="Type" 
                                     ItemsSource="{Binding Source={StaticResource EnableDiscTypes}}" 
@@ -54,7 +54,7 @@
                             </DataGrid.Resources>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="IsUpdatable" Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
 
                                 <DataGridComboBoxColumn Header="Type" 
                                     ItemsSource="{Binding Source={StaticResource EnableDiscTypes}}" 

@@ -17,9 +17,9 @@
           AutoGenerateColumns="False">
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="IsUpdatable" Binding="{Binding IsUpdatable}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="IsUpdatable" Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
 
-                        <DataGridTextColumn Header="SongNumber" Binding="{Binding Number}"/>
+                        <DataGridTextColumn Header="Order" Binding="{Binding Number}"/>
                         <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}" IsReadOnly="True"/>
                         <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
                         <DataGridTextColumn Header="SongType" Binding="{Binding Type}" IsReadOnly="True"/>
