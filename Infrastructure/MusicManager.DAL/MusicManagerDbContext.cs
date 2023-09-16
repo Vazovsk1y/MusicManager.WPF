@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MusicManager.DAL.Configurations.Base;
 using MusicManager.Domain.Common;
+using MusicManager.Domain.Entities;
 using MusicManager.Domain.Models;
 using MusicManager.Repositories.Data;
 
@@ -23,6 +24,8 @@ public class MusicManagerDbContext : DbContext, IApplicationDbContext
     public DbSet<Compilation> Compilations { get; set; }
 
     public DbSet<Song> Songs { get; set; }
+
+    public DbSet<Director> Directors { get; set; }
 
     public DbSet<Disc> Discs { get; set; }
 

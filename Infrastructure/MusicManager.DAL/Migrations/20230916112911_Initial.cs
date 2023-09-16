@@ -12,6 +12,18 @@ namespace MusicManager.DAL.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "directors",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    full_name = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_directors", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "discs",
                 columns: table => new
                 {
@@ -130,14 +142,18 @@ namespace MusicManager.DAL.Migrations
                     songwriter_id = table.Column<Guid>(type: "TEXT", nullable: false),
                     production_info_country = table.Column<string>(type: "TEXT", nullable: true),
                     production_info_year = table.Column<int>(type: "INTEGER", nullable: true),
-                    director_info_surname = table.Column<string>(type: "TEXT", nullable: true),
-                    director_info_name = table.Column<string>(type: "TEXT", nullable: true),
+                    director_id = table.Column<Guid>(type: "TEXT", nullable: true),
                     entity_directory_info = table.Column<string>(type: "TEXT", nullable: true),
                     title = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_movies", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_movies_directors_director_temp_id",
+                        column: x => x.director_id,
+                        principalTable: "directors",
+                        principalColumn: "id");
                     table.ForeignKey(
                         name: "fk_movies_songwriters_songwriter_temp_id1",
                         column: x => x.songwriter_id,
@@ -210,6 +226,11 @@ namespace MusicManager.DAL.Migrations
                 column: "releases_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_movies_director_id",
+                table: "movies",
+                column: "director_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_movies_songwriter_id",
                 table: "movies",
                 column: "songwriter_id");
@@ -243,6 +264,9 @@ namespace MusicManager.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "songs");
+
+            migrationBuilder.DropTable(
+                name: "directors");
 
             migrationBuilder.DropTable(
                 name: "songwriters");

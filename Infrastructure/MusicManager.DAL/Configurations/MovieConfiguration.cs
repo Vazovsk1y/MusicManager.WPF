@@ -19,8 +19,6 @@ internal class MovieConfiguration : IEntityTypeConfiguration<Movie>
 
         builder.OwnsOne(e => e.ProductionInfo);
 
-        builder.OwnsOne(e => e.DirectorInfo);
-
         builder
             .Property(e => e.EntityDirectoryInfo)
             .HasConversion(
@@ -30,6 +28,10 @@ internal class MovieConfiguration : IEntityTypeConfiguration<Movie>
 
         builder
             .HasMany(e => e.Releases)
+            .WithMany(e => e.Movies);
+
+        builder
+            .HasOne(e => e.Director)
             .WithMany(e => e.Movies);
     }
 }
