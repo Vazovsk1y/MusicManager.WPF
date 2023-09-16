@@ -147,11 +147,13 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
     private string GetDirectoryName(MovieRelease movieRelease)
     {
         string baseMovieReleaseDirectoryName = $"{movieRelease.Type.Value} {movieRelease.Identifier}";
-        string createdMovieReleaseDirectoryName = movieRelease.ProductionInfo is null || movieRelease.ProductionInfo.Year is null ?
-        baseMovieReleaseDirectoryName
-        :
-        $"{baseMovieReleaseDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo.Country} " +
-        $"{DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo.Year}";
+        if (movieRelease.Type == DiscType.Bootleg)
+        {
+            return baseMovieReleaseDirectoryName;
+        }
+
+        string createdMovieReleaseDirectoryName = $"{baseMovieReleaseDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo?.Country ?? ProductionInfo.UndefinedCountry} " +
+        $"{DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo!.Year}";
 
         return createdMovieReleaseDirectoryName;
     }

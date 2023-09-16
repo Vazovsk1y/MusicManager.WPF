@@ -60,9 +60,8 @@ public class FolderToMovieService :
         var movieCreationResult = Movie.Create(
             songwriterId,
             title!,
-            year,
-            ProductionInfo.UndefinedCountry,
-            moviePath.GetRelational(_root));
+            moviePath.GetRelational(_root),
+            year);
 
         if (movieCreationResult.IsFailure)
         {

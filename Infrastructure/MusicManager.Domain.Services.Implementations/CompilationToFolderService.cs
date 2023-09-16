@@ -86,11 +86,13 @@ public class CompilationToFolderService : ICompilationToFolderService
     private string GetDirectoryName(Compilation compilation)
     {
         string baseCompilationDirectoryName = $"{compilation.Type.Value} {compilation.Identifier}";
-        string createdCompilationDirectoryName = compilation.ProductionInfo is null || compilation.ProductionInfo.Year is null ?
-        baseCompilationDirectoryName
-        :
-        $"{baseCompilationDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {compilation.ProductionInfo.Country} " +
-        $"{DomainServicesConstants.DiscDirectoryNameSeparator} {compilation.ProductionInfo.Year}";
+        if (compilation.Type == DiscType.Bootleg)
+        {
+            return baseCompilationDirectoryName;
+        }
+
+        string createdCompilationDirectoryName = $"{baseCompilationDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {compilation.ProductionInfo.Country ?? ProductionInfo.UndefinedCountry} " +
+        $"{DomainServicesConstants.DiscDirectoryNameSeparator} {compilation.ProductionInfo.Year!}";
 
         return createdCompilationDirectoryName;
     }
