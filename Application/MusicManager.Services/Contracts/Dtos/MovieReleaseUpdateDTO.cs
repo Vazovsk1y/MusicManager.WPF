@@ -6,6 +6,6 @@ namespace MusicManager.Services.Contracts.Dtos;
 public record MovieReleaseUpdateDTO(
         DiscId Id,
         string Identifier,
-        string ProductionCountry,
+        string? ProductionCountry,
         int? ProductionYear,
         DiscType DiscType);

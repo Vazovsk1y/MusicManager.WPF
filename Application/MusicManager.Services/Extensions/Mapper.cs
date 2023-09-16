@@ -3,7 +3,7 @@ using MusicManager.Services.Contracts.Dtos;
 
 namespace MusicManager.Services.Extensions;
 
-public static class MappingExtensions
+public static class Mapper
 {
     public static SongwriterDTO ToDTO(this Songwriter songwriter)
     {
@@ -31,9 +31,8 @@ public static class MappingExtensions
             movie.SongwriterId,
             movie.Title,
             movie.ProductionInfo?.Country,
-            movie.ProductionInfo?.Year,
-            movie.DirectorInfo?.Name,
-            movie.DirectorInfo?.Surname,
+            (int)movie.ProductionInfo!.Year!,
+            movie.Director is null ? null : new DirectorDTO(movie.Director.Id, movie.Director.FullName),
             movie.Releases.Select(e => e.ToDTO())
             );
     }

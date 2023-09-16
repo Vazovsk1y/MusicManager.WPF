@@ -7,7 +7,6 @@ public record MovieDTO(
     SongwriterId SongwriterId,
     string Title,
     string? ProductionCountry,
-    int? ProductionYear,
-    string? DirectorName,
-    string? DirectorLastName,
+    int ProductionYear,
+    DirectorDTO? Director,
     IEnumerable<MovieReleaseDTO> MovieReleasesDTOs);
