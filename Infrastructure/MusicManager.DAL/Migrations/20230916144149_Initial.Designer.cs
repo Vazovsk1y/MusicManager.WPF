@@ -11,7 +11,7 @@ using MusicManager.DAL;
 namespace MusicManager.DAL.Migrations
 {
     [DbContext(typeof(MusicManagerDbContext))]
-    [Migration("20230916112911_Initial")]
+    [Migration("20230916144149_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

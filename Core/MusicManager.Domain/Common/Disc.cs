@@ -18,7 +18,7 @@ public class Disc : IAggregateRoot
 
     #region --Properties--
 
-    public DiscId Id { get; init; }
+    public DiscId Id { get; }
 
     public EntityDirectoryInfo? EntityDirectoryInfo { get; protected set; }
 
@@ -143,11 +143,6 @@ public class Disc : IAggregateRoot
         if (discType == null)
         {
             return Result.Failure(DomainErrors.NullEntityPassed("disc type"));
-        }
-
-        if (discType == DiscType.Bootleg)
-        {
-            ProductionInfo = ProductionInfo.None;
         }
 
         Type = discType;

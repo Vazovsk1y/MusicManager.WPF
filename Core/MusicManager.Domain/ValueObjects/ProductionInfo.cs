@@ -38,7 +38,7 @@ public class ProductionInfo : ValueObject<ProductionInfo>
     {
         if (year is  null && string.IsNullOrWhiteSpace(country))
         {
-            return None;
+            return new ProductionInfo(None.Country, None.Year);
         }
 
         if (year is not null)
