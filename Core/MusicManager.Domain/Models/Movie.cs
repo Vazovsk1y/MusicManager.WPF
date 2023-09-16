@@ -163,6 +163,7 @@ public class Movie : IAggregateRoot
             return Result.Failure(DomainErrors.NullEntityPassed("director"));
         }
 
+        Director?.RemoveMovie(Id);
         Director = director;
         director.AddMovie(this);
         return Result.Success();

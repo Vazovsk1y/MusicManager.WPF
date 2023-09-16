@@ -30,6 +30,18 @@ public class Director
         return Result.Success();
     }
 
+    internal Result RemoveMovie(MovieId movie)
+    {
+        var itemToRemove = _movies.SingleOrDefault(e => e.Id == movie);
+        if (itemToRemove is not null)
+        {
+            _movies.Remove(itemToRemove);
+            return Result.Success();
+        }
+
+        return Result.Failure(new Error("Unable to remove movie, cause it not exists."));
+    }
+
     public static Result<Director> Create(string fullName)
     {
         if (string.IsNullOrWhiteSpace(fullName))
