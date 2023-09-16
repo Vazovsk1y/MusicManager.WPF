@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Entities;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
@@ -15,13 +16,13 @@ public class Movie : IAggregateRoot
 
     #region --Properties--
 
-    public MovieId Id { get; private set; }
+    public MovieId Id { get; init; }
 
-    public SongwriterId SongwriterId { get; private set; }
+    public SongwriterId SongwriterId { get; init; }
 
-    public ProductionInfo? ProductionInfo { get; private set; }
+    public ProductionInfo ProductionInfo { get; private set; }
 
-    public DirectorInfo? DirectorInfo { get; private set; } 
+    public Director? Director { get; private set; } 
 
     public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
 
@@ -48,8 +49,8 @@ public class Movie : IAggregateRoot
     public static Result<Movie> Create(
         SongwriterId songwriterId,
         string title, 
-        int? productionYear, 
-        string productionCountry)
+        int productionYear, 
+        string? productionCountry = null)
     {
         if (string.IsNullOrWhiteSpace(title))
         {
@@ -58,7 +59,8 @@ public class Movie : IAggregateRoot
 
         var prodInfoResult = ProductionInfo.Create(productionCountry, productionYear);
 
-        return prodInfoResult.IsFailure ? Result.Failure<Movie>(prodInfoResult.Error)
+        return prodInfoResult.IsFailure ? 
+            Result.Failure<Movie>(prodInfoResult.Error)
             :
             new Movie(songwriterId)
             {
@@ -70,53 +72,9 @@ public class Movie : IAggregateRoot
     public static Result<Movie> Create(
         SongwriterId songwriterId,
         string title,
-        string directoryFullPath)
-    {
-        if (string.IsNullOrWhiteSpace(title))
-        {
-            return Result.Failure<Movie>(DomainErrors.NullOrEmptyStringPassed(nameof(title)));
-        }
-
-        var entityDirInfoRes = EntityDirectoryInfo.Create(directoryFullPath);
-
-        return entityDirInfoRes.IsFailure ? Result.Failure<Movie>(entityDirInfoRes.Error)
-            :
-            new Movie(songwriterId)
-            {
-                Title = title,
-                EntityDirectoryInfo = entityDirInfoRes.Value,
-            };
-    }
-
-    public static Result<Movie> Create(
-        SongwriterId songwriterId,
-        string title, 
-        int? productionYear, 
-        string productionCountry, 
-        string directoryFullPath)
-    {
-        var creationResult = Create(songwriterId, title, productionYear, productionCountry);
-        if (creationResult.IsFailure)
-        {
-            return creationResult;
-        }
-
-        var settingDirInfoResult = creationResult.Value.SetDirectoryInfo(directoryFullPath);
-
-        return settingDirInfoResult.IsFailure ?
-            Result.Failure<Movie>(settingDirInfoResult.Error)
-            :
-            creationResult.Value;
-    }
-
-    public static Result<Movie> Create(
-        SongwriterId songwriterId,
-        string title,
-        int? productionYear,
-        string productionCountry,
         string directoryFullPath,
-        string directorName,
-        string directorSurname)
+        int productionYear,
+        string? productionCountry = null)
     {
         var creationResult = Create(songwriterId, title, productionYear, productionCountry);
         if (creationResult.IsFailure)
@@ -124,37 +82,17 @@ public class Movie : IAggregateRoot
             return creationResult;
         }
 
-        var settingDirInfoResult = creationResult.Value.SetDirectoryInfo(directoryFullPath);
+        var entityDirInfoRes = creationResult.Value.SetDirectoryInfo(directoryFullPath);
 
-        if (settingDirInfoResult.IsFailure)
-        {
-            return Result.Failure<Movie>(settingDirInfoResult.Error);
-        }
-
-        var settingDirectorInfoResult = creationResult.Value.SetDirectorInfo(directorName, directorSurname);
-
-        return settingDirectorInfoResult.IsFailure ?
-            Result.Failure<Movie>(settingDirectorInfoResult.Error)
+        return entityDirInfoRes.IsFailure ?
+            Result.Failure<Movie>(entityDirInfoRes.Error)
             :
             creationResult.Value;
     }
 
-    public Result SetDirectorInfo(string directorName, string directorSurname)
+    public Result SetDirectoryInfo(string path)
     {
-        var result = DirectorInfo.Create(directorName, directorSurname);
-
-        if (result.IsFailure)
-        {
-            return result;
-        }
-
-        DirectorInfo = result.Value;
-        return Result.Success();
-    }
-
-    public Result SetDirectoryInfo(string fullPath)
-    {
-        var result = EntityDirectoryInfo.Create(fullPath);
+        var result = EntityDirectoryInfo.Create(path);
 
         if (result.IsFailure)
         {
@@ -165,7 +103,7 @@ public class Movie : IAggregateRoot
         return Result.Success();
     }
 
-    public Result SetProductionInfo(string productionCountry, int? productionYear)
+    public Result SetProductionInfo(string? productionCountry, int productionYear)
     {
         var result = ProductionInfo.Create(productionCountry, productionYear);
 
@@ -215,6 +153,18 @@ public class Movie : IAggregateRoot
         }
 
         Title = title;  
+        return Result.Success();
+    }
+
+    public Result SetDirector(Director director)
+    {
+        if (director is null)
+        {
+            return Result.Failure(DomainErrors.NullEntityPassed("director"));
+        }
+
+        Director = director;
+        director.AddMovie(this);
         return Result.Success();
     }
 

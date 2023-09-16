@@ -1,5 +1,4 @@
-﻿using MusicManager.Domain.Enums;
-using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Models;
 
 namespace MusicManager.Domain.Services;
 

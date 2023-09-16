@@ -1,5 +1,4 @@
 ﻿using MusicManager.Domain.Entities;
-using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
@@ -19,11 +18,11 @@ public class Disc : IAggregateRoot
 
     #region --Properties--
 
-    public DiscId Id { get; protected set; }
+    public DiscId Id { get; init; }
 
     public EntityDirectoryInfo? EntityDirectoryInfo { get; protected set; }
 
-    public ProductionInfo? ProductionInfo { get; protected set; }
+    public ProductionInfo ProductionInfo { get; protected set; }
 
     public DiscType Type { get; protected set; }
 
@@ -99,19 +98,6 @@ public class Disc : IAggregateRoot
         return result;
     }
 
-    public virtual Result SetProductionInfo(string productionCountry, int? productionYear)
-    {
-        var result = ProductionInfo.Create(productionCountry, productionYear);
-
-        if (result.IsSuccess)
-        {
-            ProductionInfo = result.Value;
-            return Result.Success();
-        }
-
-        return Result.Failure(result.Error);
-    }
-
     public virtual Result SetIdentifier(string identifier)
     {
         if (string.IsNullOrWhiteSpace(identifier))
@@ -123,28 +109,50 @@ public class Disc : IAggregateRoot
         return Result.Success();
     }
 
+    public virtual Result RemoveSong(SongId songId)
+    {
+        var song = _songs.SingleOrDefault(e => e.Id == songId);
+        if (song is null)
+        {
+            return Result.Failure(new Error("Unable to remove song because it with this id is not exists."));
+        }
+
+        _songs.Remove(song);
+        return Result.Success();
+    }
+
+    public virtual Result SetProductionInfo(string? productionCountry, int? productionYear)
+    {
+        if (productionYear is null && Type != DiscType.Bootleg)
+        {
+            return Result.Failure(new Error("At least production year must be setted."));
+        }
+
+        var result = ProductionInfo.Create(productionCountry, productionYear);
+
+        if (result.IsSuccess)
+        {
+            ProductionInfo = result.Value;
+            return Result.Success();
+        }
+
+        return Result.Failure(result.Error);
+    }
     public virtual Result SetDiscType(DiscType discType)
     {
-        if (discType is null)
+        if (discType == null)
         {
-            return Result.Failure(DomainErrors.NullEntityPassed(nameof(discType)));
+            return Result.Failure(DomainErrors.NullEntityPassed("disc type"));
+        }
+
+        if (discType == DiscType.Bootleg)
+        {
+            ProductionInfo = ProductionInfo.None;
         }
 
         Type = discType;
         return Result.Success();
     }
-
-    public Result RemoveSong(SongId songId)
-    {
-		var song = _songs.SingleOrDefault(e => e.Id == songId);
-		if (song is null)
-		{
-			return Result.Failure(new Error("Unable to remove song because it with this id is not exists."));
-		}
-
-		_songs.Remove(song);
-		return Result.Success();
-	}
 
     #endregion
 }

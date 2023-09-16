@@ -1,5 +1,4 @@
 ﻿using MusicManager.Domain.Common;
-using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
@@ -33,26 +32,43 @@ public class MovieRelease : Disc
 
     public static Result<MovieRelease> Create(
         DiscType discType, 
-        string identifier)
+        string identifier,
+        int? productionYear = null,
+        string? productionCountry = null)
     {
         if (string.IsNullOrWhiteSpace(identifier))
         {
             return Result.Failure<MovieRelease>(DomainErrors.NullOrEmptyStringPassed(nameof(identifier)));
         }
 
-        return new MovieRelease() 
+        var movieRelease = new MovieRelease()
         {
-            Type = discType, 
-            Identifier = identifier 
+            Identifier = identifier,
         };
+
+        var settingDiscTypeRes = movieRelease.SetDiscType(discType);
+        if (settingDiscTypeRes.IsFailure)
+        {
+            return Result.Failure<MovieRelease>(settingDiscTypeRes.Error);
+        }
+
+        var settingResult = movieRelease.SetProductionInfo(productionCountry, productionYear);
+        if (settingResult.IsFailure)
+        {
+            return Result.Failure<MovieRelease>(settingResult.Error);
+        }
+
+        return movieRelease;
     }
 
     public static Result<MovieRelease> Create(
         DiscType discType,
         string identifier,
-        string directoryFullPath)
+        string directoryFullPath,   
+        int? productionYear = null,
+        string? productionCountry = null)
     {
-        var creationResult = Create(discType, identifier);
+        var creationResult = Create(discType, identifier, productionYear, productionCountry);
 
         if (creationResult.IsFailure)
         {
@@ -63,33 +79,6 @@ public class MovieRelease : Disc
 
         return settingDirectoryInfoResult.IsFailure ? 
             Result.Failure<MovieRelease>(settingDirectoryInfoResult.Error) : creationResult.Value;
-    }
-
-    public static Result<MovieRelease> Create(
-        DiscType discType,
-        string identifier,
-        string directoryFullPath,
-        int? productionYear,
-        string productionCountry)
-    {
-        var diskCreationResult = Create(discType, identifier);
-
-        if (diskCreationResult.IsFailure)
-        {
-            return diskCreationResult;
-        }
-
-        var settingDirectoryInfoResutlt = diskCreationResult.Value.SetDirectoryInfo(directoryFullPath);
-
-        if (settingDirectoryInfoResutlt.IsFailure)
-        {
-            Result.Failure<MovieRelease>(settingDirectoryInfoResutlt.Error);
-        }
-
-        var settingProdInfoResult = diskCreationResult.Value.SetProductionInfo(productionCountry, productionYear);
-
-        return settingProdInfoResult.IsSuccess ?
-            diskCreationResult.Value : Result.Failure<MovieRelease>(settingProdInfoResult.Error);
     }
 
     internal Result AddMovie(Movie movie)
