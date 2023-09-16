@@ -1,10 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using MusicManager.Domain.Services;
-using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Factories;
 using MusicManager.Services.Implementations.Contracts.Factories;
-using System.IO;
-using System.Text.Json;
 
 namespace MusicManager.Services.Implementations;
 
@@ -17,6 +13,7 @@ public static class Registrator
         .AddTransient<IMovieReleaseService, MovieReleaseService>()
         .AddTransient<ISongService, SongService>()
         .AddTransient<IBaseDiscService, BaseDiscService>()
+        .AddTransient<IDirectorService, DirectorService>()
         .AddTransient<IFileManagerInteractor, FileManagerInteractor>()
         .AddSingleton<ISongwriterFolderFactory, SongwriterFolderFactory>()
         .AddSingleton<IMovieFolderFactory, MovieFolderFactory>()
