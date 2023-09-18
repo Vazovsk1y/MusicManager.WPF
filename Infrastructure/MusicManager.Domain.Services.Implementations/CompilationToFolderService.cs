@@ -86,7 +86,7 @@ public class CompilationToFolderService : ICompilationToFolderService
     private string GetDirectoryName(Compilation compilation)
     {
         string baseCompilationDirectoryName = $"{compilation.Type.Value} {compilation.Identifier}";
-        if (compilation.Type == DiscType.Bootleg)
+        if (compilation.Type == DiscType.Bootleg || compilation.Type == DiscType.Unknown)
         {
             return baseCompilationDirectoryName;
         }

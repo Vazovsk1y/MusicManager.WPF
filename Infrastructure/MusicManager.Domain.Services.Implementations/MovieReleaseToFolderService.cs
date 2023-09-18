@@ -147,7 +147,7 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
     private string GetDirectoryName(MovieRelease movieRelease)
     {
         string baseMovieReleaseDirectoryName = $"{movieRelease.Type.Value} {movieRelease.Identifier}";
-        if (movieRelease.Type == DiscType.Bootleg)
+        if (movieRelease.Type == DiscType.Bootleg || movieRelease.Type == DiscType.Unknown)
         {
             return baseMovieReleaseDirectoryName;
         }
