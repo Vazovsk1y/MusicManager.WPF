@@ -123,10 +123,13 @@ public class Disc : IAggregateRoot
 
     public virtual Result SetProductionInfo(string? productionCountry, int? productionYear)
     {
-        if (productionYear is null && Type != DiscType.Bootleg)
+        if (productionYear is null)
         {
-            return Result.Failure(new Error("At least production year must be setted."));
-        }
+            if (Type != DiscType.Bootleg && Type != DiscType.Unknown)
+            {
+				return Result.Failure(new Error("At least production year must be setted for other types except bootleg and unknown."));
+			}
+		}
 
         var result = ProductionInfo.Create(productionCountry, productionYear);
 
@@ -138,6 +141,7 @@ public class Disc : IAggregateRoot
 
         return Result.Failure(result.Error);
     }
+
     public virtual Result SetDiscType(DiscType discType)
     {
         if (discType == null)
