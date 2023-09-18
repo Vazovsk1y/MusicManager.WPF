@@ -1,38 +1,48 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 
-namespace MusicManager.Services.Implementations
+namespace MusicManager.Services.Implementations;
+
+public class BaseUserDialogService<T> : IUserDialogService<T> where T : Window
 {
-    public class BaseUserDialogService<T> : IUserDialogService<T> where T : Window
-    {
-        protected readonly IServiceScopeFactory _serviceScopeFactory;
-        protected T? _window;
+	protected readonly IServiceScopeFactory _serviceScopeFactory;
+	protected T? _window;
 
-        public BaseUserDialogService(IServiceScopeFactory serviceScopeFactory)
-        {
-            _serviceScopeFactory = serviceScopeFactory;
-        }
+	public BaseUserDialogService(IServiceScopeFactory serviceScopeFactory)
+	{
+		_serviceScopeFactory = serviceScopeFactory;
+	}
 
-        public void CloseDialog()
-        {
-            _window?.Close();
-            _window = null;
-        }
+	public void CloseDialog()
+	{
+		_window?.Close();
+		_window = null;
+	}
 
-        public void ShowDialog()
-        {
-            CloseDialog();
+	public void ShowDialog()
+	{
+		CloseDialog();
 
-            var scope = _serviceScopeFactory.CreateScope();
-            _window = scope.ServiceProvider.GetRequiredService<T>();
+		var scope = _serviceScopeFactory.CreateScope();
+		_window = scope.ServiceProvider.GetRequiredService<T>();
 
-            _window.Closed += (_, _) =>
-            {
-                scope.Dispose();
-                _window = null;
-            };
+		_window.Closed += (_, _) =>
+		{
+			scope.Dispose();
+			_window = null;
+		};
 
-            _window.ShowDialog();
-        }
-    }
+		_window.ShowDialog();
+	}
+
+	public void ShowDialog<TDialogData>(TDialogData data)
+	{
+		CloseDialog();
+
+		var scope = _serviceScopeFactory.CreateScope();
+		_window = scope.ServiceProvider.GetRequiredService<T>();
+		_window.DataContext = data;
+		_window.Closed += (_, _) => scope.Dispose();
+		_window.ShowDialog();
+	}
 }

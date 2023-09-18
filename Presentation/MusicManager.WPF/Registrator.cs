@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MusicManager.Domain.Services;
-using MusicManager.WPF.Tools;
+using MusicManager.WPF.Infrastructure;
 using MusicManager.WPF.ViewModels;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
@@ -25,7 +25,6 @@ internal static class Registrator
         .AddSingleton<UserConfigViewModel>()
         .AddTransient<MovieReleaseAddToMovieViewModel>()
         .AddTransient<MovieReleaseMovieWindow>()
-        .AddSingleton(typeof(IWpfWindowService<>), typeof(WpfWindowService<>))
         .AddTransient<IUserConfig, UserConfig>(_ =>
         {
 			var fileInfo = new FileInfo(UserConfig.SettingsFileFullPath);

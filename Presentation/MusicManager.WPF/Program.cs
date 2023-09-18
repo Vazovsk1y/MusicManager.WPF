@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using MusicManager.Utils;
-using MusicManager.WPF.Tools;
+using MusicManager.WPF.Infrastructure;
 using Serilog;
 using Serilog.Events;
 using System;
