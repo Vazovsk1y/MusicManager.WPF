@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using MusicManager.Services;
 using MusicManager.Services.Contracts.Dtos;
 using MusicManager.WPF.Messages;
-using MusicManager.WPF.Tools;
+using MusicManager.WPF.Infrastructure;
 using MusicManager.WPF.Views.Windows;
 using System.Threading.Tasks;
 

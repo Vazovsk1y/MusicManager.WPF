@@ -7,7 +7,7 @@ using MusicManager.Services;
 using MusicManager.Services.Contracts.Dtos;
 using MusicManager.Utils;
 using MusicManager.WPF.Messages;
-using MusicManager.WPF.Tools;
+using MusicManager.WPF.Infrastructure;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
 using System;
@@ -91,10 +91,10 @@ internal partial class MoviesPanelViewModel :
             .Where(e => !SelectedMovie!.MoviesReleases.Contains(e));
 
         using var scope = _serviceScopeFactory.CreateScope();
-        var dialogService = scope.ServiceProvider.GetRequiredService<IWpfWindowService<MovieReleaseMovieWindow>>();
+        var dialogService = scope.ServiceProvider.GetRequiredService<IUserDialogService<MovieReleaseMovieWindow>>();
         var dataContext = scope.ServiceProvider.GetRequiredService<MovieReleaseAddToMovieViewModel>();
         dataContext.MoviesReleasesToSelectFrom = new (movieReleasesToSelectFrom);
-        dialogService.StartDialog(dataContext);
+        dialogService.ShowDialog(dataContext);
     }
 
     [RelayCommand]

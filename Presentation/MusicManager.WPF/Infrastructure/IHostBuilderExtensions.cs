@@ -2,7 +2,7 @@
 using MusicManager.Utils;
 using System.IO;
 
-namespace MusicManager.WPF.Tools;
+namespace MusicManager.WPF.Infrastructure;
 
 public static class IHostBuilderExtensions
 {

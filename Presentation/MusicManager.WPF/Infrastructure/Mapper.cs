@@ -3,7 +3,7 @@ using MusicManager.Services.Contracts.Dtos;
 using MusicManager.WPF.ViewModels.Entities;
 using System.Linq;
 
-namespace MusicManager.WPF.Tools;
+namespace MusicManager.WPF.Infrastructure;
 
 internal static class Mapper
 {

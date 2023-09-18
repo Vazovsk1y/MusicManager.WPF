@@ -8,7 +8,7 @@ using MusicManager.Services.Contracts.Dtos;
 using MusicManager.Services.Contracts.Factories;
 using MusicManager.Utils;
 using MusicManager.WPF.Messages;
-using MusicManager.WPF.Tools;
+using MusicManager.WPF.Infrastructure;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
 using System.Collections.Generic;

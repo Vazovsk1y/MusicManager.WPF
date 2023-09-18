@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace MusicManager.WPF.Tools;
+namespace MusicManager.WPF.Infrastructure;
 
 public static class MessageBoxHelper
 {

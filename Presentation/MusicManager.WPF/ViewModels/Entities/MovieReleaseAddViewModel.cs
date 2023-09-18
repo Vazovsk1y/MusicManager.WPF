@@ -9,7 +9,7 @@ using MusicManager.Services;
 using MusicManager.Services.Contracts.Dtos;
 using MusicManager.Utils;
 using MusicManager.WPF.Messages;
-using MusicManager.WPF.Tools;
+using MusicManager.WPF.Infrastructure;
 using MusicManager.WPF.Views.Windows;
 using System;
 using System.Collections.Generic;

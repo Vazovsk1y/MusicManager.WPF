@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using MusicManager.Services;
-using MusicManager.WPF.Tools;
+using MusicManager.WPF.Infrastructure;
 using System.IO;
 using System.Text.Json;
 

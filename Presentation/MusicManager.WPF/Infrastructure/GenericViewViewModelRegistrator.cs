@@ -3,7 +3,7 @@ using System.Windows;
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace MusicManager.WPF.Tools;
+namespace MusicManager.WPF.Infrastructure;
 
 internal static class GenericViewViewModelRegistrator
 {

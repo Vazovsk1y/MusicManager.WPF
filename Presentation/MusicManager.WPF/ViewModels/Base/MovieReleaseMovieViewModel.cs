@@ -1,17 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MusicManager.WPF.Tools;
+using MusicManager.Services;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows;
 
 namespace MusicManager.WPF.ViewModels.Base;
 
 internal abstract partial class MovieReleaseMovieViewModel : ObservableRecipient
 {
-    protected readonly IWpfWindowService<MovieReleaseMovieWindow> _movieReleaseMovieWindowService;
+    protected readonly IUserDialogService<MovieReleaseMovieWindow> _movieReleaseMovieWindowService;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
@@ -21,10 +20,10 @@ internal abstract partial class MovieReleaseMovieViewModel : ObservableRecipient
 
     public MovieReleaseMovieViewModel(
         IEnumerable<MovieReleaseViewModel> movieReleases,
-        IWpfWindowService<MovieReleaseMovieWindow> wpfWindowService) : base()
+		IUserDialogService<MovieReleaseMovieWindow> dialogService) : base()
     {
-        MoviesReleasesToSelectFrom = new(movieReleases);
-        _movieReleaseMovieWindowService = wpfWindowService;
+        MoviesReleasesToSelectFrom = new (movieReleases);
+        _movieReleaseMovieWindowService = dialogService;
     }
 
     [RelayCommand(CanExecute = nameof(CanAccept))]
