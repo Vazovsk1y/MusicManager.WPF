@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using MusicManager.Domain.Common;
 using MusicManager.Domain.Models;
+using System;
 
 namespace MusicManager.WPF.ViewModels.Entities;
 
@@ -27,6 +28,9 @@ internal partial class SongViewModel :
     [NotifyPropertyChangedFor(nameof(IsUpdatable))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private int _number;
+
+    [ObservableProperty]
+    private TimeSpan _duration;
 
     public required SongId SongId { get; init; }
 

@@ -1,7 +1,9 @@
-﻿using MusicManager.Domain.Common;
+﻿using Microsoft.Extensions.Logging;
+using MusicManager.Domain.Common;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
+using NAudio.Wave;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
@@ -19,6 +21,8 @@ namespace MusicManager.Domain.Services.Implementations
 
         private readonly IRoot _root;
 
+        private readonly ILogger<FileToSongService> _logger;
+
         #endregion
 
         #region --Properties--
@@ -30,11 +34,13 @@ namespace MusicManager.Domain.Services.Implementations
         #region --Constructors--
 
         public FileToSongService(
-            ICueFileInteractor cueFileInteractor, 
-            IRoot root)
+            ICueFileInteractor cueFileInteractor,
+            IRoot root,
+            ILogger<FileToSongService> logger)
         {
             _cueFileInteractor = cueFileInteractor;
             _root = root;
+            _logger = logger;
         }
 
         #endregion
@@ -62,6 +68,8 @@ namespace MusicManager.Domain.Services.Implementations
             var discNumberMatch = IsDiscNumber().Match(parentDirectoryName);
 
             string songName = songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName);
+            var songDuration = GetDuration(songFilePath) ?? songInfo.Properties.Duration;
+
             if (discNumberMatch.Success)
             {
                 var songCreationResult = Song.Create(
@@ -70,7 +78,7 @@ namespace MusicManager.Domain.Services.Implementations
                     songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
                     int.Parse(discNumberMatch.Groups[1].Value),
                     songFilePath.GetRelational(_root),
-                    songInfo.Properties.Duration
+                    songDuration
                     );
 
                 if (songCreationResult.IsFailure)
@@ -88,7 +96,7 @@ namespace MusicManager.Domain.Services.Implementations
                 songName,
                 songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
                 songFilePath.GetRelational(_root),
-                songInfo.Properties.Duration
+                songDuration
                 );
 
             if (songCreationResultWithoutDiscNumber.IsFailure)
@@ -121,7 +129,7 @@ namespace MusicManager.Domain.Services.Implementations
                 return Result.Success(songs);
             }
 
-            TimeSpan allSongFileDuration = songFileInfo.Properties.Duration;
+            TimeSpan allSongFileDuration = GetDuration(songFilePath) ?? songFileInfo.Properties.Duration;
             var fileName = Path.GetFileName(songFileInfo.Name);
 
             var parentDirectoryName = new FileInfo(songFileInfo.Name).Directory?.Name ?? string.Empty;
@@ -178,7 +186,22 @@ namespace MusicManager.Domain.Services.Implementations
             catch (Exception e)
             {
                 songInfo?.Dispose();
+                _logger.LogError(e, "Something went wrong when trying to create songInfo.");
                 return Result.Failure<TagLib.File>(new Error(e.GetType().Name + '\n' + e.Message));
+            }
+        }
+
+        private TimeSpan? GetDuration(string filePath)
+        {
+            try
+            {
+                using var reader = new AudioFileReader(filePath);
+                return reader.TotalTime;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Something went wrong when trying to get duration.");
+                return null;
             }
         }
 

@@ -90,6 +90,7 @@ internal static class Mapper
             DiscNumber = songDTO.DiscNumber,
             Title = songDTO.Name,
             Type = songDTO.ExecutableType.ToString(),
+            Duration = songDTO.Duration,
         };
 
         entity.SetCurrentAsPrevious();

@@ -23,6 +23,7 @@
                         <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}" IsReadOnly="True"/>
                         <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
                         <DataGridTextColumn Header="SongType" Binding="{Binding Type}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Duration" Binding="{Binding Duration}" IsReadOnly="True"/>
                     </DataGrid.Columns>
 
                 </DataGrid>
