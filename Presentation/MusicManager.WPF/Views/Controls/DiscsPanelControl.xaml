@@ -38,6 +38,7 @@
                         <Button Content="Add" Command="{Binding AddMovieReleaseCommand}"/>
                         <Button Content="Save" Command="{Binding SaveMoviesReleasesCommand}"/>
                         <Button Content="Delete" Command="{Binding DeleteMovieReleaseCommand}"/>
+                        <Button Content="AddSong" Command="{Binding AddSongCommand}"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -70,6 +71,7 @@
                         <Button Content="Add" Command="{Binding AddCompilationCommand}"/>
                         <Button Content="Save" Command="{Binding SaveCompilationsCommand}"/>
                         <Button Content="Delete" Command="{Binding DeleteCompilationCommand}"/>
+                        <Button Content="AddSong" Command="{Binding AddSongCommand}"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

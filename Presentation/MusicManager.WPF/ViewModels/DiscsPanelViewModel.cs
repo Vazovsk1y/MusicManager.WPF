@@ -41,6 +41,7 @@ internal partial class DiscsPanelViewModel :
 
     private readonly IUserDialogService<CompilationAddWindow> _compilationDialogService;
     private readonly IUserDialogService<MovieReleaseAddWindow> _movieReleaseDialogService;
+    private readonly IUserDialogService<SongAddWindow> _songAddDialogService;
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
     private IDiscViewModel? _selectedDisc;
@@ -58,6 +59,7 @@ internal partial class DiscsPanelViewModel :
         MoviesPanelViewModel moviesPanelViewModel,
         IUserDialogService<CompilationAddWindow> dialogService,
         IUserDialogService<MovieReleaseAddWindow> movieReleaseDialogService,
+        IUserDialogService<SongAddWindow> songAddDialogService,
         IServiceScopeFactory serviceScopeFactory) : base()
     {
         SongwritersPanelViewModel = songwritersPanelViewModel;
@@ -65,6 +67,7 @@ internal partial class DiscsPanelViewModel :
         _compilationDialogService = dialogService;
         _movieReleaseDialogService = movieReleaseDialogService;
         _serviceScopeFactory = serviceScopeFactory;
+        _songAddDialogService = songAddDialogService;
     }
 
     [ObservableProperty]
@@ -82,7 +85,9 @@ internal partial class DiscsPanelViewModel :
         {
             if (SetProperty(ref _selectedDisc, value))
             {
-                switch(value)
+                AddSongCommand.NotifyCanExecuteChanged();
+
+				switch (value)
                 {
                     case CompilationViewModel compilationViewModel:
                         {
@@ -266,6 +271,18 @@ internal partial class DiscsPanelViewModel :
         }
     }
 
+
+    [RelayCommand(CanExecute = nameof(CanAddSong))]
+    private void AddSong()
+    {
+        using var scope = _serviceScopeFactory.CreateScope();
+        var dataContext = scope.ServiceProvider.GetRequiredService<SongAddViewModel>();
+        dataContext.SelectedDisc = SelectedDisc!;
+        _songAddDialogService.ShowDialog(dataContext);
+    }
+
+    private bool CanAddSong() => SelectedDisc is not null;
+
     public async void Receive(CompilationCreatedMessage message)
     {
         await App.Current.Dispatcher.InvokeAsync(() =>
@@ -274,7 +291,7 @@ internal partial class DiscsPanelViewModel :
 
             if (songwriter is not null)
             {
-                songwriter?.Compilations.Add(message.CompilationViewModel);
+                songwriter.Compilations.Add(message.CompilationViewModel);
                 message.CompilationViewModel.SetCurrentAsPrevious();
             }
         });

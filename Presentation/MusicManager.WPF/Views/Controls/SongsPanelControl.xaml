@@ -28,7 +28,7 @@
 
                 </DataGrid>
 
-                <Button Content="Add" Command="{Binding AddSongCommand}"/>
+                
                 <Button Content="Save" Command="{Binding SaveCommand}"/>
                 <Button Content="Delete" Command="{Binding DeleteSongCommand}"/>
             </StackPanel>

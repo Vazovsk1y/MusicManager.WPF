@@ -52,11 +52,6 @@ internal partial class SongsPanelViewModel :
     [NotifyCanExecuteChangedFor(nameof(DeleteSongCommand))]
 	private SongViewModel? _selectedSong;
 
-	[RelayCommand]
-    private void AddSong()
-    {
-        _dialogService.ShowDialog();
-    }
 
     [RelayCommand]
     private async Task Save()
@@ -142,21 +137,3 @@ internal partial class SongsPanelViewModel :
         });
     }
 }
-
-
-public static class CollectionExtensions
-{
-    public static void AddRange<T>(this IList<T> values, IEnumerable<T> collectionToAdd)
-    {
-        ArgumentNullException.ThrowIfNull(collectionToAdd);
-
-        foreach (var item in collectionToAdd)
-        {
-            values.Add(item);
-        }
-    }
-}
-    
-    
-
-

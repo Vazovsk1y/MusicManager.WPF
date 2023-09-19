@@ -27,10 +27,8 @@
             </DockPanel>
         </GroupBox>
 
-        <ComboBox ItemsSource="{Binding Discs, UpdateSourceTrigger=PropertyChanged}" 
+        <TextBlock Text="{Binding SelectedDisc.Identifier,StringFormat='Selected disc: {0}'}"
                   Grid.Row="0"
-                  DisplayMemberPath="Identificator"
-                  SelectedItem="{Binding SelectedDisc}"
                   />
 
         <ComboBox ItemsSource="{Binding DiscNumbers, UpdateSourceTrigger=PropertyChanged}" 

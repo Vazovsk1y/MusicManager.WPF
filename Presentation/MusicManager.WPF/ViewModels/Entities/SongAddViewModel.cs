@@ -10,28 +10,23 @@ using MusicManager.Utils;
 using MusicManager.WPF.Messages;
 using MusicManager.WPF.Infrastructure;
 using MusicManager.WPF.Views.Windows;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace MusicManager.WPF.ViewModels.Entities;
 
-internal partial class SongAddViewModel : DialogViewModel<SongAddWindow>
+internal partial class SongAddViewModel : 
+    DialogViewModel<SongAddWindow>
 {
-    private readonly IBaseDiscService _baseDiscService;
     private readonly ISongService _songService;
     private readonly IFileManagerInteractor _fileManagerInteractor;
     private readonly ISongFileFactory _songFileFactory;
 
     [ObservableProperty]
-    private ObservableCollection<DiscLookupDTO>? _discs;
-
-    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
-    private DiscLookupDTO? _selectedDisc;
+    private IDiscViewModel _selectedDisc = null!;
 
     [ObservableProperty]
     private DiscNumber? _selectedDiscNumber;
@@ -60,19 +55,18 @@ internal partial class SongAddViewModel : DialogViewModel<SongAddWindow>
 
     public SongAddViewModel(
         IUserDialogService<SongAddWindow> dialogService,
-        IBaseDiscService baseDiscService,
         ISongService songService,
         IFileManagerInteractor fileManagerInteractor,
         ISongFileFactory songFileFactory,
         UserConfigViewModel settingsViewModel) : base(dialogService, settingsViewModel)
     {
-        _baseDiscService = baseDiscService;
         _songService = songService;
         _fileManagerInteractor = fileManagerInteractor;
         _songFileFactory = songFileFactory;
-    }
+		DiscNumbers = new(DiscNumber.EnumerateRange());
+	}
 
-    [RelayCommand(CanExecute = nameof(CanSelectPath))]
+	[RelayCommand(CanExecute = nameof(CanSelectPath))]
     private void SelectPath()
     {
         string filter = IsFromCue ?
@@ -119,19 +113,5 @@ internal partial class SongAddViewModel : DialogViewModel<SongAddWindow>
     protected override bool CanAccept()
     {
         return NullValidator.IsAllNotNull(SelectedDisc, SelectedSongPath);
-    }
-
-    protected override async void OnActivated()
-    {
-        var result = await _baseDiscService.GetLookupsAsync();
-        if (result.IsSuccess)
-        {
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                Discs = new(result.Value);
-            });
-        }
-
-        DiscNumbers = new (DiscNumber.EnumerateRange());
     }
 }
