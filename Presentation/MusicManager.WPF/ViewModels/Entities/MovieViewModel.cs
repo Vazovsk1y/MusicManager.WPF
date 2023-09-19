@@ -6,29 +6,31 @@ namespace MusicManager.WPF.ViewModels.Entities;
 
 internal partial class MovieViewModel : 
     ObservableObject, 
-    IUpdatable<MovieViewModel>
+    IModifiable<MovieViewModel>
 {
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string _title = string.Empty;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string? _productionCountry;
 
     [ObservableProperty]
-    private DirectorViewModel? _director;
+	[NotifyPropertyChangedFor(nameof(IsModified))]
+	[NotifyPropertyChangedFor(nameof(UpdatableSign))]
+	private DirectorViewModel? _director;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private int _productionYear;
 
     public MovieViewModel PreviousState { get; private set; } = null!;
 
-    public bool IsUpdatable
+    public bool IsModified
     {
         get
         {
@@ -39,7 +41,7 @@ internal partial class MovieViewModel :
         }
     }
 
-    public string? UpdatableSign => IsUpdatable ? "*" : null;
+    public string? UpdatableSign => IsModified ? "*" : null;
 
     private ObservableCollection<MovieReleaseViewModel>? _moviesReleasesViewsModels;
 
@@ -56,7 +58,7 @@ internal partial class MovieViewModel :
     public void SetCurrentAsPrevious()
     {
         PreviousState = (MovieViewModel)MemberwiseClone();
-        OnPropertyChanged(nameof(IsUpdatable));
+        OnPropertyChanged(nameof(IsModified));
         OnPropertyChanged(nameof(UpdatableSign));
     }
 

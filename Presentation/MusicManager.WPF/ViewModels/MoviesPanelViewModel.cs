@@ -93,7 +93,7 @@ internal partial class MoviesPanelViewModel :
         using var scope = _serviceScopeFactory.CreateScope();
         var dialogService = scope.ServiceProvider.GetRequiredService<IUserDialogService<MovieReleaseMovieWindow>>();
         var dataContext = scope.ServiceProvider.GetRequiredService<MovieReleaseAddToMovieViewModel>();
-        dataContext.MoviesReleasesToSelectFrom = new (movieReleasesToSelectFrom);
+        dataContext.MoviesReleasesToSelectFrom = movieReleasesToSelectFrom;
         dialogService.ShowDialog(dataContext);
     }
 
@@ -107,7 +107,7 @@ internal partial class MoviesPanelViewModel :
 
         using var scope = _serviceScopeFactory.CreateScope();
         var movieService = scope.ServiceProvider.GetRequiredService<IMovieService>();
-        var moviesToUpdate = Movies.Where(e => e.IsUpdatable);
+        var moviesToUpdate = Movies.Where(e => e.IsModified);
 
         var results = new List<Result>();
         foreach (var item in moviesToUpdate)
@@ -185,7 +185,6 @@ internal partial class MoviesPanelViewModel :
         {
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                //request.MoviesLinks.Add(SelectedMovie.MovieId);
                 SelectedMovie.MoviesReleases.Add(request.MovieReleaseViewModel);
             });
         }

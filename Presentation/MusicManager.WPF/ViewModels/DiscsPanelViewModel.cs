@@ -187,7 +187,7 @@ internal partial class DiscsPanelViewModel :
 
         using var scope = _serviceScopeFactory.CreateScope();
         var compilationService = scope.ServiceProvider.GetRequiredService<ICompilationService>();
-        var compilationsToUpdate = Compilations.Where(e => e.IsUpdatable);
+        var compilationsToUpdate = Compilations.Where(e => e.IsModified);
 
         var results = new List<Result>();
         foreach (var item in compilationsToUpdate)
@@ -234,7 +234,7 @@ internal partial class DiscsPanelViewModel :
 
         using var scope = _serviceScopeFactory.CreateScope();
         var movieReleaseService = scope.ServiceProvider.GetRequiredService<IMovieReleaseService>();
-        var moviesReleasesToUpdate = MovieReleases.Where(e => e.IsUpdatable);
+        var moviesReleasesToUpdate = MovieReleases.Where(e => e.IsModified);
 
         var results = new List<Result>();
         foreach (var item in moviesReleasesToUpdate)

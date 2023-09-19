@@ -5,6 +5,7 @@ using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace MusicManager.WPF.ViewModels.Base;
 
@@ -16,13 +17,19 @@ internal abstract partial class MovieReleaseMovieViewModel : ObservableRecipient
     [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
     protected MovieReleaseViewModel? _selectedViewModel;
 
-    public ObservableCollection<MovieReleaseViewModel>? MoviesReleasesToSelectFrom { get; set; }
+    private IEnumerable<MovieReleaseViewModel>? _movieReleasesToSelectFrom;
+    public IEnumerable<MovieReleaseViewModel> MoviesReleasesToSelectFrom 
+    {
+        get => _movieReleasesToSelectFrom ??= Enumerable.Empty<MovieReleaseViewModel>();
+        set
+        {
+            _movieReleasesToSelectFrom = value.OrderBy(e => e.Identifier);
+        }
+    }
 
     public MovieReleaseMovieViewModel(
-        IEnumerable<MovieReleaseViewModel> movieReleases,
 		IUserDialogService<MovieReleaseMovieWindow> dialogService) : base()
     {
-        MoviesReleasesToSelectFrom = new (movieReleases);
         _movieReleaseMovieWindowService = dialogService;
     }
 

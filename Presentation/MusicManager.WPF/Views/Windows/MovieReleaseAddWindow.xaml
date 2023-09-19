@@ -35,7 +35,7 @@
 
         <ListBox Grid.Row="2"
                  ItemsSource="{Binding SelectedMovies}"
-                 DisplayMemberPath="TitleAndYear"/>
+                 DisplayMemberPath="Title"/>
 
         <StackPanel Grid.Row="3" Margin="10">
             <TextBlock Text="Индетификатор диска: "/>
@@ -47,8 +47,9 @@
         </StackPanel>
 
         <ComboBox ItemsSource="{Binding Movies}" 
-                  DisplayMemberPath="TitleAndYear"
+                  DisplayMemberPath="Title"
                   SelectedItem="{Binding SelectedMovie}"
-                  />
+                  >
+        </ComboBox>
     </Grid>
 </Window>

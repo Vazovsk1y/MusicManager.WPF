@@ -11,8 +11,7 @@ namespace MusicManager.WPF.ViewModels;
 internal class MovieReleaseAddToMovieViewModel : MovieReleaseMovieViewModel
 {
     public MovieReleaseAddToMovieViewModel(
-        IEnumerable<MovieReleaseViewModel> movieReleases, 
-        IUserDialogService<MovieReleaseMovieWindow> wpfWindowService) : base(movieReleases, wpfWindowService)
+        IUserDialogService<MovieReleaseMovieWindow> dialogService) : base(dialogService)
     {
     }
 

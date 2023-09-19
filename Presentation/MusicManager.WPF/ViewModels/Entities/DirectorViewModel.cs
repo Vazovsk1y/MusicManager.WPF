@@ -5,16 +5,16 @@ namespace MusicManager.WPF.ViewModels.Entities;
 
 public partial class DirectorViewModel : 
     ObservableObject,
-    IUpdatable<DirectorViewModel>
+    IModifiable<DirectorViewModel>
 {
     public required DirectorId Id { get; init; }
 
-    public bool IsUpdatable => PreviousState.FullName != FullName;
+    public bool IsModified => PreviousState.FullName != FullName;
 
     public DirectorViewModel PreviousState { get; private set; } = null!;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     private string _fullName = null!;
 
     public void RollBackChanges()
@@ -25,6 +25,6 @@ public partial class DirectorViewModel :
     public void SetCurrentAsPrevious()
     {
         PreviousState = (DirectorViewModel)MemberwiseClone();
-        OnPropertyChanged(nameof(IsUpdatable));
+        OnPropertyChanged(nameof(IsModified));
     }
 }

@@ -8,27 +8,27 @@ namespace MusicManager.WPF.ViewModels.Entities;
 internal partial class DiscViewModel<T> : 
     ObservableObject,
     IDiscViewModel,
-    IUpdatable<T> where T : DiscViewModel<T>
+    IModifiable<T> where T : DiscViewModel<T>
 {
     private ObservableCollection<SongViewModel>? _songs;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private int? _productionYear;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string? _productionCountry;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private DiscType _selectedDiscType = null!;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string _identifier = null!;
 
@@ -42,16 +42,18 @@ internal partial class DiscViewModel<T> :
 
     public T PreviousState { get; private set; } = null!;
 
-    public virtual bool IsUpdatable
+    public virtual bool IsModified
     {
         get
         {
             return PreviousState.Identifier != Identifier
-                || PreviousState.SelectedDiscType != SelectedDiscType;
+                || PreviousState.SelectedDiscType != SelectedDiscType
+                || PreviousState.ProductionCountry != ProductionCountry
+                || PreviousState.ProductionYear != ProductionYear;
         }
     }
 
-    public string? UpdatableSign => IsUpdatable ? "*" : null;
+    public string? UpdatableSign => IsModified ? "*" : null;
 
     public virtual void RollBackChanges()
     {
@@ -64,7 +66,7 @@ internal partial class DiscViewModel<T> :
     public virtual void SetCurrentAsPrevious()
     {
         PreviousState = (T)MemberwiseClone();
-        OnPropertyChanged(nameof(IsUpdatable));
+        OnPropertyChanged(nameof(IsModified));
         OnPropertyChanged(nameof(UpdatableSign));
     }
 }

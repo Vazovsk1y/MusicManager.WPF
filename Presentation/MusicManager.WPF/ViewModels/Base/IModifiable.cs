@@ -1,8 +1,8 @@
 ﻿namespace MusicManager.WPF.ViewModels.Entities;
 
-public interface IUpdatable<T> where T : IUpdatable<T>
+public interface IModifiable<T> where T : IModifiable<T>
 {
-    bool IsUpdatable { get; }
+    bool IsModified { get; }
 
     T PreviousState { get; }
 

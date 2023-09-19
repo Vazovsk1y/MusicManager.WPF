@@ -7,25 +7,25 @@ namespace MusicManager.WPF.ViewModels.Entities;
 
 internal partial class SongViewModel : 
 	ObservableObject, 
-	IUpdatable<SongViewModel>
+	IModifiable<SongViewModel>
 {
 	[ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     private string? _discNumber;
 
 	[ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string _title = string.Empty;
 
 	[ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string? _type;
 
 	[ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpdatable))]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private int _number;
 
@@ -36,7 +36,7 @@ internal partial class SongViewModel :
 
     public required DiscId DiscId { get; init; }
 
-    public bool IsUpdatable
+    public bool IsModified
     {
         get
         {
@@ -45,7 +45,7 @@ internal partial class SongViewModel :
         }
     }
 
-    public string? UpdatableSign => IsUpdatable ? "*" : null;
+    public string? UpdatableSign => IsModified ? "*" : null;
 
     public SongViewModel PreviousState { get; private set; } = null!;
 
@@ -60,7 +60,7 @@ internal partial class SongViewModel :
     public void SetCurrentAsPrevious()
     {
         PreviousState = (SongViewModel)MemberwiseClone();
-        OnPropertyChanged(nameof(IsUpdatable));
+        OnPropertyChanged(nameof(IsModified));
         OnPropertyChanged(nameof(UpdatableSign));
     }
 }

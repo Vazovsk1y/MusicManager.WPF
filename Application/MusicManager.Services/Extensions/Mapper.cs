@@ -41,7 +41,8 @@ public static class Mapper
     {
         return new MovieLookupDTO(
             movie.Id,
-            $"{movie.Title} {movie.ProductionInfo?.Year}"
+            movie.Title,
+            (int)movie.ProductionInfo.Year!
             );
     }
 
