@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MusicManager.WPF.Views.Windows" 
         xmlns:entities="clr-namespace:MusicManager.WPF.ViewModels.Entities" 
+        xmlns:utils="clr-namespace:MusicManager.Utils;assembly=MusicManager.Utils"
         d:DataContext="{d:DesignInstance Type=entities:CompilationAddViewModel}"
         mc:Ignorable="d"
         Title="CompilationAddWindow" Height="400" Width="400">
@@ -15,10 +16,10 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-
-        <GroupBox Grid.Row="4">
+        <GroupBox Grid.Row="5">
             <DockPanel>
                 <UniformGrid DockPanel.Dock="Bottom" Rows="1" >
                     <Button Margin ="20" Content="Ок" Command="{Binding AcceptCommand}"/>
@@ -28,13 +29,28 @@
         </GroupBox>
 
         <ComboBox ItemsSource="{Binding DiscTypes, UpdateSourceTrigger=PropertyChanged}" 
-                  Grid.Row="1"
+                  Grid.Row="0"
                   DisplayMemberPath="Value"
                   SelectedItem="{Binding SelectedDiscType}"
                   />
-        
 
-        <StackPanel Grid.Row="3" Margin="10">
+        <ComboBox ItemsSource="{Binding Source={x:Static utils:YearsHelper.Years}, UpdateSourceTrigger=PropertyChanged}" 
+                  Grid.Row="1"
+                  SelectedItem="{Binding SelectedYear}"
+                  />
+
+        <ComboBox ItemsSource="{Binding Source={x:Static utils:CountryHelper.Countries}}" 
+                  Grid.Row="2"
+                  SelectedItem="{Binding SelectedCountry}"
+                  />
+
+        <ComboBox ItemsSource="{Binding Songwriters}" 
+                  Grid.Row="3"
+                  DisplayMemberPath="FullName"
+                  SelectedItem="{Binding SelectedSongwriter}"
+                  />
+
+        <StackPanel Grid.Row="4" Margin="10">
             <TextBlock Text="Индетификатор диска: "/>
             <TextBox FontFamily="Century Gothic"
                      FontSize="20"
@@ -43,9 +59,6 @@
                      />
         </StackPanel>
 
-        <ComboBox ItemsSource="{Binding Songwriters}" 
-                  DisplayMemberPath="FullName"
-                  SelectedItem="{Binding SelectedSongwriter}"
-                  />
+       
     </Grid>
 </Window>

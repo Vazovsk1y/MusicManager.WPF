@@ -35,7 +35,15 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
     [ObservableProperty]
     private string _identifier = string.Empty;
 
-    public CompilationAddViewModel(
+	[ObservableProperty]
+	[NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
+	private string? _selectedCountry;
+
+	[ObservableProperty]
+	[NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
+	private int? _selectedYear;
+
+	public CompilationAddViewModel(
         IUserDialogService<CompilationAddWindow> dialogService,
         ISongwriterService songwriterService,
         ICompilationService compilationService,
@@ -47,7 +55,7 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
 
     protected override async Task Accept()
     {
-        var dto = new CompilationAddDTO(SelectedSongwriter!.Id, Identifier, SelectedDiscType!);
+        var dto = new CompilationAddDTO(SelectedSongwriter!.Id, Identifier, SelectedDiscType!, SelectedYear, SelectedCountry);
         var addingResult = await _compilationService.SaveAsync(dto, _settingsViewModel.CreateAssociatedFolder);
         if (addingResult.IsSuccess)
         {
@@ -57,6 +65,8 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
                 SongwriterId = dto.SongwriterId,
                 Identifier = dto.Identifier,
                 SelectedDiscType = SelectedDiscType!,
+                ProductionYear = SelectedYear,
+                ProductionCountry = SelectedCountry,
             });
 
             Messenger.Send(message);

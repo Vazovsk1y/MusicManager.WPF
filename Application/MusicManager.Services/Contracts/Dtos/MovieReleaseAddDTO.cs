@@ -7,6 +7,8 @@ namespace MusicManager.Services.Contracts.Dtos
     public record MovieReleaseAddDTO(
         IEnumerable<MovieId> MoviesLinks,
         string Identifier,
-        DiscType DiscType
+        DiscType DiscType,
+        int? ProductionYear,
+        string? ProductionCountry
         );
 }

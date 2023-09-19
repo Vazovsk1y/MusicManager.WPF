@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MusicManager.WPF.Views.Windows" 
         xmlns:entities="clr-namespace:MusicManager.WPF.ViewModels.Entities" 
+        xmlns:utils="clr-namespace:MusicManager.Utils;assembly=MusicManager.Utils"
         d:DataContext="{d:DesignInstance Type=entities:MovieReleaseAddViewModel}"
         mc:Ignorable="d"
-        Title="MovieReleaseAddWindow" Height="400" Width="400">
+        Title="MovieReleaseAddWindow" Height="500" Width="400">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -15,29 +16,38 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <ComboBox ItemsSource="{Binding Movies}"
+                  Grid.Row="0"
+                  DisplayMemberPath="Title"
+                  SelectedItem="{Binding SelectedMovie}"
+                  />
 
-        <GroupBox Grid.Row="4">
-            <DockPanel>
-                <UniformGrid DockPanel.Dock="Bottom" Rows="1" >
-                    <Button Margin ="20" Content="Ок" Command="{Binding AcceptCommand}"/>
-                    <Button Margin ="20" Content="Отмена" Command="{Binding CancelCommand}"/>
-                </UniformGrid>
-            </DockPanel>
-        </GroupBox>
+        <ListBox Grid.Row="1"
+                 ItemsSource="{Binding SelectedMovies}"
+                 DisplayMemberPath="Title"/>
+
 
         <ComboBox ItemsSource="{Binding DiscTypes, UpdateSourceTrigger=PropertyChanged}" 
-                  Grid.Row="1"
+                  Grid.Row="2"
                   DisplayMemberPath="Value"
                   SelectedItem="{Binding SelectedDiscType}"
                   />
 
-        <ListBox Grid.Row="2"
-                 ItemsSource="{Binding SelectedMovies}"
-                 DisplayMemberPath="Title"/>
+        <ComboBox ItemsSource="{Binding Source={x:Static utils:YearsHelper.Years}, UpdateSourceTrigger=PropertyChanged}" 
+                  Grid.Row="3"
+                  SelectedItem="{Binding SelectedYear}"
+                  />
 
-        <StackPanel Grid.Row="3" Margin="10">
+        <ComboBox ItemsSource="{Binding Source={x:Static utils:CountryHelper.Countries}}" 
+                  Grid.Row="4"
+                  SelectedItem="{Binding SelectedCountry}"
+                  />
+
+        <StackPanel Grid.Row="5" Margin="10">
             <TextBlock Text="Индетификатор диска: "/>
             <TextBox FontFamily="Century Gothic"
                      FontSize="20"
@@ -46,10 +56,14 @@
                      />
         </StackPanel>
 
-        <ComboBox ItemsSource="{Binding Movies}" 
-                  DisplayMemberPath="Title"
-                  SelectedItem="{Binding SelectedMovie}"
-                  >
-        </ComboBox>
+        <GroupBox Grid.Row="6">
+            <DockPanel>
+                <UniformGrid DockPanel.Dock="Bottom" Rows="1" >
+                    <Button Margin ="20" Content="Ок" Command="{Binding AcceptCommand}"/>
+                    <Button Margin ="20" Content="Отмена" Command="{Binding CancelCommand}"/>
+                </UniformGrid>
+            </DockPanel>
+        </GroupBox>
+
     </Grid>
 </Window>

@@ -6,6 +6,8 @@ namespace MusicManager.Services.Contracts.Dtos
     public record CompilationAddDTO(
         SongwriterId SongwriterId,
         string Identifier,
-        DiscType DiscType
+        DiscType DiscType,
+        int? ProductionYear,
+        string? ProductionCountry
         );
 }

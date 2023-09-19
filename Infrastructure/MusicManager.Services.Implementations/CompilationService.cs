@@ -101,7 +101,9 @@ public class CompilationService : ICompilationService
         var creationResult = Compilation.Create(
             compilationAddDTO.SongwriterId,
             compilationAddDTO.DiscType,
-            compilationAddDTO.Identifier
+            compilationAddDTO.Identifier,
+            compilationAddDTO.ProductionYear,
+            compilationAddDTO.ProductionCountry
             );
 
         if (creationResult.IsFailure) 

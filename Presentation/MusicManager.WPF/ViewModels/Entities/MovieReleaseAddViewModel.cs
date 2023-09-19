@@ -25,8 +25,15 @@ internal partial class MovieReleaseAddViewModel : DialogViewModel<MovieReleaseAd
 	[ObservableProperty]
 	private ObservableCollection<DiscType>? _discTypes;
 
-	private MovieLookupDTO? _selectedMovie;
+	[ObservableProperty]
+	[NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
+	private string? _selectedCountry;
 
+	[ObservableProperty]
+	[NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
+	private int? _selectedYear;
+
+	private MovieLookupDTO? _selectedMovie;
 	public MovieLookupDTO? SelectedMovie
 	{
 		get => _selectedMovie;
@@ -66,7 +73,7 @@ internal partial class MovieReleaseAddViewModel : DialogViewModel<MovieReleaseAd
 	protected override async Task Accept()
 	{
 		var moviesLinks = SelectedMovies.Select(e => e.MovieId).ToList();
-		var dto = new MovieReleaseAddDTO(moviesLinks, Identifier, SelectedDiscType!);
+		var dto = new MovieReleaseAddDTO(moviesLinks, Identifier, SelectedDiscType!, SelectedYear, SelectedCountry);
 		var addingResult = await _movieReleaseService.SaveAsync(dto, _settingsViewModel.CreateAssociatedFolder);
 
 		if (addingResult.IsSuccess)
@@ -75,7 +82,9 @@ internal partial class MovieReleaseAddViewModel : DialogViewModel<MovieReleaseAd
 			{
 				DiscId = addingResult.Value,
 				SelectedDiscType = SelectedDiscType!,
-				Identifier = dto.Identifier
+				Identifier = dto.Identifier,
+				ProductionYear = SelectedYear,
+				ProductionCountry = SelectedCountry
 			}, moviesLinks);
 
 			Messenger.Send(message);

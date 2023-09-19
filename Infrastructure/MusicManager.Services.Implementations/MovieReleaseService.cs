@@ -101,7 +101,9 @@ public class MovieReleaseService : IMovieReleaseService
 
         var creationResult = MovieRelease.Create(
             movieReleaseAddDTO.DiscType,
-            movieReleaseAddDTO.Identifier
+            movieReleaseAddDTO.Identifier,
+            movieReleaseAddDTO.ProductionYear,
+            movieReleaseAddDTO.ProductionCountry
             );
 
         if (creationResult.IsFailure)
