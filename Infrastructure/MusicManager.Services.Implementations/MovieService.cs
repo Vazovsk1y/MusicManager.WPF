@@ -40,6 +40,7 @@ public class MovieService : IMovieService
         var movie = await _dbContext
             .Movies
             .Include(e => e.Releases)
+            .ThenInclude(e => e.MovieRelease)
             .ThenInclude(e => e.Movies)
             .SingleOrDefaultAsync(e => e.Id == dto.MovieId, cancellationToken);
 
@@ -132,7 +133,7 @@ public class MovieService : IMovieService
 
             result.Add(movie.ToDTO() with
             {
-                MovieReleasesDTOs = moviesReleasesResult.Value
+                MoviesReleasesLinks = movie.Releases.Select(e => e.ToDTO())
             });
         }
 
@@ -219,7 +220,7 @@ public class MovieService : IMovieService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var moviesReleasesDtos = new List<MovieReleaseDTO>();
+        var moviesReleasesLinksDtos = new List<MovieReleaseLinkDTO>();
         foreach (var movieReleaseFolder in movieFolder.MoviesReleasesFolders)
         {
             var result = await _movieReleaseService.SaveFromFolderAsync(movieReleaseFolder, movie.Id, cancellationToken);
@@ -228,12 +229,13 @@ public class MovieService : IMovieService
                 return Result.Failure<MovieDTO>(result.Error);
             }
 
-            moviesReleasesDtos.Add(result.Value);
+            var movieReleaseDto = result.Value;
+            moviesReleasesLinksDtos.Add(new MovieReleaseLinkDTO(movieReleaseDto, movieReleaseFolder.LinkPath is null));
         }
 
         return movie.ToDTO() with
         {
-            MovieReleasesDTOs = moviesReleasesDtos,
+            MoviesReleasesLinks = moviesReleasesLinksDtos,
         };
     }
 

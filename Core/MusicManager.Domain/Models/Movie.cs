@@ -10,7 +10,8 @@ public class Movie : IAggregateRoot
 {
     #region --Fields--
 
-    private readonly List<MovieRelease> _releases = new();
+    //private readonly List<MovieRelease> _releases = new();
+    private readonly List<MovieReleaseLink> _releases = new();
 
     #endregion
 
@@ -28,7 +29,8 @@ public class Movie : IAggregateRoot
 
     public string Title { get; private set; } = string.Empty;
 
-    public IReadOnlyCollection<MovieRelease> Releases => _releases.ToList();
+    //public IReadOnlyCollection<MovieRelease> Releases => _releases.ToList();
+    public IReadOnlyCollection<MovieReleaseLink> Releases => _releases.ToList();
 
     #endregion
 
@@ -116,23 +118,29 @@ public class Movie : IAggregateRoot
         return Result.Failure(result.Error);
     }
 
-    public Result AddRelease(MovieRelease release, bool checkDirectoryInfo = false)
+    public Result AddRelease(MovieRelease release, bool checkDirectoryInfo = false, string? realeseLinkPath = null)
     {
         if (release is null)
         {
             return Result.Failure(DomainErrors.NullEntityPassed(nameof(release)));
         }
 
-        if (_releases.SingleOrDefault(i => i.Id == release.Id) is not null)
+        if (_releases.SingleOrDefault(i => i.MovieRelease.Id == release.Id) is not null)
         {
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(release)));
         }
 
         if (checkDirectoryInfo &&
             _releases.SingleOrDefault(m =>
-            m.EntityDirectoryInfo == release.EntityDirectoryInfo) is not null)
+            m.MovieRelease.EntityDirectoryInfo == release.EntityDirectoryInfo) is not null)
         {
             return Result.Failure(new Error($"MovieRelease with passed directory info is already exists."));
+        }
+
+        var linkCreationResult = MovieReleaseLink.Create(release, this, realeseLinkPath);
+        if (linkCreationResult.IsFailure)
+        {
+            return Result.Failure(linkCreationResult.Error);
         }
 
         var addingDiscResult = release.AddMovie(this);
@@ -141,7 +149,7 @@ public class Movie : IAggregateRoot
             return Result.Failure(addingDiscResult.Error);
         }
 
-        _releases.Add(release);
+        _releases.Add(linkCreationResult.Value);
         return Result.Success();
     }
 

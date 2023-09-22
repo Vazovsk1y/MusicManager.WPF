@@ -48,9 +48,9 @@ public class MovieReleaseService : IMovieReleaseService
         return Result.Success();
 	}
 
-	public async Task<Result<IEnumerable<MovieReleaseDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default)
+	public async Task<Result<IEnumerable<MovieReleaseLinkDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default)
     {
-        var result = new List<MovieReleaseDTO>();
+        var result = new List<MovieReleaseLinkDTO>();
         var movie = await _dbContext
             .Movies
             .Include(e => e.Releases)
@@ -58,22 +58,24 @@ public class MovieReleaseService : IMovieReleaseService
 
         if (movie is null)
         {
-            return Result.Failure<IEnumerable<MovieReleaseDTO>>(ServicesErrors.MovieWithPassedIdIsNotExists());
+            return Result.Failure<IEnumerable<MovieReleaseLinkDTO>>(ServicesErrors.MovieWithPassedIdIsNotExists());
         }
 
         var moviesReleases = movie.Releases;
-        foreach (var movieRelease in moviesReleases)
+        foreach (var movieReleaseLink in moviesReleases)
         {
-            var songsResult = await _songService.GetAllAsync(movieRelease.Id, cancellationToken);
+            var songsResult = await _songService.GetAllAsync(movieReleaseLink.MovieRelease.Id, cancellationToken);
             if (songsResult.IsFailure)
             {
-                return Result.Failure<IEnumerable<MovieReleaseDTO>>(songsResult.Error);
+                return Result.Failure<IEnumerable<MovieReleaseLinkDTO>>(songsResult.Error);
             }
 
-            result.Add(movieRelease.ToDTO() with
+            var movieReleaseDTO = movieReleaseLink.MovieRelease.ToDTO() with
             {
                 SongDTOs = songsResult.Value
-            });
+            };
+
+            result.Add(new MovieReleaseLinkDTO(movieReleaseDTO, movieReleaseLink.ReleaseLink is null));
         }
 
         return result;
@@ -90,6 +92,7 @@ public class MovieReleaseService : IMovieReleaseService
         var movies = await _dbContext
             .Movies
             .Include(e => e.Releases)
+            .ThenInclude(e => e.MovieRelease)
             .ThenInclude(e => e.Movies)
             .Where(e => movieReleaseAddDTO.MoviesLinks.Contains(e.Id))
             .ToListAsync(cancellationToken);
@@ -155,6 +158,7 @@ public class MovieReleaseService : IMovieReleaseService
         var movie = await _dbContext
             .Movies
             .Include(e => e.Releases)
+            .ThenInclude(e => e.MovieRelease)
             .ThenInclude(e => e.Movies)
             .SingleOrDefaultAsync(e => e.Id == movieId, cancellationToken);
 

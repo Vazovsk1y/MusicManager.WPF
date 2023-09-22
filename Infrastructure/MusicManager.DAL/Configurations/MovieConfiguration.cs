@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using MusicManager.Domain.Entities;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.ValueObjects;
 
@@ -28,7 +29,9 @@ internal class MovieConfiguration : IEntityTypeConfiguration<Movie>
 
         builder
             .HasMany(e => e.Releases)
-            .WithMany(e => e.Movies);
+            .WithOne(e => e.Movie);
+
+            //.WithMany(e => e.MovieRelease.Movies);
 
         builder
             .HasOne(e => e.Director)
