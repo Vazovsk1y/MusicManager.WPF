@@ -34,7 +34,7 @@ public static class Mapper
             movie.ProductionInfo?.Country,
             (int)movie.ProductionInfo!.Year!,
             movie.Director is null ? null : new DirectorDTO(movie.Director.Id, movie.Director.FullName),
-            movie.Releases.Select(e => e.ToDTO())
+            movie.ReleasesLinks.Select(e => e.ToDTO())
             );
     }
 

@@ -15,7 +15,7 @@ public interface IMovieService
 
     Task<Result<MovieId>> SaveAsync(MovieAddDTO movieAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default);
 
-    Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, CancellationToken cancellationToken = default);
+    Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, bool createAssociatedLink = true, CancellationToken cancellationToken = default);
 
     Task<Result> UpdateAsync(MovieUpdateDTO movieUpdateDTO, CancellationToken cancellationToken = default);
 
