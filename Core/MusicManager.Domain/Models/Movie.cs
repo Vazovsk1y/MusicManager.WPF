@@ -10,8 +10,7 @@ public class Movie : IAggregateRoot
 {
     #region --Fields--
 
-    //private readonly List<MovieRelease> _releases = new();
-    private readonly List<MovieReleaseLink> _releases = new();
+    private readonly List<MovieReleaseLink> _releasesLinks = new();
 
     #endregion
 
@@ -29,8 +28,7 @@ public class Movie : IAggregateRoot
 
     public string Title { get; private set; } = string.Empty;
 
-    //public IReadOnlyCollection<MovieRelease> Releases => _releases.ToList();
-    public IReadOnlyCollection<MovieReleaseLink> Releases => _releases.ToList();
+    public IReadOnlyCollection<MovieReleaseLink> ReleasesLinks => _releasesLinks.ToList();
 
     #endregion
 
@@ -125,13 +123,13 @@ public class Movie : IAggregateRoot
             return Result.Failure(DomainErrors.NullEntityPassed(nameof(release)));
         }
 
-        if (_releases.SingleOrDefault(i => i.MovieRelease.Id == release.Id) is not null)
+        if (_releasesLinks.SingleOrDefault(i => i.MovieRelease.Id == release.Id) is not null)
         {
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(release)));
         }
 
         if (checkDirectoryInfo &&
-            _releases.SingleOrDefault(m =>
+            _releasesLinks.SingleOrDefault(m =>
             m.MovieRelease.EntityDirectoryInfo == release.EntityDirectoryInfo) is not null)
         {
             return Result.Failure(new Error($"MovieRelease with passed directory info is already exists."));
@@ -143,13 +141,13 @@ public class Movie : IAggregateRoot
             return Result.Failure(linkCreationResult.Error);
         }
 
-        var addingDiscResult = release.AddMovie(this);
+        var addingDiscResult = release.AddMovieLink(linkCreationResult.Value);
         if (addingDiscResult.IsFailure)
         {
             return Result.Failure(addingDiscResult.Error);
         }
 
-        _releases.Add(linkCreationResult.Value);
+        _releasesLinks.Add(linkCreationResult.Value);
         return Result.Success();
     }
 

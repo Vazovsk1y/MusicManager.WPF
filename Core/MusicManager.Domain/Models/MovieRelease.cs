@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Entities;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
@@ -7,21 +8,21 @@ namespace MusicManager.Domain.Models;
 
 public class MovieRelease : Disc
 {
-    #region --Fields--
+	#region --Fields--
 
-    private readonly List<Movie> _movies = new();
+	private readonly List<MovieReleaseLink> _moviesLinks = new();
 
-    #endregion
+	#endregion
 
-    #region --Properties--
+	#region --Properties--
 
-    public IReadOnlyCollection<Movie> Movies => _movies.ToList();
+	public IReadOnlyCollection<MovieReleaseLink> MoviesLinks => _moviesLinks.ToList();
 
-    #endregion
+	#endregion
 
-    #region --Constructors--
+	#region --Constructors--
 
-    private MovieRelease() : base()
+	private MovieRelease() : base()
     {
 
     }
@@ -81,14 +82,10 @@ public class MovieRelease : Disc
             Result.Failure<MovieRelease>(settingDirectoryInfoResult.Error) : creationResult.Value;
     }
 
-    internal Result AddMovie(Movie movie)
+    internal Result AddMovieLink(MovieReleaseLink movieLink)
     {
-        if (_movies.SingleOrDefault(i => i.Id == movie.Id) is not null)
-        {
-            return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(movie)));
-        }
 
-        _movies.Add(movie);
+        _moviesLinks.Add(movieLink);
         return Result.Success();
     }
 

@@ -8,22 +8,24 @@ namespace MusicManager.Domain.Entities;
 
 public class MovieReleaseLink
 {
-    public MovieId MovieId { get; }
+    public MovieId MovieId { get; private set; }
 
-    public DiscId DiscId { get; }
-    public MovieRelease MovieRelease { get; }
+    public DiscId MovieReleaseId { get; private set; }
 
-    public Movie Movie { get; }
+    public MovieRelease MovieRelease { get; private set; }
+
+    public Movie Movie { get; private set; }
 
     public EntityDirectoryInfo? ReleaseLink { get; private set; }
 
     private MovieReleaseLink() { }
+
     private MovieReleaseLink(MovieRelease movieRelease, Movie movie)
     {
         MovieRelease = movieRelease;
         Movie = movie;
         MovieId = movie.Id;
-        DiscId = movieRelease.Id;
+        MovieReleaseId = movieRelease.Id;
     }
 
     internal static Result<MovieReleaseLink> Create(MovieRelease movieRelease, Movie movie, string? linkPath = null)
