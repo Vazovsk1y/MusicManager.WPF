@@ -8,12 +8,10 @@ internal class MovieReleaseLinkConfiguration : IEntityTypeConfiguration<MovieRel
 {
     public void Configure(EntityTypeBuilder<MovieReleaseLink> builder)
     {
-        builder.HasKey(e => new { e.MovieId, e.DiscId });
+        builder.HasKey(e => new { e.MovieId, e.MovieReleaseId });
 
         builder.OwnsOne(e => e.ReleaseLink);
-
-        builder.Property(e => e.DiscId).HasConversion(e => e.Value, e => new Domain.Common.DiscId(e));
-    }
+	}
 }
 
 

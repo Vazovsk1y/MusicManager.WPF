@@ -91,14 +91,17 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("movie_id");
 
-                    b.Property<Guid>("DiscId")
+                    b.Property<Guid>("MovieReleaseId")
                         .HasColumnType("TEXT")
-                        .HasColumnName("disc_id");
+                        .HasColumnName("movie_release_id");
 
-                    b.HasKey("MovieId", "DiscId")
-                        .HasName("pk_movie_release_link");
+                    b.HasKey("MovieId", "MovieReleaseId")
+                        .HasName("pk_movie_release_links");
 
-                    b.ToTable("movie_release_link", (string)null);
+                    b.HasIndex("MovieReleaseId")
+                        .HasDatabaseName("ix_movie_release_links_movie_release_id");
+
+                    b.ToTable("movie_release_links", (string)null);
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Entities.PlaybackInfo", b =>
@@ -141,10 +144,6 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("entity_directory_info");
 
-                    b.Property<Guid?>("MovieReleaseId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("movie_release_id");
-
                     b.Property<Guid>("SongwriterId")
                         .HasColumnType("TEXT")
                         .HasColumnName("songwriter_id");
@@ -159,9 +158,6 @@ namespace MusicManager.DAL.Migrations
 
                     b.HasIndex("DirectorId")
                         .HasDatabaseName("ix_movies_director_id");
-
-                    b.HasIndex("MovieReleaseId")
-                        .HasDatabaseName("ix_movies_movie_release_id");
 
                     b.HasIndex("SongwriterId")
                         .HasDatabaseName("ix_movies_songwriter_id");
@@ -290,11 +286,18 @@ namespace MusicManager.DAL.Migrations
             modelBuilder.Entity("MusicManager.Domain.Entities.MovieReleaseLink", b =>
                 {
                     b.HasOne("MusicManager.Domain.Models.Movie", "Movie")
-                        .WithMany("Releases")
+                        .WithMany("ReleasesLinks")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_movie_release_link_movies_movie_temp_id");
+                        .HasConstraintName("fk_movie_release_links_movies_movie_temp_id");
+
+                    b.HasOne("MusicManager.Domain.Models.MovieRelease", "MovieRelease")
+                        .WithMany("Movies")
+                        .HasForeignKey("MovieReleaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_movie_release_links_discs_movie_release_temp_id2");
 
                     b.OwnsOne("MusicManager.Domain.ValueObjects.EntityDirectoryInfo", "ReleaseLink", b1 =>
                         {
@@ -302,25 +305,27 @@ namespace MusicManager.DAL.Migrations
                                 .HasColumnType("TEXT")
                                 .HasColumnName("movie_id");
 
-                            b1.Property<Guid>("MovieReleaseLinkDiscId")
+                            b1.Property<Guid>("MovieReleaseLinkMovieReleaseId")
                                 .HasColumnType("TEXT")
-                                .HasColumnName("disc_id");
+                                .HasColumnName("movie_release_id");
 
                             b1.Property<string>("Path")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
                                 .HasColumnName("release_link_path");
 
-                            b1.HasKey("MovieReleaseLinkMovieId", "MovieReleaseLinkDiscId");
+                            b1.HasKey("MovieReleaseLinkMovieId", "MovieReleaseLinkMovieReleaseId");
 
-                            b1.ToTable("movie_release_link");
+                            b1.ToTable("movie_release_links");
 
                             b1.WithOwner()
-                                .HasForeignKey("MovieReleaseLinkMovieId", "MovieReleaseLinkDiscId")
-                                .HasConstraintName("fk_movie_release_link_movie_release_link_movie_id_disc_id");
+                                .HasForeignKey("MovieReleaseLinkMovieId", "MovieReleaseLinkMovieReleaseId")
+                                .HasConstraintName("fk_movie_release_links_movie_release_links_movie_id_movie_release_id");
                         });
 
                     b.Navigation("Movie");
+
+                    b.Navigation("MovieRelease");
 
                     b.Navigation("ReleaseLink");
                 });
@@ -376,11 +381,6 @@ namespace MusicManager.DAL.Migrations
                         .WithMany("Movies")
                         .HasForeignKey("DirectorId")
                         .HasConstraintName("fk_movies_directors_director_temp_id");
-
-                    b.HasOne("MusicManager.Domain.Models.MovieRelease", null)
-                        .WithMany("Movies")
-                        .HasForeignKey("MovieReleaseId")
-                        .HasConstraintName("fk_movies_discs_movie_release_temp_id2");
 
                     b.HasOne("MusicManager.Domain.Models.Songwriter", null)
                         .WithMany("Movies")
@@ -469,7 +469,7 @@ namespace MusicManager.DAL.Migrations
 
             modelBuilder.Entity("MusicManager.Domain.Models.Movie", b =>
                 {
-                    b.Navigation("Releases");
+                    b.Navigation("ReleasesLinks");
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Models.Song", b =>
