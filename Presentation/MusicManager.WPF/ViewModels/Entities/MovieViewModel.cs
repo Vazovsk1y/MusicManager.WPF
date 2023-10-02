@@ -4,49 +4,69 @@ using System.Collections.ObjectModel;
 
 namespace MusicManager.WPF.ViewModels.Entities;
 
-internal class MovieViewModel : ObservableObject
+internal partial class MovieViewModel : 
+    ObservableObject, 
+    IModifiable<MovieViewModel>
 {
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
+    [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string _title = string.Empty;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
+    [NotifyPropertyChangedFor(nameof(UpdatableSign))]
     private string? _productionCountry;
 
-    private string? _directorFullName;
+    [ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(IsModified))]
+	[NotifyPropertyChangedFor(nameof(UpdatableSign))]
+	private DirectorViewModel? _director;
 
-    private string? _productionYear;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsModified))]
+    [NotifyPropertyChangedFor(nameof(UpdatableSign))]
+    private int _productionYear;
 
-    private ObservableCollection<MovieReleaseViewModel>? _moviesReleasesViewsModels;
+    public MovieViewModel PreviousState { get; private set; } = null!;
+
+    public bool IsModified
+    {
+        get
+        {
+            return PreviousState.Title != Title
+                || PreviousState.ProductionCountry != ProductionCountry
+                || PreviousState.ProductionYear != ProductionYear
+                || PreviousState.Director?.Id != Director?.Id;
+        }
+    }
+
+    public string? UpdatableSign => IsModified ? "*" : null;
+
+    private ObservableCollection<MovieReleaseLinkViewModel>? _moviesReleasesLinks;
 
     public required MovieId MovieId { get; init; }
 
-    public required SongwriterId SongwriterId { get; init; }    
+    public required SongwriterId SongwriterId { get; init; }
 
-    public ObservableCollection<MovieReleaseViewModel> MoviesReleases
+    public ObservableCollection<MovieReleaseLinkViewModel> MoviesReleasesLinks
     {
-        get => _moviesReleasesViewsModels ??= new();
-        init => SetProperty(ref _moviesReleasesViewsModels, value);
+        get => _moviesReleasesLinks ??= new();
+        init => SetProperty(ref _moviesReleasesLinks, value);
     }
 
-    public string Title
+    public void SetCurrentAsPrevious()
     {
-        get => _title;
-        set => SetProperty(ref _title, value);
+        PreviousState = (MovieViewModel)MemberwiseClone();
+        OnPropertyChanged(nameof(IsModified));
+        OnPropertyChanged(nameof(UpdatableSign));
     }
 
-    public string? ProductionYear
+    public void RollBackChanges()
     {
-        get => _productionYear;
-        set => SetProperty(ref _productionYear, value);
-    }
-
-    public string? ProductionCountry
-    {
-        get => _productionCountry;
-        set => SetProperty(ref _productionCountry, value);
-    }
-
-    public string? DirectorFullName
-    {
-        get => _directorFullName;
-        set => SetProperty(ref _directorFullName, value);
+        ProductionYear= PreviousState.ProductionYear;
+        ProductionCountry = PreviousState.ProductionCountry;
+        Title = PreviousState.Title;
+        Director = PreviousState.Director;
     }
 }

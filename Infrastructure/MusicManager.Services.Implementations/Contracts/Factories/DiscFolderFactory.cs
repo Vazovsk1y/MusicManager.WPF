@@ -1,6 +1,8 @@
 ﻿using MusicManager.Domain.Constants;
+using MusicManager.Domain.Services;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Base;
 using MusicManager.Services.Contracts.Factories;
@@ -10,26 +12,25 @@ namespace MusicManager.Services.Implementations.Contracts.Factories;
 
 public class DiscFolderFactory : IDiscFolderFactory
 {
-    private const string COVERS_FOLDER_NAME = "covers";
-    private const string FolderJPG = "folder.jpg";
-    private const string CD_KEYWORD = "CD";
     private readonly string[] _allowedFilesExtensions = new[]
     {
         DomainConstants.WVExtension,
-        DomainConstants.CueExtension,
         DomainConstants.Mp3Extension,
         DomainConstants.ApeExtension,
         DomainConstants.FlacExtension,
+        DomainConstants.CueExtension,
     };
 
     private readonly ISongFileFactory _songFileFactory;
+    private readonly ICueFileInteractor _cueFileInteractor;
 
-    public DiscFolderFactory(ISongFileFactory songFileFactory)
+    public DiscFolderFactory(ISongFileFactory songFileFactory, ICueFileInteractor cueFileInteractor)
     {
         _songFileFactory = songFileFactory;
+        _cueFileInteractor = cueFileInteractor;
     }
 
-    public Result<DiscFolder> Create(DirectoryInfo discDirectory)
+    public Result<DiscFolder> Create(DirectoryInfo discDirectory, string? linkPath = null)
     {
         if (!discDirectory.Exists)
         {
@@ -38,12 +39,12 @@ public class DiscFolderFactory : IDiscFolderFactory
 
         var coversFolder = discDirectory
             .EnumerateDirectories()
-            .FirstOrDefault(d => d.Name == COVERS_FOLDER_NAME);
+            .FirstOrDefault(d => d.Name == DomainServicesConstants.COVERS_FOLDER_NAME);
 
         List<string> covers = coversFolder is null ? new List<string>() : coversFolder.EnumerateFiles().Select(f => f.FullName).ToList();
         var folderJPGfile = discDirectory
             .EnumerateFiles()
-            .FirstOrDefault(f => f.Name == FolderJPG);
+            .FirstOrDefault(f => string.Equals(f.Name, DomainServicesConstants.FolderJPG, StringComparison.OrdinalIgnoreCase));
 
         if (folderJPGfile is not null)
         {
@@ -53,37 +54,40 @@ public class DiscFolderFactory : IDiscFolderFactory
         List<SongFile> songsFiles = new();
         var songsFromCdFolders = discDirectory
             .EnumerateDirectories()
-            .Where(d => d.Name.StartsWith(CD_KEYWORD))
+            .Where(d => d.Name.StartsWith(DiscNumber.CD_KEYWORD))
             .SelectMany(d => 
             d.EnumerateFiles().Where(f => _allowedFilesExtensions.Contains(f.Extension)));
 
         var allSongsFiles = songsFromCdFolders
-            .Union(discDirectory.EnumerateFiles().Where(f => _allowedFilesExtensions.Contains(f.Extension)));
+            .Union(discDirectory.EnumerateFiles().Where(f => _allowedFilesExtensions.Contains(f.Extension))).ToList();
 
         var cueFiles = allSongsFiles.Where(f => f.Extension == DomainConstants.CueExtension).ToList();
 
-        if (cueFiles.Count > 0)
+        foreach (var cueFile in cueFiles)
         {
-            foreach (var cueFile in cueFiles)
+            var cueInteractorResult = _cueFileInteractor.GetCueSheet(cueFile.FullName);
+            if (cueInteractorResult.IsFailure)
             {
-                var executableFileForCue = allSongsFiles
-                    .FirstOrDefault(e => e.Name.Contains(Path.GetFileNameWithoutExtension(cueFile.Name)) && e.Extension != DomainConstants.CueExtension);
-
-                if (executableFileForCue is null)
-                {
-                    return Result.Failure<DiscFolder>(new($"Couldn't find an executable file for cue file [{cueFile.FullName}]."));
-                }
-
-                var result = _songFileFactory.Create(executableFileForCue, cueFile);
-                if (result.IsFailure)
-                {
-                    return Result.Failure<DiscFolder>(result.Error);
-                }
-
-                songsFiles.Add(result.Value);
+                return Result.Failure<DiscFolder>(cueInteractorResult.Error);
             }
 
-            return new DiscFolder(discDirectory.FullName, songsFiles, covers);
+            var executableFileForCue = allSongsFiles
+                .FirstOrDefault(e => e.Name == cueInteractorResult.Value.ExecutableFileName);
+
+            if (executableFileForCue is null)
+            {
+                return Result.Failure<DiscFolder>(new($"Couldn't find an executable file for cue file [{cueFile.FullName}]."));
+            }
+
+            var result = _songFileFactory.Create(cueFile);
+            if (result.IsFailure)
+            {
+                return Result.Failure<DiscFolder>(result.Error);
+            }
+
+            allSongsFiles.Remove(executableFileForCue);
+            allSongsFiles.Remove(cueFile);
+            songsFiles.Add(result.Value);
         }
 
         foreach (var songFile in allSongsFiles)
@@ -97,6 +101,6 @@ public class DiscFolderFactory : IDiscFolderFactory
             songsFiles.Add(result.Value);
         }
 
-        return new DiscFolder(discDirectory.FullName, songsFiles, covers);
+        return new DiscFolder(discDirectory.FullName, songsFiles, covers, linkPath);
     }
 }

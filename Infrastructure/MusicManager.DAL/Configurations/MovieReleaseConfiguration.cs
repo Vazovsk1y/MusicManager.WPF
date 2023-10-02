@@ -10,8 +10,11 @@ internal class MovieReleaseConfiguration : IEntityTypeConfiguration<MovieRelease
     {
         entityBuilder.ToTable(MusicManagerDbContext.MOVIES_RELEASES_TABLE_NAME);
 
-        entityBuilder.UseTptMappingStrategy();
+		entityBuilder
+			.HasMany(e => e.MoviesLinks)
+			.WithOne(e => e.MovieRelease)
+			.HasForeignKey(e => e.MovieReleaseId);
+
+		entityBuilder.UseTptMappingStrategy();
     }
 }
-
-

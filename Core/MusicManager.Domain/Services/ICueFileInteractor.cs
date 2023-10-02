@@ -4,5 +4,7 @@ namespace MusicManager.Domain.Services;
 
 public interface ICueFileInteractor 
 {
-    Task<Result<IEnumerable<ICueFileTrack>>> GetTracksAsync(string cueFilePath, CancellationToken cancellationToken = default);
+    Task<Result<CueSheetInfo>> GetCueSheetAsync(string cueFilePath, CancellationToken cancellationToken = default);
+
+    Result<CueSheetInfo> GetCueSheet(string cueFilePath);
 }

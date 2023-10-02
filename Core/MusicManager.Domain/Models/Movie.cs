@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Entities;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
@@ -9,25 +10,25 @@ public class Movie : IAggregateRoot
 {
     #region --Fields--
 
-    private readonly List<MovieRelease> _movieReleases = new();
+    private readonly List<MovieReleaseLink> _releasesLinks = new();
 
     #endregion
 
     #region --Properties--
 
-    public MovieId Id { get; private set; }
+    public MovieId Id { get; init; }
 
-    public SongwriterId SongwriterId { get; private set; }
+    public SongwriterId SongwriterId { get; init; }
 
     public ProductionInfo ProductionInfo { get; private set; }
 
-    public DirectorInfo? DirectorInfo { get; private set; } 
+    public Director? Director { get; private set; } 
 
     public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
 
     public string Title { get; private set; } = string.Empty;
 
-    public IReadOnlyCollection<MovieRelease> Releases => _movieReleases.ToList();
+    public IReadOnlyCollection<MovieReleaseLink> ReleasesLinks => _releasesLinks.ToList();
 
     #endregion
 
@@ -48,8 +49,8 @@ public class Movie : IAggregateRoot
     public static Result<Movie> Create(
         SongwriterId songwriterId,
         string title, 
-        string productionYear, 
-        string productionCountry)
+        int productionYear, 
+        string? productionCountry = null)
     {
         if (string.IsNullOrWhiteSpace(title))
         {
@@ -58,7 +59,8 @@ public class Movie : IAggregateRoot
 
         var prodInfoResult = ProductionInfo.Create(productionCountry, productionYear);
 
-        return prodInfoResult.IsFailure ? Result.Failure<Movie>(prodInfoResult.Error)
+        return prodInfoResult.IsFailure ? 
+            Result.Failure<Movie>(prodInfoResult.Error)
             :
             new Movie(songwriterId)
             {
@@ -69,10 +71,10 @@ public class Movie : IAggregateRoot
 
     public static Result<Movie> Create(
         SongwriterId songwriterId,
-        string title, 
-        string productionYear, 
-        string productionCountry, 
-        string directoryFullPath)
+        string title,
+        string directoryFullPath,
+        int productionYear,
+        string? productionCountry = null)
     {
         var creationResult = Create(songwriterId, title, productionYear, productionCountry);
         if (creationResult.IsFailure)
@@ -80,17 +82,17 @@ public class Movie : IAggregateRoot
             return creationResult;
         }
 
-        var settingDirInfoResult = creationResult.Value.SetDirectoryInfo(directoryFullPath);
+        var entityDirInfoRes = creationResult.Value.SetDirectoryInfo(directoryFullPath);
 
-        return settingDirInfoResult.IsFailure ?
-            Result.Failure<Movie>(settingDirInfoResult.Error)
+        return entityDirInfoRes.IsFailure ?
+            Result.Failure<Movie>(entityDirInfoRes.Error)
             :
             creationResult.Value;
     }
 
-    public Result SetDirectoryInfo(string fullPath)
+    public Result SetDirectoryInfo(string path)
     {
-        var result = EntityDirectoryInfo.Create(fullPath);
+        var result = EntityDirectoryInfo.Create(path);
 
         if (result.IsFailure)
         {
@@ -101,7 +103,7 @@ public class Movie : IAggregateRoot
         return Result.Success();
     }
 
-    public Result SetProductionInfo(string productionCountry, string productionYear)
+    public Result SetProductionInfo(string? productionCountry, int productionYear)
     {
         var result = ProductionInfo.Create(productionCountry, productionYear);
 
@@ -114,33 +116,62 @@ public class Movie : IAggregateRoot
         return Result.Failure(result.Error);
     }
 
-    public Result AddRelease(MovieRelease release, bool checkDirectoryInfo = false)
+    public Result AddRelease(MovieRelease release, bool checkDirectoryInfo = false, string? realeseLinkPath = null)
     {
         if (release is null)
         {
             return Result.Failure(DomainErrors.NullEntityPassed(nameof(release)));
         }
 
-        if (_movieReleases.SingleOrDefault(i => i.Id == release.Id) is not null)
+        if (_releasesLinks.SingleOrDefault(i => i.MovieRelease.Id == release.Id) is not null)
         {
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(release)));
         }
 
-        var addingDiscResult = release.AddMovie(this);
+        if (checkDirectoryInfo &&
+            _releasesLinks.SingleOrDefault(m =>
+            m.MovieRelease.EntityDirectoryInfo == release.EntityDirectoryInfo) is not null)
+        {
+            return Result.Failure(new Error($"MovieRelease with passed directory info is already exists."));
+        }
+
+        var linkCreationResult = MovieReleaseLink.Create(release, this, realeseLinkPath);
+        if (linkCreationResult.IsFailure)
+        {
+            return Result.Failure(linkCreationResult.Error);
+        }
+
+        var addingDiscResult = release.AddMovieLink(linkCreationResult.Value);
         if (addingDiscResult.IsFailure)
         {
             return Result.Failure(addingDiscResult.Error);
         }
 
-        if (checkDirectoryInfo)
+        _releasesLinks.Add(linkCreationResult.Value);
+        return Result.Success();
+    }
+
+    public Result SetTitle(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
         {
-            if (_movieReleases.SingleOrDefault(m => m.EntityDirectoryInfo == release.EntityDirectoryInfo) is not null)
-            {
-                return Result.Failure(new Error($"MovieRelease with passed directory info is already exists."));
-            }
+            return Result.Failure(DomainErrors.NullOrEmptyStringPassed(nameof(title)));
         }
 
-        _movieReleases.Add(release);
+        Title = title;  
+        return Result.Success();
+    }
+
+    public Result SetDirector(Director director)
+    {
+        if (director is null)
+        {
+            return Result.Failure(DomainErrors.NullEntityPassed("director"));
+        }
+
+        Director?.RemoveMovie(Id);
+        Director = director;
+        director.AddMovie(this);
         return Result.Success();
     }
 

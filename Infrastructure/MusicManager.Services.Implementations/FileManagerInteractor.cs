@@ -22,8 +22,21 @@ public class FileManagerInteractor : IFileManagerInteractor
         return Result.Failure<DirectoryInfo>(new Error("No directory was selected."));
     }
 
-    public Result<FileInfo> SelectFile()
+    public Result<FileInfo> SelectFile(string filter = "All files (*.*)|*.*", string title = "Choose file(s): ")
     {
-        throw new NotImplementedException();
+        var fileDialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = filter,
+            Title = title,
+        };
+
+        var dialogResult = fileDialog.ShowDialog();
+
+        if (dialogResult is bool result && result is true)
+        {
+            return new FileInfo(fileDialog.FileName);
+        }
+
+        return Result.Failure<FileInfo>(new Error("No file was selected."));
     }
 }

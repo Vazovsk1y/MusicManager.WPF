@@ -1,4 +1,7 @@
-﻿using MusicManager.WPF.ViewModels.Base;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using MusicManager.WPF.ViewModels.Base;
+using System.Linq;
+using System.Reflection;
 
 namespace MusicManager.WPF.ViewModels;
 
@@ -20,6 +23,8 @@ internal class MainWindowViewModel : TitledViewModel
 
     public SongsPanelViewModel SongsPanelViewModel { get; }
 
+    public UserConfigViewModel SettingsViewModel { get; }
+
     #endregion
 
     #region --Constructors--
@@ -30,18 +35,20 @@ internal class MainWindowViewModel : TitledViewModel
     }
 
     public MainWindowViewModel(
-        SongwirtersPanelViewModel songwirtersPanelViewModel, 
-        MoviesPanelViewModel moviesPanelViewModel, 
-        DiscsPanelViewModel discsPanelViewModel, 
-        SongsPanelViewModel songsPanelViewModel) 
+        SongwirtersPanelViewModel songwirtersPanelViewModel,
+        MoviesPanelViewModel moviesPanelViewModel,
+        DiscsPanelViewModel discsPanelViewModel,
+        SongsPanelViewModel songsPanelViewModel,
+        UserConfigViewModel settingsViewModel)
     {
         SongwirtersPanelViewModel = songwirtersPanelViewModel;
         MoviesPanelViewModel = moviesPanelViewModel;
         DiscsPanelViewModel = discsPanelViewModel;
         SongsPanelViewModel = songsPanelViewModel;
+        SettingsViewModel = settingsViewModel;
         ControlTitle = App.Name;
 
-        SongwirtersPanelViewModel.IsActive = true;
+        ActivateAllRecipients();
     }
 
     #endregion
@@ -54,7 +61,19 @@ internal class MainWindowViewModel : TitledViewModel
 
     #region --Methods--
 
+    private void ActivateAllRecipients()
+    {
+        var type = GetType();
+        var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
+        foreach (var property in properties)
+        {
+            if (property.GetValue(this) is ObservableRecipient observableRecipient)
+            {
+                observableRecipient.IsActive = true;
+            }
+        }
+    }
 
     #endregion
 }

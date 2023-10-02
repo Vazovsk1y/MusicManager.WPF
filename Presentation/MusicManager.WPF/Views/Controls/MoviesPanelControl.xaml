@@ -9,6 +9,38 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-            
+        <ScrollViewer>
+            <StackPanel>
+                <DataGrid ItemsSource="{Binding SongwritersPanelViewModel.SelectedSongwriter.Movies}"
+          SelectedItem="{Binding SelectedMovie}"
+          AutoGenerateColumns="False"
+          >
+
+                    <DataGrid.Resources>
+                        <CollectionViewSource x:Key="EnableDirectors" Source="{Binding EnableDirectors}"/>
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="IsUpdatable" Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Title" Binding="{Binding Title, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Director" Binding="{Binding Director.FullName}" IsReadOnly="True"/>
+                        <DataGridComboBoxColumn Header="Swap director" 
+    ItemsSource="{Binding Source={StaticResource EnableDirectors}}" 
+    SelectedItemBinding="{Binding Director}" DisplayMemberPath="FullName"/>
+
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <Button Content="AddMovie" Command="{Binding AddMovieCommand}"/>
+                <Button Content="AddMR" Command="{Binding AddMovieReleaseCommand}"/>
+                <Button Content="Save" Command="{Binding SaveCommand}"/>
+                <Button Content="Delete" Command="{Binding DeleteMovieCommand}"/>
+
+                <TextBox x:Name="directorFullName"/>
+                <Button Content="AddDirector" Command="{Binding AddDirectorCommand}" CommandParameter="{Binding Text, ElementName=directorFullName}"/>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

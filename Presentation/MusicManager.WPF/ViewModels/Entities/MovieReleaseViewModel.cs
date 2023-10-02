@@ -1,6 +1,5 @@
 ﻿namespace MusicManager.WPF.ViewModels.Entities;
 
-internal class MovieReleaseViewModel : DiscViewModel
+internal partial class MovieReleaseViewModel : DiscViewModel<MovieReleaseViewModel>
 {
-
 }

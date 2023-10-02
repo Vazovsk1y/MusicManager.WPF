@@ -1,8 +1,9 @@
 ﻿using MusicManager.Domain.Constants;
+using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Services.Implementations.Errors;
-using MusicManager.Domain.Services.Implementations.Extensions;
 using MusicManager.Domain.Shared;
 using MusicManager.Utils;
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
 namespace MusicManager.Domain.Services.Implementations;
@@ -19,17 +20,24 @@ public partial class CueFileInteractor : ICueFileInteractor
     private const string ISRCKeyWord = "ISRC";
     private const string Index00KeyWord = "INDEX 00";
     private const string Index01KeyWord = "INDEX 01";
+    private const string AudioKeyWord = "AUDIO";
+    private const string FILE_KeyWord = "FILE";
 
     #endregion
 
     [GeneratedRegex("\\d{2}:\\d{2}:\\d{2}")]
     private static partial Regex GetTimeSpanRowFromLine();
 
+    [GeneratedRegex("\\b\\d+\\b")]
+    private static partial Regex GetNumberFromTrackRow();
+
     private static readonly char[] _cueRowsSeparators = new char[]
     {
         '\r',
         '\n',
     };
+
+    private readonly ConcurrentDictionary<string, CueSheetInfo> _cache = new();
 
     #endregion
 
@@ -49,33 +57,119 @@ public partial class CueFileInteractor : ICueFileInteractor
 
     #region --Public--
 
-    public async Task<Result<IEnumerable<ICueFileTrack>>> GetTracksAsync(string cueFilePath, CancellationToken cancellationToken = default)
+    public Result<CueSheetInfo> GetCueSheet(string cueFilePath)
     {
-        var result = IsAbleToReadFile(cueFilePath);
-        if (result.IsFailure)
+        var isAbleToReadFileResult = IsAbleToReadFile(cueFilePath);
+        if (isAbleToReadFileResult.IsFailure)
         {
-            return Result.Failure<IEnumerable<ICueFileTrack>>(result.Error);
+            return Result.Failure<CueSheetInfo>(isAbleToReadFileResult.Error);
         }
 
-        var fileInfo = result.Value;
-        string cueFileText = await GetCueFileTextAsync(fileInfo, cancellationToken).ConfigureAwait(false);
-        var tracksSections = cueFileText
+        if (_cache.TryGetValue(cueFilePath, out var cueSheetInfo))
+        {
+            return cueSheetInfo;
+        }
+
+        var fileInfo = isAbleToReadFileResult.Value;
+        using var reader = new StreamReader(fileInfo.OpenRead());
+        string cueFileText = reader.ReadToEnd();
+        var splittedText = cueFileText
             .Split(TrackKeyWord, StringSplitOptions.RemoveEmptyEntries)
-            .Skip(1)                                                     // skip the row that before first track section.
-            .ToList();                                                   
+            .ToList();
 
-        if (tracksSections.Count is 0)
+        if (splittedText.Count is 0)
         {
-            return Result.Failure<IEnumerable<ICueFileTrack>>(new Error("No tracks were founded in cue file."));
+            return Result.Failure<CueSheetInfo>(new Error("Error occured while cue file reading."));
         }
 
-        var tracks = new List<ICueFileTrack>();
-        foreach (var section in tracksSections)
+        var rowsWithFileName = string.Join("", splittedText)
+            .Split(_cueRowsSeparators, StringSplitOptions.RemoveEmptyEntries)
+            .Where(e => e.Contains(FILE_KeyWord));
+
+        if (rowsWithFileName.Count() > 1)
         {
-            tracks.Add(GetTrackFromSection(section));
+            return Result.Failure<CueSheetInfo>(new Error($"Cue {cueFilePath} contain more than one file inside it."));
         }
 
-        return tracks;
+        string rowWithFileName = rowsWithFileName!.FirstOrDefault();
+        if (rowWithFileName is null)
+        {
+            return Result.Failure<CueSheetInfo>(new Error($"Can't to get an executable file name for passed cue file {cueFilePath}."));
+        }
+
+        var tracks = new List<CueFileTrack>();
+        for (int i = 1; i < splittedText.Count; i++)      // skip the row that before first track section.
+        {
+            var trackSection = splittedText[i];
+            tracks.Add(GetTrackFromSection(trackSection));
+        }
+
+        var executableFileName = GetRowFromQuotes(rowWithFileName);
+        if (string.IsNullOrWhiteSpace(executableFileName))
+        {
+            return Result.Failure<CueSheetInfo>(new Error("Error occured while tried to get an executable file name for passed cue file."));
+        }
+
+        var result = new CueSheetInfo(executableFileName, tracks);
+        _cache[cueFilePath] = result;
+        return result;
+    }
+
+    public async Task<Result<CueSheetInfo>> GetCueSheetAsync(string cueFilePath, CancellationToken cancellationToken = default)
+    {
+        var isAbleToReadFileResult = IsAbleToReadFile(cueFilePath);
+        if (isAbleToReadFileResult.IsFailure)
+        {
+            return Result.Failure<CueSheetInfo>(isAbleToReadFileResult.Error);
+        }
+
+        if (_cache.TryGetValue(cueFilePath, out var cueSheetInfo))
+        {
+            return cueSheetInfo;
+        }
+
+        var fileInfo = isAbleToReadFileResult.Value;
+        string cueFileText = await GetCueFileTextAsync(fileInfo, cancellationToken).ConfigureAwait(false);
+        var splittedText = cueFileText
+            .Split(TrackKeyWord, StringSplitOptions.RemoveEmptyEntries)
+            .ToList();
+
+        if (splittedText.Count is 0)
+        {
+            return Result.Failure<CueSheetInfo>(new Error("Error occured while cue file reading."));
+        }
+
+        var rowsWithFileName = string.Join("", splittedText)
+            .Split(_cueRowsSeparators, StringSplitOptions.RemoveEmptyEntries)
+            .Where(e => e.Contains(FILE_KeyWord));
+
+        if (rowsWithFileName.Count() > 1)
+        {
+            return Result.Failure<CueSheetInfo>(new Error($"Cue {cueFilePath} contain more than one file inside it."));
+        }
+
+        string rowWithFileName = rowsWithFileName!.FirstOrDefault();
+        if (rowWithFileName is null)
+        {
+            return Result.Failure<CueSheetInfo>(new Error($"Can't to get an executable file name for passed cue file {cueFilePath}."));
+        }
+
+        var tracks = new List<CueFileTrack>();
+        for (int i = 1; i < splittedText.Count; i++)      // skip the row that before first track section.
+        {
+            var trackSection = splittedText[i];
+            tracks.Add(GetTrackFromSection(trackSection));
+        }
+
+        var executableFileName = GetRowFromQuotes(rowWithFileName);
+        if (string.IsNullOrWhiteSpace(executableFileName))
+        {
+            return Result.Failure<CueSheetInfo>(new Error("Error occured while tried to get an executable file name for passed cue file."));
+        }
+
+        var result = new CueSheetInfo(executableFileName, tracks);
+        _cache[cueFilePath] = result;
+        return result;
     }
 
     #endregion
@@ -118,6 +212,12 @@ public partial class CueFileInteractor : ICueFileInteractor
 
         foreach (var row in trackSectionRows)
         {
+            if (row.Contains(AudioKeyWord))
+            {
+                track.TrackPosition = GetTrackPosition(row);
+                continue;
+            }
+
             if (row.Contains(TitleKeyWord))
             {
                 track.Title = GetRowFromQuotes(row) ?? "Undefined";
@@ -152,12 +252,12 @@ public partial class CueFileInteractor : ICueFileInteractor
             {
                 var match = GetTimeSpanRowFromLine().Match(row);
                 if (match.Success)
-                {
-                    track.Index01 = ParseToTimeSpan(match.Value);
+                    {
+                        track.Index01 = ParseToTimeSpan(match.Value);
+                    }
+                    break;
                 }
-                break;
             }
-        }
 
         return track;
     }
@@ -196,6 +296,19 @@ public partial class CueFileInteractor : ICueFileInteractor
             }
         }
         return null; 
+    }
+
+    private int GetTrackPosition(string rowWithPosition)
+    {
+        var match = GetNumberFromTrackRow().Match(rowWithPosition);
+
+        if (match.Success)
+        {
+            _ = int.TryParse(match.Value, out int result);
+            return result;
+        }
+
+        return 0;
     }
 
     #endregion

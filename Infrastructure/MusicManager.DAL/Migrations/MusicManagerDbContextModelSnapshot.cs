@@ -2,7 +2,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MusicManager.DAL;
 
@@ -16,49 +15,26 @@ namespace MusicManager.DAL.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.9")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("MovieMovieRelease", b =>
-                {
-                    b.Property<Guid>("MoviesId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("movies_id");
-
-                    b.Property<Guid>("ReleasesId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("releases_id");
-
-                    b.HasKey("MoviesId", "ReleasesId")
-                        .HasName("pk_movie_movie_release");
-
-                    b.HasIndex("ReleasesId")
-                        .HasDatabaseName("ix_movie_movie_release_releases_id");
-
-                    b.ToTable("movie_movie_release", (string)null);
-                });
+            modelBuilder.HasAnnotation("ProductVersion", "7.0.9");
 
             modelBuilder.Entity("MusicManager.Domain.Common.Disc", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("TEXT")
                         .HasColumnName("id");
 
                     b.Property<string>("EntityDirectoryInfo")
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("entity_directory_info");
 
                     b.Property<string>("Identifier")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("identifier");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("type");
 
                     b.HasKey("Id");
@@ -71,78 +47,117 @@ namespace MusicManager.DAL.Migrations
             modelBuilder.Entity("MusicManager.Domain.Entities.Cover", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("TEXT")
                         .HasColumnName("id");
 
                     b.Property<Guid>("DiscId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("TEXT")
                         .HasColumnName("disc_id");
 
                     b.Property<string>("FullPath")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("full_path");
 
                     b.HasKey("Id")
-                        .HasName("pk_covers");
+                        .HasName("pk_cover");
 
                     b.HasIndex("DiscId")
-                        .HasDatabaseName("ix_covers_disc_id");
+                        .HasDatabaseName("ix_cover_disc_id");
 
-                    b.ToTable("covers", (string)null);
+                    b.ToTable("cover", (string)null);
+                });
+
+            modelBuilder.Entity("MusicManager.Domain.Entities.Director", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("full_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_directors");
+
+                    b.ToTable("directors", (string)null);
+                });
+
+            modelBuilder.Entity("MusicManager.Domain.Entities.MovieReleaseLink", b =>
+                {
+                    b.Property<Guid>("MovieId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("movie_id");
+
+                    b.Property<Guid>("MovieReleaseId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("movie_release_id");
+
+                    b.HasKey("MovieId", "MovieReleaseId")
+                        .HasName("pk_movie_release_links");
+
+                    b.HasIndex("MovieReleaseId")
+                        .HasDatabaseName("ix_movie_release_links_movie_release_id");
+
+                    b.ToTable("movie_release_links", (string)null);
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Entities.PlaybackInfo", b =>
                 {
                     b.Property<Guid>("SongId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("TEXT")
                         .HasColumnName("song_id");
-
-                    b.Property<string>("CueFilePath")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("cue_file_path");
 
                     b.Property<string>("ExecutableFileFullPath")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("executable_file_full_path");
 
                     b.Property<string>("ExecutableType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("executable_type");
 
                     b.Property<TimeSpan>("SongDuration")
-                        .HasColumnType("time")
+                        .HasColumnType("TEXT")
                         .HasColumnName("song_duration");
 
                     b.HasKey("SongId")
-                        .HasName("pk_playback_infos");
+                        .HasName("pk_playback_info");
 
-                    b.ToTable("playback_infos", (string)null);
+                    b.ToTable("playback_info", (string)null);
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Models.Movie", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("TEXT")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("DirectorId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("director_id");
+
                     b.Property<string>("EntityDirectoryInfo")
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("entity_directory_info");
 
                     b.Property<Guid>("SongwriterId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("TEXT")
                         .HasColumnName("songwriter_id");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("title");
 
                     b.HasKey("Id")
                         .HasName("pk_movies");
+
+                    b.HasIndex("DirectorId")
+                        .HasDatabaseName("ix_movies_director_id");
 
                     b.HasIndex("SongwriterId")
                         .HasDatabaseName("ix_movies_songwriter_id");
@@ -153,21 +168,25 @@ namespace MusicManager.DAL.Migrations
             modelBuilder.Entity("MusicManager.Domain.Models.Song", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("TEXT")
                         .HasColumnName("id");
 
                     b.Property<Guid>("DiscId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("TEXT")
                         .HasColumnName("disc_id");
 
-                    b.Property<string>("DiscNumber")
-                        .HasColumnType("nvarchar(max)")
+                    b.Property<int?>("DiscNumber")
+                        .HasColumnType("INTEGER")
                         .HasColumnName("disc_number");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("name");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("order");
 
                     b.HasKey("Id")
                         .HasName("pk_songs");
@@ -181,21 +200,21 @@ namespace MusicManager.DAL.Migrations
             modelBuilder.Entity("MusicManager.Domain.Models.Songwriter", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("TEXT")
                         .HasColumnName("id");
 
                     b.Property<string>("EntityDirectoryInfo")
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("entity_directory_info");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("name");
 
                     b.Property<string>("Surname")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("surname");
 
                     b.HasKey("Id")
@@ -209,7 +228,7 @@ namespace MusicManager.DAL.Migrations
                     b.HasBaseType("MusicManager.Domain.Common.Disc");
 
                     b.Property<Guid>("SongwriterId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("TEXT")
                         .HasColumnName("songwriter_id");
 
                     b.HasIndex("SongwriterId")
@@ -225,39 +244,20 @@ namespace MusicManager.DAL.Migrations
                     b.ToTable("movies_releases", (string)null);
                 });
 
-            modelBuilder.Entity("MovieMovieRelease", b =>
-                {
-                    b.HasOne("MusicManager.Domain.Models.Movie", null)
-                        .WithMany()
-                        .HasForeignKey("MoviesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_movie_movie_release_movies_movies_temp_id");
-
-                    b.HasOne("MusicManager.Domain.Models.MovieRelease", null)
-                        .WithMany()
-                        .HasForeignKey("ReleasesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_movie_movie_release_discs_releases_temp_id2");
-                });
-
             modelBuilder.Entity("MusicManager.Domain.Common.Disc", b =>
                 {
                     b.OwnsOne("MusicManager.Domain.ValueObjects.ProductionInfo", "ProductionInfo", b1 =>
                         {
                             b1.Property<Guid>("DiscId")
-                                .HasColumnType("uniqueidentifier")
+                                .HasColumnType("TEXT")
                                 .HasColumnName("id");
 
                             b1.Property<string>("Country")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("TEXT")
                                 .HasColumnName("production_info_country");
 
-                            b1.Property<string>("Year")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                            b1.Property<int?>("Year")
+                                .HasColumnType("INTEGER")
                                 .HasColumnName("production_info_year");
 
                             b1.HasKey("DiscId");
@@ -280,7 +280,54 @@ namespace MusicManager.DAL.Migrations
                         .HasForeignKey("DiscId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_covers_discs_disc_temp_id");
+                        .HasConstraintName("fk_cover_discs_disc_temp_id");
+                });
+
+            modelBuilder.Entity("MusicManager.Domain.Entities.MovieReleaseLink", b =>
+                {
+                    b.HasOne("MusicManager.Domain.Models.Movie", "Movie")
+                        .WithMany("ReleasesLinks")
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_movie_release_links_movies_movie_temp_id");
+
+                    b.HasOne("MusicManager.Domain.Models.MovieRelease", "MovieRelease")
+                        .WithMany("Movies")
+                        .HasForeignKey("MovieReleaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_movie_release_links_discs_movie_release_temp_id2");
+
+                    b.OwnsOne("MusicManager.Domain.ValueObjects.EntityDirectoryInfo", "ReleaseLink", b1 =>
+                        {
+                            b1.Property<Guid>("MovieReleaseLinkMovieId")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("movie_id");
+
+                            b1.Property<Guid>("MovieReleaseLinkMovieReleaseId")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("movie_release_id");
+
+                            b1.Property<string>("Path")
+                                .IsRequired()
+                                .HasColumnType("TEXT")
+                                .HasColumnName("release_link_path");
+
+                            b1.HasKey("MovieReleaseLinkMovieId", "MovieReleaseLinkMovieReleaseId");
+
+                            b1.ToTable("movie_release_links");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MovieReleaseLinkMovieId", "MovieReleaseLinkMovieReleaseId")
+                                .HasConstraintName("fk_movie_release_links_movie_release_links_movie_id_movie_release_id");
+                        });
+
+                    b.Navigation("Movie");
+
+                    b.Navigation("MovieRelease");
+
+                    b.Navigation("ReleaseLink");
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Entities.PlaybackInfo", b =>
@@ -290,11 +337,51 @@ namespace MusicManager.DAL.Migrations
                         .HasForeignKey("MusicManager.Domain.Entities.PlaybackInfo", "SongId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_playback_infos_songs_song_id");
+                        .HasConstraintName("fk_playback_info_songs_song_id");
+
+                    b.OwnsOne("MusicManager.Domain.ValueObjects.CueInfo", "CueInfo", b1 =>
+                        {
+                            b1.Property<Guid>("PlaybackInfoSongId")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("song_id");
+
+                            b1.Property<string>("CueFilePath")
+                                .IsRequired()
+                                .HasColumnType("TEXT")
+                                .HasColumnName("cue_info_cue_file_path");
+
+                            b1.Property<TimeSpan>("Index00")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("cue_info_index00");
+
+                            b1.Property<TimeSpan>("Index01")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("cue_info_index01");
+
+                            b1.Property<string>("SongNameInCue")
+                                .IsRequired()
+                                .HasColumnType("TEXT")
+                                .HasColumnName("cue_info_song_name_in_cue");
+
+                            b1.HasKey("PlaybackInfoSongId");
+
+                            b1.ToTable("playback_info");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PlaybackInfoSongId")
+                                .HasConstraintName("fk_playback_info_playback_info_song_id");
+                        });
+
+                    b.Navigation("CueInfo");
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Models.Movie", b =>
                 {
+                    b.HasOne("MusicManager.Domain.Entities.Director", "Director")
+                        .WithMany("Movies")
+                        .HasForeignKey("DirectorId")
+                        .HasConstraintName("fk_movies_directors_director_temp_id");
+
                     b.HasOne("MusicManager.Domain.Models.Songwriter", null)
                         .WithMany("Movies")
                         .HasForeignKey("SongwriterId")
@@ -305,17 +392,15 @@ namespace MusicManager.DAL.Migrations
                     b.OwnsOne("MusicManager.Domain.ValueObjects.ProductionInfo", "ProductionInfo", b1 =>
                         {
                             b1.Property<Guid>("MovieId")
-                                .HasColumnType("uniqueidentifier")
+                                .HasColumnType("TEXT")
                                 .HasColumnName("id");
 
                             b1.Property<string>("Country")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("TEXT")
                                 .HasColumnName("production_info_country");
 
-                            b1.Property<string>("Year")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                            b1.Property<int?>("Year")
+                                .HasColumnType("INTEGER")
                                 .HasColumnName("production_info_year");
 
                             b1.HasKey("MovieId");
@@ -327,32 +412,7 @@ namespace MusicManager.DAL.Migrations
                                 .HasConstraintName("fk_movies_movies_id");
                         });
 
-                    b.OwnsOne("MusicManager.Domain.ValueObjects.DirectorInfo", "DirectorInfo", b1 =>
-                        {
-                            b1.Property<Guid>("MovieId")
-                                .HasColumnType("uniqueidentifier")
-                                .HasColumnName("id");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("director_info_name");
-
-                            b1.Property<string>("Surname")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("director_info_surname");
-
-                            b1.HasKey("MovieId");
-
-                            b1.ToTable("movies");
-
-                            b1.WithOwner()
-                                .HasForeignKey("MovieId")
-                                .HasConstraintName("fk_movies_movies_id");
-                        });
-
-                    b.Navigation("DirectorInfo");
+                    b.Navigation("Director");
 
                     b.Navigation("ProductionInfo")
                         .IsRequired();
@@ -402,15 +462,31 @@ namespace MusicManager.DAL.Migrations
                     b.Navigation("Songs");
                 });
 
+            modelBuilder.Entity("MusicManager.Domain.Entities.Director", b =>
+                {
+                    b.Navigation("Movies");
+                });
+
+            modelBuilder.Entity("MusicManager.Domain.Models.Movie", b =>
+                {
+                    b.Navigation("ReleasesLinks");
+                });
+
             modelBuilder.Entity("MusicManager.Domain.Models.Song", b =>
                 {
-                    b.Navigation("PlaybackInfo");
+                    b.Navigation("PlaybackInfo")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Models.Songwriter", b =>
                 {
                     b.Navigation("Compilations");
 
+                    b.Navigation("Movies");
+                });
+
+            modelBuilder.Entity("MusicManager.Domain.Models.MovieRelease", b =>
+                {
                     b.Navigation("Movies");
                 });
 #pragma warning restore 612, 618

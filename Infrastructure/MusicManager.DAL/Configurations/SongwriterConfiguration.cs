@@ -24,18 +24,20 @@ internal class SongwriterConfiguration : IEntityTypeConfiguration<Songwriter>
         builder
         .Property(e => e.EntityDirectoryInfo)
         .HasConversion(
-            e => e != null ? e.FullPath : null,
+            e => e != null ? e.Path : null,
             e => e != null ? EntityDirectoryInfo.Create(e).Value : null)
         .IsRequired(false);
 
         builder
         .HasMany(e => e.Movies)
         .WithOne()
-        .HasForeignKey(e => e.SongwriterId);
+        .HasForeignKey(e => e.SongwriterId)
+        .OnDelete(DeleteBehavior.Cascade);
 
         builder
         .HasMany(e => e.Compilations)
         .WithOne()
-        .HasForeignKey(e => e.SongwriterId);
+        .HasForeignKey(e => e.SongwriterId)
+        .OnDelete(DeleteBehavior.Cascade);
     }
 }

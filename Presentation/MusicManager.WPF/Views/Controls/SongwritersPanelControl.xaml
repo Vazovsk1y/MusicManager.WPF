@@ -11,7 +11,7 @@
              d:DesignHeight="150" d:DesignWidth="800">
     <Grid>
         <StackPanel>
-            <Button Command="{Binding AddSongwriterFromFolderCommand}" Content="ClICK"/>
+            <Button Command="{Binding AddSongwriterFromFolderCommand}" Content="AddFromFolder"/>
             <ComboBox ItemsSource="{Binding Songwriters}" SelectedItem="{Binding SelectedSongwriter}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type viewmodelsEnt:SongwriterViewModel}">
@@ -19,6 +19,8 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+            <Button Content="Add" Command="{Binding AddSongwriterCommand}"/>
+            <Button Content="Delete" Command="{Binding DeleteSongwriterCommand}"/>
         </StackPanel>
     </Grid>
 </UserControl>

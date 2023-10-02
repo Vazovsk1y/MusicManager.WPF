@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestPlace", "TestPlace\TestPlace.csproj", "{86F52CD4-E647-4064-92A5-C015514E7911}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TEsts", "TEsts\TEsts.csproj", "{FBFD1C93-1099-41B9-9A90-3504FF868A6C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicManager.Domain", "Core\MusicManager.Domain\MusicManager.Domain.csproj", "{859AD6F0-865F-4167-88EB-76816C6BABAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{BDEC5E5D-EE30-4135-9F79-3A2A12731434}"
@@ -29,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicManager.Repositories",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicManager.DAL", "Infrastructure\MusicManager.DAL\MusicManager.DAL.csproj", "{261B0C6E-8D5E-4298-BEC8-B27160D23AAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicManager.Utils", "Infrastructure\MusicManager.Utils\MusicManager.Utils.csproj", "{4F33C3FC-06D6-434F-8CDD-5FE222BA7E39}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicManager.Utils", "Infrastructure\MusicManager.Utils\MusicManager.Utils.csproj", "{4F33C3FC-06D6-434F-8CDD-5FE222BA7E39}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,14 +33,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{86F52CD4-E647-4064-92A5-C015514E7911}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{86F52CD4-E647-4064-92A5-C015514E7911}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{86F52CD4-E647-4064-92A5-C015514E7911}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{86F52CD4-E647-4064-92A5-C015514E7911}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FBFD1C93-1099-41B9-9A90-3504FF868A6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FBFD1C93-1099-41B9-9A90-3504FF868A6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FBFD1C93-1099-41B9-9A90-3504FF868A6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FBFD1C93-1099-41B9-9A90-3504FF868A6C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{859AD6F0-865F-4167-88EB-76816C6BABAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{859AD6F0-865F-4167-88EB-76816C6BABAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{859AD6F0-865F-4167-88EB-76816C6BABAC}.Release|Any CPU.ActiveCfg = Release|Any CPU

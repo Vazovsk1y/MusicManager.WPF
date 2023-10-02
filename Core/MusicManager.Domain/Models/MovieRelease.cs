@@ -1,5 +1,5 @@
 ﻿using MusicManager.Domain.Common;
-using MusicManager.Domain.Enums;
+using MusicManager.Domain.Entities;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
@@ -8,23 +8,23 @@ namespace MusicManager.Domain.Models;
 
 public class MovieRelease : Disc
 {
-    #region --Fields--
+	#region --Fields--
 
-    private readonly List<Movie> _movies = new();
+	private readonly List<MovieReleaseLink> _moviesLinks = new();
 
-    #endregion
+	#endregion
 
-    #region --Properties--
+	#region --Properties--
 
-    public IReadOnlyCollection<Movie> Movies => _movies.ToList();
+	public IReadOnlyCollection<MovieReleaseLink> MoviesLinks => _moviesLinks.ToList();
 
-    #endregion
+	#endregion
 
-    #region --Constructors--
+	#region --Constructors--
 
-    private MovieRelease() : base()
+	private MovieRelease() : base()
     {
-        ProductionInfo = ProductionInfo.Undefined;
+
     }
 
     #endregion
@@ -33,26 +33,43 @@ public class MovieRelease : Disc
 
     public static Result<MovieRelease> Create(
         DiscType discType, 
-        string identifier)
+        string identifier,
+        int? productionYear = null,
+        string? productionCountry = null)
     {
         if (string.IsNullOrWhiteSpace(identifier))
         {
             return Result.Failure<MovieRelease>(DomainErrors.NullOrEmptyStringPassed(nameof(identifier)));
         }
 
-        return new MovieRelease() 
+        var movieRelease = new MovieRelease()
         {
-            Type = discType, 
-            Identifier = identifier 
+            Identifier = identifier,
         };
+
+        var settingDiscTypeRes = movieRelease.SetDiscType(discType);
+        if (settingDiscTypeRes.IsFailure)
+        {
+            return Result.Failure<MovieRelease>(settingDiscTypeRes.Error);
+        }
+
+        var settingResult = movieRelease.SetProductionInfo(productionCountry, productionYear);
+        if (settingResult.IsFailure)
+        {
+            return Result.Failure<MovieRelease>(settingResult.Error);
+        }
+
+        return movieRelease;
     }
 
     public static Result<MovieRelease> Create(
         DiscType discType,
         string identifier,
-        string directoryFullPath)
+        string directoryFullPath,   
+        int? productionYear = null,
+        string? productionCountry = null)
     {
-        var creationResult = Create(discType, identifier);
+        var creationResult = Create(discType, identifier, productionYear, productionCountry);
 
         if (creationResult.IsFailure)
         {
@@ -65,41 +82,10 @@ public class MovieRelease : Disc
             Result.Failure<MovieRelease>(settingDirectoryInfoResult.Error) : creationResult.Value;
     }
 
-    public static Result<MovieRelease> Create(
-        DiscType discType,
-        string identifier,
-        string directoryFullPath,
-        string productionYear,
-        string productionCountry)
+    internal Result AddMovieLink(MovieReleaseLink movieLink)
     {
-        var diskCreationResult = Create(discType, identifier);
 
-        if (diskCreationResult.IsFailure)
-        {
-            return diskCreationResult;
-        }
-
-        var settingDirectoryInfoResutlt = diskCreationResult.Value.SetDirectoryInfo(directoryFullPath);
-
-        if (settingDirectoryInfoResutlt.IsFailure)
-        {
-            Result.Failure<MovieRelease>(settingDirectoryInfoResutlt.Error);
-        }
-
-        var settingProdInfoResult = diskCreationResult.Value.SetProductionInfo(productionCountry, productionYear);
-
-        return settingProdInfoResult.IsSuccess ?
-            diskCreationResult.Value : Result.Failure<MovieRelease>(settingProdInfoResult.Error);
-    }
-
-    internal Result AddMovie(Movie movie)
-    {
-        if (_movies.SingleOrDefault(i => i.Id == movie.Id) is not null)
-        {
-            return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(movie)));
-        }
-
-        _movies.Add(movie);
+        _moviesLinks.Add(movieLink);
         return Result.Success();
     }
 

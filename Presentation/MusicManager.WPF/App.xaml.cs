@@ -1,11 +1,16 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using MusicManager.DAL;
 using MusicManager.Domain.Services.Implementations;
+using MusicManager.Repositories.Data;
 using MusicManager.Services.Implementations;
+using MusicManager.Utils;
+using Serilog;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace MusicManager.WPF;
@@ -18,11 +23,15 @@ public partial class App : Application
 
     public const string Name = "MusicManager";
 
-    #endregion
+	public const string CompanyName = "Vazovskiy";
 
-    #region --Properties--
+	public static readonly string AssociatedAppFolderFullPath = Path.Combine(DirectoryHelper.LocalApplicationDataPath, CompanyName, App.Name);
 
-    public static string WorkingDirectory => IsInDesignMode ? Path.GetDirectoryName(GetSourceCodePath())! : Environment.CurrentDirectory;
+	#endregion
+
+	#region --Properties--
+
+	public static string WorkingDirectory => IsInDesignMode ? Path.GetDirectoryName(GetSourceCodePath())! : Environment.CurrentDirectory;
 
     public static bool IsInDesignMode { get; private set; } = true;
 
@@ -40,6 +49,29 @@ public partial class App : Application
 
     #region --Methods--
 
+    public void StartGlobalExceptionsHandling()
+    {
+		DispatcherUnhandledException += (sender, e) =>
+		{
+            var logger = Services.GetRequiredService<ILogger<App>>();
+			logger.LogError(e.Exception, "Something went wrong in [{nameofDispatcherUnhandledException}]", nameof(DispatcherUnhandledException));
+			e.Handled = true;
+			Current?.Shutdown();
+		};
+
+		AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+		{
+			var logger = Services.GetRequiredService<ILogger<App>>();
+			logger.LogError(e.ExceptionObject as Exception, "Something went wrong in [{nameofCurrentDomainUnhandledException}].", nameof(AppDomain.CurrentDomain.UnhandledException));
+		};
+
+        TaskScheduler.UnobservedTaskException += (sender, e) =>
+        {
+			var logger = Services.GetRequiredService<ILogger<App>>();
+			logger.LogError(e.Exception, "Something went wrong in [{nameofCurrentDomainUnhandledException}].", nameof(TaskScheduler.UnobservedTaskException));
+        };
+	}
+
     internal static void ConfigureServices(HostBuilderContext hostBuilder, IServiceCollection services) => services
         .AddWPF()
         .AddDAL(hostBuilder.Configuration.GetSection("Database"))
@@ -52,6 +84,11 @@ public partial class App : Application
         base.OnStartup(e);
         IsInDesignMode = false;
         await Host.StartAsync();
+
+        using var scope = Services.CreateScope();
+        var databaseInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        await databaseInitializer.InitializeAsync();
+
         Services.GetRequiredService<MainWindow>().Show();
     }
 

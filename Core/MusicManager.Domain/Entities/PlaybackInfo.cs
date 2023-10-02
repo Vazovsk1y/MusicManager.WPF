@@ -1,12 +1,14 @@
-﻿using MusicManager.Domain.Constants;
+﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Constants;
 using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Domain.Entities;
 
-public class PlaybackInfo
+public class PlaybackInfo : ValueObject<PlaybackInfo>
 {
     #region --Fields--
 
@@ -18,11 +20,9 @@ public class PlaybackInfo
 
     public SongId SongId { get; private set; }
 
-    public string ExecutableFileName { get; }
-
     public string ExecutableFileFullPath { get; }
 
-    public string? CueFilePath { get; private set; }
+    public CueInfo? CueInfo { get; private set; }
 
     public SongFileType ExecutableType { get; init; }
 
@@ -37,7 +37,6 @@ public class PlaybackInfo
     private PlaybackInfo(string fullPath, SongId songId)
     {
         ExecutableFileFullPath = fullPath;
-        ExecutableFileName = Path.GetFileName(ExecutableFileFullPath);
         SongId = songId;
     }
 
@@ -78,7 +77,11 @@ public class PlaybackInfo
                 SongDuration = duration,
                 ExecutableType = SongFileType.Ape,
             },
-            _ => Result.Failure<PlaybackInfo>(DomainErrors.SongPlayInfo.UndefinedExecutableTypePassed(fileExtension))
+            _ => new PlaybackInfo(fullPath, songId)
+            {
+                SongDuration = duration,
+                ExecutableType = SongFileType.Unknown,
+            }
         };
     }
 
@@ -86,8 +89,16 @@ public class PlaybackInfo
         string fullPath,
         SongId songId,
         TimeSpan duration,
-        string cueFileFullPath)
+        string cueFileFullPath,
+        TimeSpan index00,
+        TimeSpan index01,
+        string songNameInCue)
     {
+        if (Path.GetDirectoryName(fullPath) != Path.GetDirectoryName(cueFileFullPath)) 
+        {
+            return Result.Failure<PlaybackInfo>(new Error("Cue file and executable must be place in the same folder together."));
+        }
+
         var creationResult = Create(fullPath, songId, duration);
 
         if (creationResult.IsFailure)
@@ -95,22 +106,25 @@ public class PlaybackInfo
             return creationResult;
         }
 
-        if (string.IsNullOrWhiteSpace(cueFileFullPath))
+        var cueInfoCreationResult = CueInfo.Create(cueFileFullPath, index00, index01, songNameInCue);
+
+        if (cueInfoCreationResult.IsFailure)
         {
-            return Result.Failure<PlaybackInfo>(DomainErrors.NullOrEmptyStringPassed(nameof(cueFileFullPath)));
+            return Result.Failure<PlaybackInfo>(cueInfoCreationResult.Error);
         }
 
-        if (!cueFileFullPath.EndsWith(DomainConstants.CueExtension))
-        {
-            return Result.Failure<PlaybackInfo>(DomainErrors.SongPlayInfo.IncorrectCuePathPassed(cueFileFullPath));
-        }
+        var playbackInfo = creationResult.Value;
+        playbackInfo.CueInfo = cueInfoCreationResult.Value;
+        return playbackInfo;
+    }
 
-        var songPlayInfo = creationResult.Value;
-        songPlayInfo.CueFilePath = cueFileFullPath;
-        return songPlayInfo;
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return ExecutableFileFullPath;
+        yield return ExecutableType;
+        yield return SongDuration;
+        yield return CueInfo;
     }
 
     #endregion
 }
-
-

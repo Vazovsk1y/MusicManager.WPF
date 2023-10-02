@@ -9,6 +9,29 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-            
+        <ScrollViewer>
+            <StackPanel>
+
+                <DataGrid ItemsSource="{Binding DiscsPanelViewModel.SelectedDisc.Songs}"
+              SelectedItem="{Binding SelectedSong}"
+          AutoGenerateColumns="False">
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="IsUpdatable" Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
+
+                        <DataGridTextColumn Header="Order" Binding="{Binding Number}"/>
+                        <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
+                        <DataGridTextColumn Header="SongType" Binding="{Binding Type}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Duration" Binding="{Binding Duration}" IsReadOnly="True"/>
+                    </DataGrid.Columns>
+
+                </DataGrid>
+
+                
+                <Button Content="Save" Command="{Binding SaveCommand}"/>
+                <Button Content="Delete" Command="{Binding DeleteSongCommand}"/>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

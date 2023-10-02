@@ -25,14 +25,14 @@ internal class DiscConfiguration : IEntityTypeConfiguration<Disc>
         entityBuilder
             .Property(e => e.EntityDirectoryInfo)
             .HasConversion(
-            e => e != null ? e.FullPath : null,
+            e => e != null ? e.Path : null,
             e => e != null ? EntityDirectoryInfo.Create(e).Value : null)
         .IsRequired(false);
 
         entityBuilder.Property(e => e.Type)
                .HasConversion(
-            e => e.MapToString(),
-            e => e.CreateDiscType().Value)
+            e => e.Value,
+            e => DiscType.Create(e).Value)
                .IsRequired();
 
         entityBuilder.Property(e => e.Identifier).IsRequired();
@@ -40,11 +40,13 @@ internal class DiscConfiguration : IEntityTypeConfiguration<Disc>
         entityBuilder
             .HasMany(e => e.Covers)
             .WithOne()
-            .HasForeignKey(e => e.DiscId);
+            .HasForeignKey(e => e.DiscId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         entityBuilder
             .HasMany(e => e.Songs)
             .WithOne()
-            .HasForeignKey(e => e.DiscId);
+            .HasForeignKey(e => e.DiscId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

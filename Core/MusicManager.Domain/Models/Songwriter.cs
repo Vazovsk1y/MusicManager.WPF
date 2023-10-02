@@ -103,12 +103,10 @@ public class Songwriter : IAggregateRoot
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(movie)));
         }
 
-        if (checkDirectoryInfo)
+        if (checkDirectoryInfo && _movies.SingleOrDefault(m =>
+            m.EntityDirectoryInfo == movie.EntityDirectoryInfo) is not null)
         {
-            if (_movies.SingleOrDefault(m => m.EntityDirectoryInfo == movie.EntityDirectoryInfo) is not null)
-            {
-                return Result.Failure(new Error("Movie with passed directory info is already exists."));
-            }
+            return Result.Failure(new Error("Movie with passed directory info is already exists."));
         }
 
         _movies.Add(movie);
@@ -127,15 +125,37 @@ public class Songwriter : IAggregateRoot
             return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(disc)));
         }
 
-        if (checkDirectoryInfo)
+        if (checkDirectoryInfo && _compilations.SingleOrDefault(m =>
+        m.EntityDirectoryInfo == disc.EntityDirectoryInfo) is not null)
         {
-            if (_compilations.SingleOrDefault(m => m.EntityDirectoryInfo == disc.EntityDirectoryInfo) is not null)
-            {
-                return Result.Failure(new Error($"Compilation with passed directory info is already exists."));
-            }
+            return Result.Failure(new Error($"Compilation with passed directory info is already exists."));
         }
 
         _compilations.Add(disc);
+        return Result.Success();
+    }
+
+    public Result RemoveCompilation(DiscId discId)
+    {
+        var compilation = _compilations.SingleOrDefault(e => e.Id == discId);
+        if (compilation is null)
+        {
+            return Result.Failure(new Error("Unable to remove compilation because it with this id is not exists."));
+        }
+
+        _compilations.Remove(compilation);
+        return Result.Success();
+    }
+
+    public Result RemoveMovie(MovieId movieId)
+    {
+        var movie = _movies.SingleOrDefault(e => e.Id == movieId);
+        if (movie is null)
+        {
+            return Result.Failure(new Error("Unable to remove movie because it with this id is not exists."));
+        }
+
+        _movies.Remove(movie);
         return Result.Success();
     }
 

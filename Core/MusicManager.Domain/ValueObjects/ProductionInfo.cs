@@ -8,21 +8,23 @@ public class ProductionInfo : ValueObject<ProductionInfo>
 {
     #region --Fields--
 
-    public static readonly ProductionInfo Undefined = new("Undefined", "Undefined");
+    public const string UndefinedCountry = "Undefined";
+
+    public static readonly ProductionInfo None = new(null, null);
 
     #endregion
 
     #region --Properties--
 
-    public string Country { get; private set; } = string.Empty;
+    public string? Country { get; private set; }
 
-    public string Year { get; private set; }
+    public int? Year { get; private set; }
 
     #endregion
 
     #region --Constructors--
 
-    private ProductionInfo(string country, string year)
+    private ProductionInfo(string? country, int? year)
     {
         Country = country;
         Year = year;
@@ -32,39 +34,28 @@ public class ProductionInfo : ValueObject<ProductionInfo>
 
     #region --Methods--
 
-    internal static Result<ProductionInfo> Create(string country, string year)
+    internal static Result<ProductionInfo> Create(string? country, int? year)
     {
-        if (string.IsNullOrWhiteSpace(country) || string.IsNullOrWhiteSpace(year))
+        if (year is  null && string.IsNullOrWhiteSpace(country))
         {
-            return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassed());
+            return new ProductionInfo(None.Country, None.Year);
         }
 
-        if (int.TryParse(year, out int result) && IsYearCorrect(result))
+        if (year is not null)
         {
-            return new ProductionInfo(country, year);
+            if (IsYearCorrect((int)year))
+            {
+                return new ProductionInfo(country, year);
+            }
+            return Result.Failure<ProductionInfo>(DomainErrors.ProductInfo.IncorrectYearPassed(year.ToString()!));
         }
 
-        return Result.Failure<ProductionInfo>(DomainErrors.ProductInfo.IncorrectYearPassed(year));
-    }
-
-    internal static Result<ProductionInfo> Create(string country, int year)
-    {
-        if (string.IsNullOrWhiteSpace(country))
-        {
-            return Result.Failure<ProductionInfo>(DomainErrors.NullOrEmptyStringPassed(nameof(country)));
-        }
-
-        if (IsYearCorrect(year))
-        {
-            return new ProductionInfo(country, year.ToString());
-        }
-
-        return Result.Failure<ProductionInfo>(DomainErrors.ProductInfo.IncorrectYearPassed(year.ToString()));
+        return new ProductionInfo(country, year);
     }
 
     private static bool IsYearCorrect(int year) => year > 0 && year <= DateTime.Now.Year;
 
-    protected override IEnumerable<object> GetEqualityComponents()
+    protected override IEnumerable<object?> GetEqualityComponents()
     {
         yield return Country;
         yield return Year;

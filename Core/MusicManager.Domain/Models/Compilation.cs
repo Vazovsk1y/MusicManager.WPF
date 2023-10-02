@@ -1,5 +1,4 @@
 ﻿using MusicManager.Domain.Common;
-using MusicManager.Domain.Enums;
 using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
@@ -16,7 +15,7 @@ public class Compilation : Disc
 
     #region --Properties--
 
-    public SongwriterId SongwriterId { get; private set; }
+    public SongwriterId SongwriterId { get; }
 
     #endregion
 
@@ -25,7 +24,6 @@ public class Compilation : Disc
     private Compilation(SongwriterId songwriterId) : base()
     {
         SongwriterId = songwriterId;
-        ProductionInfo = ProductionInfo.Undefined;
     }
 
     #endregion
@@ -35,27 +33,44 @@ public class Compilation : Disc
     public static Result<Compilation> Create(
         SongwriterId songwriterId,
         DiscType discType,
-        string identifier)
+        string identifier,
+        int? productionYear = null,
+        string? productionCountry = null)
     {
         if (string.IsNullOrWhiteSpace(identifier))
         {
             return Result.Failure<Compilation>(DomainErrors.NullOrEmptyStringPassed(nameof(identifier)));
         }
 
-        return new Compilation(songwriterId)
+        var compilation = new Compilation(songwriterId)
         {
-            Type = discType,
-            Identifier = identifier
+            Identifier = identifier,
         };
+
+        var settingDiscTypeRes = compilation.SetDiscType(discType);
+        if (settingDiscTypeRes.IsFailure)
+        {
+            return Result.Failure<Compilation>(settingDiscTypeRes.Error);
+        }
+
+        var settingProdInfoResult = compilation.SetProductionInfo(productionCountry, productionYear);
+        if (settingProdInfoResult.IsFailure)
+        {
+            return Result.Failure<Compilation>(settingProdInfoResult.Error);
+        }
+
+        return compilation;
     }
 
     public static Result<Compilation> Create(
         SongwriterId songwriterId,
         DiscType discType,
         string identifier,
-        string directoryFullPath)
+        string directoryFullPath,
+        int? productionYear = null,
+        string? productionCountry = null)
     {
-        var creationResult = Create(songwriterId, discType, identifier);
+        var creationResult = Create(songwriterId, discType, identifier, productionYear, productionCountry);
 
         if (creationResult.IsFailure)
         {
@@ -66,34 +81,6 @@ public class Compilation : Disc
 
         return settingDirectoryInfoResult.IsFailure ?
             Result.Failure<Compilation>(settingDirectoryInfoResult.Error) : creationResult.Value;
-    }
-
-    public static Result<Compilation> Create(
-        SongwriterId songwriterId,
-        DiscType discType,
-        string identifier,
-        string directoryFullPath,
-        string productionYear,
-        string productionCountry)
-    {
-        var diskCreationResult = Create(songwriterId, discType, identifier);
-
-        if (diskCreationResult.IsFailure)
-        {
-            return diskCreationResult;
-        }
-
-        var settingDirectoryInfoResutlt = diskCreationResult.Value.SetDirectoryInfo(directoryFullPath);
-
-        if (settingDirectoryInfoResutlt.IsFailure)
-        {
-            Result.Failure<Compilation>(settingDirectoryInfoResutlt.Error);
-        }
-
-        var settingProdInfoResult = diskCreationResult.Value.SetProductionInfo(productionCountry, productionYear);
-
-        return settingProdInfoResult.IsSuccess ?
-            diskCreationResult.Value : Result.Failure<Compilation>(settingProdInfoResult.Error);
     }
 
     #endregion
