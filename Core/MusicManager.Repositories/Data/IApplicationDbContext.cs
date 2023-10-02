@@ -16,8 +16,10 @@ public interface IApplicationDbContext
     public DbSet<Movie> Movies { get; set; }
 
     public DbSet<MovieRelease> MovieReleases { get; set; }
-     
-    public DbSet<Compilation> Compilations { get; set; }
+
+	public DbSet<MovieReleaseLink> MovieReleaseLinks { get; set; }
+
+	public DbSet<Compilation> Compilations { get; set; }
 
     public DbSet<Song> Songs { get; set; }
 

@@ -28,7 +28,13 @@
 
         <ListBox Grid.Row="1"
                  ItemsSource="{Binding SelectedMovies}"
-                 DisplayMemberPath="Title"/>
+                 >
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Movie.Title}"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
 
         <ComboBox ItemsSource="{Binding DiscTypes, UpdateSourceTrigger=PropertyChanged}" 

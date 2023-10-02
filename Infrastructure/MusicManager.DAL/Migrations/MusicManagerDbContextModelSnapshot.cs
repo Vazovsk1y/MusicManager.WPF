@@ -17,25 +17,6 @@ namespace MusicManager.DAL.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.9");
 
-            modelBuilder.Entity("MovieMovieRelease", b =>
-                {
-                    b.Property<Guid>("MoviesId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("movies_id");
-
-                    b.Property<Guid>("ReleasesId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("releases_id");
-
-                    b.HasKey("MoviesId", "ReleasesId")
-                        .HasName("pk_movie_movie_release");
-
-                    b.HasIndex("ReleasesId")
-                        .HasDatabaseName("ix_movie_movie_release_releases_id");
-
-                    b.ToTable("movie_movie_release", (string)null);
-                });
-
             modelBuilder.Entity("MusicManager.Domain.Common.Disc", b =>
                 {
                     b.Property<Guid>("Id")
@@ -102,6 +83,25 @@ namespace MusicManager.DAL.Migrations
                         .HasName("pk_directors");
 
                     b.ToTable("directors", (string)null);
+                });
+
+            modelBuilder.Entity("MusicManager.Domain.Entities.MovieReleaseLink", b =>
+                {
+                    b.Property<Guid>("MovieId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("movie_id");
+
+                    b.Property<Guid>("MovieReleaseId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("movie_release_id");
+
+                    b.HasKey("MovieId", "MovieReleaseId")
+                        .HasName("pk_movie_release_links");
+
+                    b.HasIndex("MovieReleaseId")
+                        .HasDatabaseName("ix_movie_release_links_movie_release_id");
+
+                    b.ToTable("movie_release_links", (string)null);
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Entities.PlaybackInfo", b =>
@@ -244,23 +244,6 @@ namespace MusicManager.DAL.Migrations
                     b.ToTable("movies_releases", (string)null);
                 });
 
-            modelBuilder.Entity("MovieMovieRelease", b =>
-                {
-                    b.HasOne("MusicManager.Domain.Models.Movie", null)
-                        .WithMany()
-                        .HasForeignKey("MoviesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_movie_movie_release_movies_movies_temp_id");
-
-                    b.HasOne("MusicManager.Domain.Models.MovieRelease", null)
-                        .WithMany()
-                        .HasForeignKey("ReleasesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_movie_movie_release_discs_releases_temp_id2");
-                });
-
             modelBuilder.Entity("MusicManager.Domain.Common.Disc", b =>
                 {
                     b.OwnsOne("MusicManager.Domain.ValueObjects.ProductionInfo", "ProductionInfo", b1 =>
@@ -298,6 +281,53 @@ namespace MusicManager.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_cover_discs_disc_temp_id");
+                });
+
+            modelBuilder.Entity("MusicManager.Domain.Entities.MovieReleaseLink", b =>
+                {
+                    b.HasOne("MusicManager.Domain.Models.Movie", "Movie")
+                        .WithMany("ReleasesLinks")
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_movie_release_links_movies_movie_temp_id");
+
+                    b.HasOne("MusicManager.Domain.Models.MovieRelease", "MovieRelease")
+                        .WithMany("Movies")
+                        .HasForeignKey("MovieReleaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_movie_release_links_discs_movie_release_temp_id2");
+
+                    b.OwnsOne("MusicManager.Domain.ValueObjects.EntityDirectoryInfo", "ReleaseLink", b1 =>
+                        {
+                            b1.Property<Guid>("MovieReleaseLinkMovieId")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("movie_id");
+
+                            b1.Property<Guid>("MovieReleaseLinkMovieReleaseId")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("movie_release_id");
+
+                            b1.Property<string>("Path")
+                                .IsRequired()
+                                .HasColumnType("TEXT")
+                                .HasColumnName("release_link_path");
+
+                            b1.HasKey("MovieReleaseLinkMovieId", "MovieReleaseLinkMovieReleaseId");
+
+                            b1.ToTable("movie_release_links");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MovieReleaseLinkMovieId", "MovieReleaseLinkMovieReleaseId")
+                                .HasConstraintName("fk_movie_release_links_movie_release_links_movie_id_movie_release_id");
+                        });
+
+                    b.Navigation("Movie");
+
+                    b.Navigation("MovieRelease");
+
+                    b.Navigation("ReleaseLink");
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Entities.PlaybackInfo", b =>
@@ -437,6 +467,11 @@ namespace MusicManager.DAL.Migrations
                     b.Navigation("Movies");
                 });
 
+            modelBuilder.Entity("MusicManager.Domain.Models.Movie", b =>
+                {
+                    b.Navigation("ReleasesLinks");
+                });
+
             modelBuilder.Entity("MusicManager.Domain.Models.Song", b =>
                 {
                     b.Navigation("PlaybackInfo")
@@ -447,6 +482,11 @@ namespace MusicManager.DAL.Migrations
                 {
                     b.Navigation("Compilations");
 
+                    b.Navigation("Movies");
+                });
+
+            modelBuilder.Entity("MusicManager.Domain.Models.MovieRelease", b =>
+                {
                     b.Navigation("Movies");
                 });
 #pragma warning restore 612, 618

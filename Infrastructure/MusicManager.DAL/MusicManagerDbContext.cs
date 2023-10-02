@@ -29,7 +29,9 @@ public class MusicManagerDbContext : DbContext, IApplicationDbContext
 
     public DbSet<Disc> Discs { get; set; }
 
-    public MusicManagerDbContext(DbContextOptions options) : base(options)
+	public DbSet<MovieReleaseLink> MovieReleaseLinks { get; set; }
+
+	public MusicManagerDbContext(DbContextOptions options) : base(options)
     {
     }
 

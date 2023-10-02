@@ -10,7 +10,7 @@ namespace MusicManager.Services
     {
         Task<Result<MovieReleaseDTO>> SaveFromFolderAsync(DiscFolder movieReleaseFolder, MovieId movieId, CancellationToken cancellationToken = default);
 
-        Task<Result<IEnumerable<MovieReleaseDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default);
+        Task<Result<IEnumerable<MovieReleaseLinkDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default);
 
         Task<Result<DiscId>> SaveAsync(MovieReleaseAddDTO movieReleaseAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default);
 

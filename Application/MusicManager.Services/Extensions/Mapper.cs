@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Models;
+﻿using MusicManager.Domain.Entities;
+using MusicManager.Domain.Models;
 using MusicManager.Services.Contracts.Dtos;
 
 namespace MusicManager.Services.Extensions;
@@ -33,8 +34,13 @@ public static class Mapper
             movie.ProductionInfo?.Country,
             (int)movie.ProductionInfo!.Year!,
             movie.Director is null ? null : new DirectorDTO(movie.Director.Id, movie.Director.FullName),
-            movie.Releases.Select(e => e.ToDTO())
+            movie.ReleasesLinks.Select(e => e.ToDTO())
             );
+    }
+
+    public static MovieReleaseLinkDTO ToDTO(this MovieReleaseLink movieReleaseLink)
+    {
+        return new MovieReleaseLinkDTO(movieReleaseLink.MovieRelease.ToDTO(), movieReleaseLink.ReleaseLink is null);
     }
 
     public static MovieLookupDTO ToLookupDTO(this Movie movie)

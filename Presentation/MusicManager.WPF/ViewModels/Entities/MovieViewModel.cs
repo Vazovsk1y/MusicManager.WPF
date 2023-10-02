@@ -43,16 +43,16 @@ internal partial class MovieViewModel :
 
     public string? UpdatableSign => IsModified ? "*" : null;
 
-    private ObservableCollection<MovieReleaseViewModel>? _moviesReleasesViewsModels;
+    private ObservableCollection<MovieReleaseLinkViewModel>? _moviesReleasesLinks;
 
     public required MovieId MovieId { get; init; }
 
     public required SongwriterId SongwriterId { get; init; }
 
-    public ObservableCollection<MovieReleaseViewModel> MoviesReleases
+    public ObservableCollection<MovieReleaseLinkViewModel> MoviesReleasesLinks
     {
-        get => _moviesReleasesViewsModels ??= new();
-        init => SetProperty(ref _moviesReleasesViewsModels, value);
+        get => _moviesReleasesLinks ??= new();
+        init => SetProperty(ref _moviesReleasesLinks, value);
     }
 
     public void SetCurrentAsPrevious()

@@ -187,24 +187,25 @@ namespace MusicManager.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "movie_movie_release",
+                name: "movie_release_links",
                 columns: table => new
                 {
-                    movies_id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    releases_id = table.Column<Guid>(type: "TEXT", nullable: false)
+                    movie_id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    movie_release_id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    release_link_path = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_movie_movie_release", x => new { x.movies_id, x.releases_id });
+                    table.PrimaryKey("pk_movie_release_links", x => new { x.movie_id, x.movie_release_id });
                     table.ForeignKey(
-                        name: "fk_movie_movie_release_discs_releases_temp_id2",
-                        column: x => x.releases_id,
+                        name: "fk_movie_release_links_discs_movie_release_temp_id2",
+                        column: x => x.movie_release_id,
                         principalTable: "movies_releases",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_movie_movie_release_movies_movies_temp_id",
-                        column: x => x.movies_id,
+                        name: "fk_movie_release_links_movies_movie_temp_id",
+                        column: x => x.movie_id,
                         principalTable: "movies",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -221,9 +222,9 @@ namespace MusicManager.DAL.Migrations
                 column: "disc_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_movie_movie_release_releases_id",
-                table: "movie_movie_release",
-                column: "releases_id");
+                name: "ix_movie_release_links_movie_release_id",
+                table: "movie_release_links",
+                column: "movie_release_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_movies_director_id",
@@ -251,7 +252,7 @@ namespace MusicManager.DAL.Migrations
                 name: "cover");
 
             migrationBuilder.DropTable(
-                name: "movie_movie_release");
+                name: "movie_release_links");
 
             migrationBuilder.DropTable(
                 name: "playback_info");

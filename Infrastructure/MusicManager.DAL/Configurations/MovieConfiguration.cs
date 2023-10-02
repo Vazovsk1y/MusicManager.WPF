@@ -27,8 +27,9 @@ internal class MovieConfiguration : IEntityTypeConfiguration<Movie>
         .IsRequired(false);
 
         builder
-            .HasMany(e => e.Releases)
-            .WithMany(e => e.Movies);
+            .HasMany(e => e.ReleasesLinks)
+            .WithOne(e => e.Movie)
+            .HasForeignKey(e => e.MovieId);
 
         builder
             .HasOne(e => e.Director)

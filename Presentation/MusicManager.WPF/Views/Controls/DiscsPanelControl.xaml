@@ -13,8 +13,8 @@
             <TabItem Header="Releases">
                 <ScrollViewer>
                     <StackPanel>
-                        <DataGrid ItemsSource="{Binding MoviesPanelViewModel.SelectedMovie.MoviesReleases}"
-          SelectedItem="{Binding SelectedDisc}"
+                        <DataGrid ItemsSource="{Binding MoviesPanelViewModel.SelectedMovie.MoviesReleasesLinks}"
+          SelectedItem="{Binding SelectedItem}"
           AutoGenerateColumns="False">
 
                             <DataGrid.Resources>
@@ -22,15 +22,16 @@
                             </DataGrid.Resources>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="IsUpdatable" Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="IsUpdatable" Binding="{Binding MovieRelease.UpdatableSign}" IsReadOnly="True"/>
 
                                 <DataGridComboBoxColumn Header="Type" 
                                     ItemsSource="{Binding Source={StaticResource EnableDiscTypes}}" 
-                                    SelectedItemBinding="{Binding SelectedDiscType}" DisplayMemberPath="Value"/>
-                                <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry}"/>
-                                <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear}"/>
-                                <DataGridTextColumn Header="Identificator" Binding="{Binding Identifier}"/>
-                                <DataGridTextColumn Header="SongsCount" Binding="{Binding Songs.Count}"/>
+                                    SelectedItemBinding="{Binding MovieRelease.SelectedDiscType}" DisplayMemberPath="Value"/>
+                                <DataGridTextColumn Header="Country" Binding="{Binding  MovieRelease.ProductionCountry}"/>
+                                <DataGridTextColumn Header="Year" Binding="{Binding MovieRelease.ProductionYear}"/>
+                                <DataGridTextColumn Header="Identificator" Binding="{Binding MovieRelease.Identifier}"/>
+                                <DataGridTextColumn Header="SongsCount" Binding="{Binding MovieRelease.Songs.Count}"/>
+                                <DataGridTextColumn Header="IsFolder" Binding="{Binding IsFolder}" IsReadOnly="True"/>
                             </DataGrid.Columns>
 
                         </DataGrid>

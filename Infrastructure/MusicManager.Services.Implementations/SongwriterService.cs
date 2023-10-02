@@ -45,7 +45,7 @@ public class SongwriterService : ISongwriterService
 
         IEnumerable<MovieId> deletedMoviesIds = songwriter.Movies.Select(e => e.Id);
         var movieReleasesToRemove = _dbContext.MovieReleases
-            .Include(e => e.Movies)
+            .Include(e => e.MoviesLinks)
             .Where(Filter);
 
         _dbContext.Songwriters.Remove(songwriter);
@@ -55,8 +55,8 @@ public class SongwriterService : ISongwriterService
 
         bool Filter(MovieRelease movieRelease)
         {
-            var moviesIds = movieRelease.Movies.Select(e => e.Id);
-            bool mainCondition = moviesIds.Any(e => deletedMoviesIds.Contains(e)) && movieRelease.Movies.Count == 1;
+            var moviesIds = movieRelease.MoviesLinks.Select(e => e.MovieId);
+            bool mainCondition = moviesIds.Any(e => deletedMoviesIds.Contains(e)) && movieRelease.MoviesLinks.Count == 1;
             bool secondaryCondition = moviesIds.All(e => deletedMoviesIds.Contains(e));
 
             return mainCondition || secondaryCondition;
