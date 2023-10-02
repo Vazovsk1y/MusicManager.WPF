@@ -30,7 +30,7 @@ public class MovieFolderFactory : IMovieFolderFactory
         }
 
         List<DiscFolder> movieReleases = new();
-        var moviesReleasesDirectories = new List<DirectoryInfo>();
+        var moviesReleasesDirectories = new List<(DirectoryInfo actualDirectory, string? linkOnActualDirectory)>();
 
         // if shortcut file with .lnk extension, if link directory with not null link target.
         var fileSystemInfos = movieDirectory.EnumerateFileSystemInfos().Where(e => e.LinkTarget is not null || e.Extension == ".lnk");  
@@ -53,19 +53,19 @@ public class MovieFolderFactory : IMovieFolderFactory
                     return Result.Failure<MovieFolder>(shorcut.Error);
                 }
 
-                moviesReleasesDirectories.Add(shorcut.Value);
+                moviesReleasesDirectories.Add((shorcut.Value, fileSystemInfo.FullName));
             }
             else
             {
-                moviesReleasesDirectories.Add(new DirectoryInfo(fileSystemInfo.LinkTarget!));
+                moviesReleasesDirectories.Add((new DirectoryInfo(fileSystemInfo.LinkTarget!), fileSystemInfo.FullName));
             }
         }
 
-        moviesReleasesDirectories.AddRange(movieDirectory.EnumerateDirectories().Where(e => e.LinkTarget is null));  // exclude already added directories links
+        moviesReleasesDirectories.AddRange(movieDirectory.EnumerateDirectories().Where(e => e.LinkTarget is null).Select(e => (e, (string?)null)));  // exclude already added directories links
 
         foreach (var movieReleaseDirectory in moviesReleasesDirectories)
         {
-            var result = _movieReleaseFolderFactory.Create(movieReleaseDirectory);
+            var result = _movieReleaseFolderFactory.Create(movieReleaseDirectory.actualDirectory, movieReleaseDirectory.linkOnActualDirectory);
             if (result.IsFailure)
             {
                 return Result.Failure<MovieFolder>(result.Error);

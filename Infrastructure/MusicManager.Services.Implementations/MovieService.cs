@@ -35,13 +35,13 @@ public class MovieService : IMovieService
         _root = root;
     }
 
-    public async Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, CancellationToken cancellationToken = default)
+    public async Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, bool createAssociatedLink = true, CancellationToken cancellationToken = default)
     {
         var movie = await _dbContext
             .Movies
-            .Include(e => e.Releases)
+            .Include(e => e.ReleasesLinks)
             .ThenInclude(e => e.MovieRelease)
-            .ThenInclude(e => e.Movies)
+            .ThenInclude(e => e.MoviesLinks)
             .SingleOrDefaultAsync(e => e.Id == dto.MovieId, cancellationToken);
 
         if (movie is null)
@@ -51,8 +51,7 @@ public class MovieService : IMovieService
 
         var movieRelease = await _dbContext
             .MovieReleases
-            .Include(e => e.Movies)
-            .ThenInclude(e => e.Releases)
+            .Include(e => e.MoviesLinks)
             .SingleOrDefaultAsync(e => e.Id == dto.DiscId, cancellationToken);
 
         if (movieRelease is null)
@@ -60,24 +59,35 @@ public class MovieService : IMovieService
             return Result.Failure(ServicesErrors.MovieReleaseWithPassedIdIsNotExists());
         }
 
-        var addingResult = movie.AddRelease(movieRelease, true);
-        if (addingResult.IsFailure)
-        {
-            return addingResult;
-        }
-
         if (movieRelease.EntityDirectoryInfo is null)
         {
             return Result.Failure(new Error("Movie release directory info is not created."));
         }
 
-        var settingLinkResult = await _movieReleaseToFolderService.CreateFolderLinkAsync(movie, _root.CombineWith(movieRelease.EntityDirectoryInfo!.Path));
-        if (settingLinkResult.IsFailure)
+        if (createAssociatedLink)
         {
-            return settingLinkResult;
-        }
+			var settingLinkResult = await _movieReleaseToFolderService.CreateFolderLinkAsync(movie, _root.CombineWith(movieRelease.EntityDirectoryInfo!.Path));
+			if (settingLinkResult.IsFailure)
+			{
+				return settingLinkResult;
+			}
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+			var addingResult = movie.AddRelease(movieRelease, true, settingLinkResult.Value);
+			if (addingResult.IsFailure)
+			{
+				return addingResult;
+			}
+		}
+        else
+        {
+			var addingResult = movie.AddRelease(movieRelease, true);
+			if (addingResult.IsFailure)
+			{
+				return addingResult;
+			}
+		}
+       
+		await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 
@@ -99,8 +109,9 @@ public class MovieService : IMovieService
         }
 
         var moviesReleasesToRemove = _dbContext.MovieReleases
-            .Include(e => e.Movies)
-            .Where(e => e.Movies.Select(e => e.Id).Contains(movieId) && e.Movies.Count == 1);
+            .Include(e => e.MoviesLinks)
+            .ThenInclude(e => e.MovieRelease)
+            .Where(e => e.MoviesLinks.Any(e => e.MovieId == movieId) && e.MoviesLinks.Count == 1);
 
         _dbContext.MovieReleases.RemoveRange(moviesReleasesToRemove);
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -133,7 +144,7 @@ public class MovieService : IMovieService
 
             result.Add(movie.ToDTO() with
             {
-                MoviesReleasesLinks = movie.Releases.Select(e => e.ToDTO())
+                MoviesReleasesLinks = moviesReleasesResult.Value
             });
         }
 

@@ -30,7 +30,7 @@ public class DiscFolderFactory : IDiscFolderFactory
         _cueFileInteractor = cueFileInteractor;
     }
 
-    public Result<DiscFolder> Create(DirectoryInfo discDirectory)
+    public Result<DiscFolder> Create(DirectoryInfo discDirectory, string? linkPath = null)
     {
         if (!discDirectory.Exists)
         {
@@ -101,6 +101,6 @@ public class DiscFolderFactory : IDiscFolderFactory
             songsFiles.Add(result.Value);
         }
 
-        return new DiscFolder(discDirectory.FullName, songsFiles, covers);
+        return new DiscFolder(discDirectory.FullName, songsFiles, covers, linkPath);
     }
 }
