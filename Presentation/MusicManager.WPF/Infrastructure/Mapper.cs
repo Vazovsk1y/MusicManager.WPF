@@ -28,11 +28,16 @@ internal static class Mapper
             ProductionCountry = movieDTO.ProductionCountry,
             ProductionYear = movieDTO.ProductionYear,
             Title = movieDTO.Title,
-            MoviesReleases = new(movieDTO.MovieReleasesDTOs.Select(e => e.ToViewModel())),
+            MoviesReleasesLinks = new(movieDTO.MoviesReleasesLinks.Select(e => e.ToViewModel())),
         };
 
         entity.SetCurrentAsPrevious();
         return entity;
+    }
+
+    public static MovieReleaseLinkViewModel ToViewModel(this MovieReleaseLinkDTO movieReleaseLinkDTO)
+    {
+        return new MovieReleaseLinkViewModel { IsFolder = movieReleaseLinkDTO.IsFolder, MovieRelease = movieReleaseLinkDTO.MovieReleaseDTO.ToViewModel() };
     }
 
     public static DirectorViewModel ToViewModel(this DirectorDTO directorDTO)
@@ -64,16 +69,16 @@ internal static class Mapper
         return entity;
     }
 
-    public static MovieReleaseViewModel ToViewModel(this MovieReleaseDTO movieReleaseDTO)
+    public static MovieReleaseViewModel ToViewModel(this MovieReleaseDTO movieReleaseLink)
     {
         var entity = new MovieReleaseViewModel()
         {
-            DiscId = movieReleaseDTO.Id,
-            Identifier = movieReleaseDTO.Identifier,
-            ProductionCountry = movieReleaseDTO.ProductionCountry,
-            ProductionYear = movieReleaseDTO.ProductionYear,
-            SelectedDiscType = movieReleaseDTO.DiscType,
-            Songs = new (movieReleaseDTO.SongDTOs.Select(e => e.ToViewModel())),
+            DiscId = movieReleaseLink.Id,
+            Identifier = movieReleaseLink.Identifier,
+            ProductionCountry = movieReleaseLink.ProductionCountry,
+            ProductionYear = movieReleaseLink.ProductionYear,
+            SelectedDiscType = movieReleaseLink.DiscType,
+            Songs = new (movieReleaseLink.SongDTOs.Select(e => e.ToViewModel())),
         };
 
         entity.SetCurrentAsPrevious();

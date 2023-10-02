@@ -163,18 +163,24 @@ internal partial class SongwirtersPanelViewModel :
 
     private void ReplaceMovieReleasesDuplicates()
     {
-        var duplicates = Songwriters.SelectMany(e => e.Movies).SelectMany(e => e.MoviesReleases).GroupBy(e => e.DiscId).Where(e => e.Count() > 1);
+        var duplicates = Songwriters
+            .SelectMany(e => e.Movies)
+            .SelectMany(e => e.MoviesReleasesLinks.Select(e => e.MovieRelease))
+            .GroupBy(e => e.DiscId)
+            .Where(e => e.Count() > 1);
+
         var movies = Songwriters.SelectMany(e => e.Movies);
 
         foreach (var movie in movies)
         {
             foreach (var moviesReleases in duplicates)
             {
-                var mrToSwap = movie.MoviesReleases.FirstOrDefault(e => e.DiscId == moviesReleases.Key);
+                var mrToSwap = movie.MoviesReleasesLinks.FirstOrDefault(e => e.MovieRelease.DiscId == moviesReleases.Key);
                 if (mrToSwap is not null)
                 {
-                    int index = movie.MoviesReleases.IndexOf(mrToSwap);
-                    movie.MoviesReleases[index] = moviesReleases.First();
+                    //int index = movie.MoviesReleasesLinks.IndexOf(mrToSwap);
+                    //movie.MoviesReleasesLinks. = moviesReleases.First();
+                    mrToSwap.MovieRelease = moviesReleases.First();
                 }
             }
         }

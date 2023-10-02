@@ -33,7 +33,7 @@ internal partial class DiscsPanelViewModel :
         new ObservableCollection<CompilationViewModel>(SongwritersPanelViewModel.Songwriters.SelectMany(e => e.Compilations));
 
     public IReadOnlyCollection<MovieReleaseViewModel> MovieReleases =>
-        new ObservableCollection<MovieReleaseViewModel>(MoviesPanelViewModel.Movies.SelectMany(e => e.MoviesReleases));
+        new ObservableCollection<MovieReleaseViewModel>(MoviesPanelViewModel.Movies.SelectMany(e => e.MoviesReleasesLinks.Select(e => e.MovieRelease)));
 
     public IReadOnlyCollection<IDiscViewModel> Discs => new ObservableCollection<IDiscViewModel>(
         MovieReleases.Cast<IDiscViewModel>()
@@ -77,6 +77,24 @@ internal partial class DiscsPanelViewModel :
     [ObservableProperty]
 	[NotifyCanExecuteChangedFor(nameof(DeleteMovieReleaseCommand))]
 	private MovieReleaseViewModel? _selectedMovieRelease;
+
+    private object? _selectedItem;
+    public object? SelectedItem
+    {
+        get => _selectedItem;
+        set
+        {
+            if (value is MovieReleaseLinkViewModel movieReleaseLinkViewModel)
+            {
+                SelectedDisc = movieReleaseLinkViewModel.MovieRelease;
+                _selectedItem = value;
+            }
+            else
+            {
+                _selectedItem = value;
+            }
+        }
+    }
 
     public IDiscViewModel? SelectedDisc
     {
@@ -166,10 +184,10 @@ internal partial class DiscsPanelViewModel :
 
 			await App.Current.Dispatcher.InvokeAsync(() =>
 			{
-                var movies = MoviesPanelViewModel.Movies.Where(e => e.MoviesReleases.Contains(SelectedMovieRelease));
+                var movies = MoviesPanelViewModel.Movies.Where(e => e.MoviesReleasesLinks.Any(e => e.MovieRelease.DiscId == SelectedMovieRelease.DiscId));
                 foreach (var movie in movies)
                 {
-                    movie.MoviesReleases.Remove(SelectedMovieRelease);
+                    movie.MoviesReleasesLinks.Remove(movie.MoviesReleasesLinks.First(e => e.MovieRelease.DiscId == SelectedMovieRelease.DiscId));
                 }
 			});
 		}
@@ -301,11 +319,12 @@ internal partial class DiscsPanelViewModel :
     {
         await App.Current.Dispatcher.InvokeAsync(() =>
         {
-            var movies = MoviesPanelViewModel.Movies.Where(e => message.MoviesLinks.Contains(e.MovieId));
+            //var movies = MoviesPanelViewModel.Movies.Where(e => message.MoviesLinks.Select(e => e.MovieId).Contains(e.MovieId));
 
-            foreach (var movie in movies)
+            foreach (var movieLink in message.MoviesLinks)
             {
-                movie.MoviesReleases.Add(message.MovieReleaseViewModel);
+                var movie = MoviesPanelViewModel.Movies.FirstOrDefault(e => movieLink.MovieId == e.MovieId);
+                movie?.MoviesReleasesLinks.Add(new MovieReleaseLinkViewModel { MovieRelease = message.MovieReleaseViewModel, IsFolder = movieLink.AddAsFolder });
                 message.MovieReleaseViewModel.SetCurrentAsPrevious();
             }
         });

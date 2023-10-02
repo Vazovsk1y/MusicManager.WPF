@@ -16,6 +16,13 @@ namespace MusicManager.WPF.ViewModels.Entities;
 
 internal partial class MovieReleaseAddViewModel : DialogViewModel<MovieReleaseAddWindow>
 {
+	internal class MovieLinkViewModel
+	{
+		public required MovieLookupDTO Movie { get; set; }
+
+		public required bool AddAsFolder { get; set; }
+	}
+
 	private readonly IMovieReleaseService _movieReleaseService;
 	private readonly IMovieService _movieService;
 
@@ -41,10 +48,17 @@ internal partial class MovieReleaseAddViewModel : DialogViewModel<MovieReleaseAd
 		{
 			if (SetProperty(ref _selectedMovie, value) &&
 				value is not null
-				&& !SelectedMovies.Contains(value))
+				&& !SelectedMovies.Select(e => e.Movie).Contains(value))
 			{
+				if (_selectedMovies.Count == 0)
+				{
+					SelectedMovies.Add(new MovieLinkViewModel { AddAsFolder = true, Movie = value });
+					AcceptCommand.NotifyCanExecuteChanged();
+					return;
+				}
+
+				SelectedMovies.Add(new MovieLinkViewModel { AddAsFolder = false, Movie = value });
 				AcceptCommand.NotifyCanExecuteChanged();
-				SelectedMovies.Add(value);
 			}
 		}
 	}
@@ -56,9 +70,9 @@ internal partial class MovieReleaseAddViewModel : DialogViewModel<MovieReleaseAd
 	[ObservableProperty]
 	private string _identifier = string.Empty;
 
-	private readonly ObservableCollection<MovieLookupDTO> _selectedMovies = new();
+	private readonly ObservableCollection<MovieLinkViewModel> _selectedMovies = new();
 
-	public ObservableCollection<MovieLookupDTO> SelectedMovies => _selectedMovies;
+	public ObservableCollection<MovieLinkViewModel> SelectedMovies => _selectedMovies;
 
 	public MovieReleaseAddViewModel(
 		IUserDialogService<MovieReleaseAddWindow> dialogService,
@@ -72,7 +86,7 @@ internal partial class MovieReleaseAddViewModel : DialogViewModel<MovieReleaseAd
 
 	protected override async Task Accept()
 	{
-		var moviesLinks = SelectedMovies.Select(e => e.MovieId).ToList();
+		var moviesLinks = SelectedMovies.Select(e => new MovieLinkDTO(e.Movie.MovieId, e.AddAsFolder)).ToList();
 		var dto = new MovieReleaseAddDTO(moviesLinks, Identifier, SelectedDiscType!, SelectedYear, SelectedCountry);
 		var addingResult = await _movieReleaseService.SaveAsync(dto, _settingsViewModel.CreateAssociatedFolder);
 

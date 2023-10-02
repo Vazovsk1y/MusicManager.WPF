@@ -42,7 +42,7 @@ internal partial class MoviesPanelViewModel :
     public MoviesPanelViewModel(
         SongwirtersPanelViewModel songwritersPanelViewModel,
         IUserDialogService<MovieAddWindow> dialogService,
-        IServiceScopeFactory serviceScopeFactory)
+        IServiceScopeFactory serviceScopeFactory) 
     {
         SongwritersPanelViewModel = songwritersPanelViewModel;
         _movieAddDialogService = dialogService;
@@ -86,9 +86,9 @@ internal partial class MoviesPanelViewModel :
     private void AddMovieRelease()
     {
         var movieReleasesToSelectFrom = Movies
-            .SelectMany(e => e.MoviesReleases)
+            .SelectMany(e => e.MoviesReleasesLinks.Select(e => e.MovieRelease))
             .DistinctBy(e => e.DiscId)
-            .Where(e => !SelectedMovie!.MoviesReleases.Contains(e));
+            .Where(e => !SelectedMovie!.MoviesReleasesLinks.Select(e => e.MovieRelease).Contains(e));
 
         using var scope = _serviceScopeFactory.CreateScope();
         var dialogService = scope.ServiceProvider.GetRequiredService<IUserDialogService<MovieReleaseMovieWindow>>();
@@ -185,7 +185,7 @@ internal partial class MoviesPanelViewModel :
         {
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                SelectedMovie.MoviesReleases.Add(request.MovieReleaseViewModel);
+                SelectedMovie.MoviesReleasesLinks.Add(new MovieReleaseLinkViewModel { MovieRelease = request.MovieReleaseViewModel, IsFolder = false });
             });
         }
         else
@@ -209,8 +209,11 @@ internal partial class MoviesPanelViewModel :
             }
         });
     }
+
     protected override async void OnActivated()
     {
+        base.OnActivated();
+
         using var scope = _serviceScopeFactory.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<IDirectorService>();
         var result = await service.GetAllAsync();
