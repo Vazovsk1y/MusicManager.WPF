@@ -1,6 +1,7 @@
 ﻿using MusicManager.Domain.Common;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Services.Implementations.Errors;
+using MusicManager.Domain.Services.Storage;
 using MusicManager.Domain.Shared;
 using System.Text.Json;
 
@@ -39,7 +40,7 @@ public abstract class BaseDomainService
     {
         if (!_root.IsStoresIn(songWriterPath))
         {
-            return Result.Failure<TFileSystem>(new Error($"Entity must be stored in root folder {_root.RootPath}."));
+            return Result.Failure<TFileSystem>(new Error($"Entity must be stored in root folder {_root.Path}."));
         }
 
         var fileSystemInfo = (TFileSystem)Activator.CreateInstance(typeof(TFileSystem), songWriterPath);

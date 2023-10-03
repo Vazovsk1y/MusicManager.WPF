@@ -3,6 +3,7 @@ using MusicManager.Domain.Common;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 using NAudio.Wave;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
@@ -72,13 +73,19 @@ namespace MusicManager.Domain.Services.Implementations
 
             if (discNumberMatch.Success)
             {
+                var discNumberCreationResult = DiscNumber.Create(int.Parse(discNumberMatch.Groups[1].Value));
+                if (discNumberCreationResult.IsFailure)
+                {
+                    return Task.FromResult(Result.Failure<Song>(discNumberCreationResult.Error));
+                }
+
                 var songCreationResult = Song.Create(
                     parentId,
                     songName,
                     songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
-                    int.Parse(discNumberMatch.Groups[1].Value),
                     songFilePath.GetRelational(_root),
-                    songDuration
+                    songDuration,
+                    discNumberCreationResult.Value
                     );
 
                 if (songCreationResult.IsFailure)
@@ -138,13 +145,19 @@ namespace MusicManager.Domain.Services.Implementations
 
             if (discNumberMatch.Success)
             {
-                var result = ParseCueFileTracksToSongs(
+				var discNumberCreationResult = DiscNumber.Create(int.Parse(discNumberMatch.Groups[1].Value));
+				if (discNumberCreationResult.IsFailure)
+				{
+					return Result.Failure<IEnumerable<Song>>(discNumberCreationResult.Error);
+				}
+
+				var result = ParseCueFileTracksToSongs(
                     cueFileTracks,
                     parentId,
                     songFilePath.GetRelational(_root),
                     cueFilePath.GetRelational(_root),
                     allSongFileDuration,
-                    int.Parse(discNumberMatch.Groups[1].Value));
+                    discNumberCreationResult.Value);
 
                 if (result.IsFailure)
                 {
@@ -211,7 +224,7 @@ namespace MusicManager.Domain.Services.Implementations
             string songRelationalFilePath,
             string cueRelationalFilePath,
             TimeSpan allSongFileDuration,
-            int? discNumber = null)
+            DiscNumber? discNumber = null)
         {
             var results = new List<Song>();
             var tracks = cueFileTracks.ToList();
@@ -221,30 +234,18 @@ namespace MusicManager.Domain.Services.Implementations
                 var previousTrack = tracks[i - 1];
                 var currentTrack = tracks[i];
 
-                var songCreationResult = discNumber is null ?
+                var songCreationResult =
                     Song.Create(
                     parent,
                     previousTrack.Title,
-                    previousTrack.TrackPosition,
+                    previousTrack.TrackOrder,
                     songRelationalFilePath,
                     currentTrack.Index01 - previousTrack.Index01,
                     cueRelationalFilePath,
                     previousTrack.Index00,
                     previousTrack.Index01,
-                    previousTrack.Title)
-                    :
-                    Song.Create(
-                    parent, 
                     previousTrack.Title,
-                    previousTrack.TrackPosition,
-                    (int)discNumber,
-                    songRelationalFilePath,
-                    currentTrack.Index01 - previousTrack.Index01,
-                    cueRelationalFilePath,
-                    previousTrack.Index00,
-                    previousTrack.Index01,
-                    previousTrack.Title
-                    );
+                    discNumber);
 
                 if (songCreationResult.IsFailure)
                 {
@@ -255,30 +256,19 @@ namespace MusicManager.Domain.Services.Implementations
             }
 
             var lastTrack = tracks.Last();
-            var lastSongCreationResult = discNumber is null ?
+            var lastSongCreationResult =
                     Song.Create(
                     parent,
                     lastTrack.Title,
-                    lastTrack.TrackPosition,
+                    lastTrack.TrackOrder,
                     songRelationalFilePath,
                     allSongFileDuration - lastTrack.Index01,
                     cueRelationalFilePath,
                     lastTrack.Index00,
                     lastTrack.Index01,
-                    lastTrack.Title)
-                    :
-                    Song.Create(
-                    parent,
                     lastTrack.Title,
-                    lastTrack.TrackPosition,
-                    (int)discNumber,
-                    songRelationalFilePath,
-                    allSongFileDuration - lastTrack.Index01,
-                    cueRelationalFilePath,
-                    lastTrack.Index00,
-                    lastTrack.Index01,
-                    lastTrack.Title
-                    );
+                    discNumber);
+                   
 
             if (lastSongCreationResult.IsSuccess)
             {

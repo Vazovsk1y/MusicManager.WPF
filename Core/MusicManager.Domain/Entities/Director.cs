@@ -6,54 +6,67 @@ namespace MusicManager.Domain.Entities;
 
 public class Director
 {
-    private readonly List<Movie> _movies = new();
+	#region --Fields--
 
-    public DirectorId Id { get; }
+	private readonly List<Movie> _movies = new();
 
-    public string FullName { get; private set; } = null!;
+	#endregion
 
-    public IReadOnlyCollection<Movie> Movies => _movies.ToList();
+	#region --Properties--
 
-    private Director() 
-    {
-        Id = DirectorId.Create();
-    }
+	public DirectorId Id { get; }
 
-    internal Result AddMovie(Movie movie)
-    {
-        if (_movies.SingleOrDefault(e => e.Id == movie.Id) is not null)
-        {
-            return Result.Failure(new("Passed movie is already added."));
-        }
+	public string FullName { get; private set; }
 
-        _movies.Add(movie);
-        return Result.Success();
-    }
+	public IReadOnlyCollection<Movie> Movies => _movies.ToList();
 
-    internal Result RemoveMovie(MovieId movie)
-    {
-        var itemToRemove = _movies.SingleOrDefault(e => e.Id == movie);
-        if (itemToRemove is not null)
-        {
-            _movies.Remove(itemToRemove);
-            return Result.Success();
-        }
+	#endregion
 
-        return Result.Failure(new Error("Unable to remove movie, cause it not exists."));
-    }
+	#region --Constructors--
 
-    public static Result<Director> Create(string fullName)
-    {
-        if (string.IsNullOrWhiteSpace(fullName))
-        {
-            return Result.Failure<Director>(DomainErrors.NullOrEmptyStringPassed("director fullName"));
-        }
+#pragma warning disable CS8618 
+	private Director()
+	{
+		Id = DirectorId.Create();
+	}
+#pragma warning restore CS8618 
 
-        return new Director() { FullName = fullName };
-    }
+
+	#endregion
+
+	#region --Methods--
+
+	internal void AddMovie(Movie movie)
+	{
+		_movies.Add(movie);
+	}
+
+	internal void RemoveMovie(MovieId movieId)
+	{
+		var movie = _movies.SingleOrDefault(e => e.Id == movieId);
+		if (movie is not null)
+		{
+			_movies.Remove(movie);
+		}
+	}
+
+	public static Result<Director> Create(string fullName)
+	{
+		if (string.IsNullOrWhiteSpace(fullName))
+		{
+			return Result.Failure<Director>(DomainErrors.NullOrEmptyStringPassed("director fullName"));
+		}
+
+		return new Director() 
+		{ 
+			FullName = fullName 
+		};
+	}
+
+	#endregion
 }
 
 public record DirectorId(Guid Value)
 {
-    public static DirectorId Create() => new DirectorId(Guid.NewGuid());
+    public static DirectorId Create() => new(Guid.NewGuid());
 }

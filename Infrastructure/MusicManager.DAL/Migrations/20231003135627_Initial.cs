@@ -28,11 +28,11 @@ namespace MusicManager.DAL.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    entity_directory_info = table.Column<string>(type: "TEXT", nullable: true),
+                    type = table.Column<string>(type: "TEXT", nullable: false),
                     production_info_country = table.Column<string>(type: "TEXT", nullable: true),
                     production_info_year = table.Column<int>(type: "INTEGER", nullable: true),
-                    type = table.Column<string>(type: "TEXT", nullable: false),
-                    identifier = table.Column<string>(type: "TEXT", nullable: false)
+                    identifier = table.Column<string>(type: "TEXT", nullable: false),
+                    associated_folder_info = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -45,8 +45,8 @@ namespace MusicManager.DAL.Migrations
                 {
                     id = table.Column<Guid>(type: "TEXT", nullable: false),
                     name = table.Column<string>(type: "TEXT", nullable: false),
-                    surname = table.Column<string>(type: "TEXT", nullable: false),
-                    entity_directory_info = table.Column<string>(type: "TEXT", nullable: true)
+                    last_name = table.Column<string>(type: "TEXT", nullable: false),
+                    associated_folder_info = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -59,7 +59,7 @@ namespace MusicManager.DAL.Migrations
                 {
                     id = table.Column<Guid>(type: "TEXT", nullable: false),
                     disc_id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    full_path = table.Column<string>(type: "TEXT", nullable: false)
+                    path = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -96,7 +96,7 @@ namespace MusicManager.DAL.Migrations
                     id = table.Column<Guid>(type: "TEXT", nullable: false),
                     disc_id = table.Column<Guid>(type: "TEXT", nullable: false),
                     disc_number = table.Column<int>(type: "INTEGER", nullable: true),
-                    name = table.Column<string>(type: "TEXT", nullable: false),
+                    title = table.Column<string>(type: "TEXT", nullable: false),
                     order = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -142,9 +142,9 @@ namespace MusicManager.DAL.Migrations
                     songwriter_id = table.Column<Guid>(type: "TEXT", nullable: false),
                     production_info_country = table.Column<string>(type: "TEXT", nullable: true),
                     production_info_year = table.Column<int>(type: "INTEGER", nullable: true),
+                    title = table.Column<string>(type: "TEXT", nullable: false),
                     director_id = table.Column<Guid>(type: "TEXT", nullable: true),
-                    entity_directory_info = table.Column<string>(type: "TEXT", nullable: true),
-                    title = table.Column<string>(type: "TEXT", nullable: false)
+                    associated_folder_info = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -167,13 +167,13 @@ namespace MusicManager.DAL.Migrations
                 columns: table => new
                 {
                     song_id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    executable_file_full_path = table.Column<string>(type: "TEXT", nullable: false),
+                    executable_file_path = table.Column<string>(type: "TEXT", nullable: false),
+                    executable_type = table.Column<string>(type: "TEXT", nullable: false),
+                    duration = table.Column<TimeSpan>(type: "TEXT", nullable: false),
                     cue_info_cue_file_path = table.Column<string>(type: "TEXT", nullable: true),
                     cue_info_index00 = table.Column<TimeSpan>(type: "TEXT", nullable: true),
                     cue_info_index01 = table.Column<TimeSpan>(type: "TEXT", nullable: true),
-                    cue_info_song_name_in_cue = table.Column<string>(type: "TEXT", nullable: true),
-                    executable_type = table.Column<string>(type: "TEXT", nullable: false),
-                    song_duration = table.Column<TimeSpan>(type: "TEXT", nullable: false)
+                    cue_info_song_title_in_cue = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -192,7 +192,7 @@ namespace MusicManager.DAL.Migrations
                 {
                     movie_id = table.Column<Guid>(type: "TEXT", nullable: false),
                     movie_release_id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    release_link_path = table.Column<string>(type: "TEXT", nullable: true)
+                    release_link_info_path = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

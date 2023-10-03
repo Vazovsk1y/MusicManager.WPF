@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
+using MusicManager.Domain.Services.Storage;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 using MusicManager.Repositories.Data;
@@ -19,14 +20,14 @@ public class MovieToFolderService : IMovieToFolderService
         _root = root;
     }
 
-    public async Task<Result<string>> CreateAssociatedAsync(Movie movie, Songwriter parent)
+    public async Task<Result<string>> CreateAssociatedFolderAndFileAsync(Movie movie, Songwriter parent, CancellationToken cancellationToken = default)
     {
-        if (parent.EntityDirectoryInfo is null)
+        if (parent.AssociatedFolderInfo is null)
         {
             return Result.Failure<string>(new Error("Parent directory info is not created."));
         }
 
-        var rootDirectory = new DirectoryInfo(Path.Combine(_root.CombineWith(parent.EntityDirectoryInfo.Path), DomainServicesConstants.MOVIES_FOLDER_NAME));
+        var rootDirectory = new DirectoryInfo(Path.Combine(_root.CombineWith(parent.AssociatedFolderInfo.Path), DomainServicesConstants.MOVIES_FOLDER_NAME));
         if (!rootDirectory.Exists)
         {
             return Result.Failure<string>(new Error("Parent directory is not exists."));
@@ -37,7 +38,7 @@ public class MovieToFolderService : IMovieToFolderService
         string createdMovieRelationalPath = createdMovieDirectoryFullPath.GetRelational(_root);
 
         if (Directory.Exists(createdMovieDirectoryFullPath)
-            || await _dbContext.Movies.AnyAsync(e => e.EntityDirectoryInfo == EntityDirectoryInfo.Create(createdMovieRelationalPath).Value))
+            || await _dbContext.Movies.AnyAsync(e => e.AssociatedFolderInfo == EntityDirectoryInfo.Create(createdMovieRelationalPath).Value, cancellationToken))
         {
             return Result.Failure<string>(new Error("Directory for this movie is already exists or movie with that directory info is already added to database."));
         }
@@ -51,14 +52,14 @@ public class MovieToFolderService : IMovieToFolderService
         return createdMovieRelationalPath;
     }
 
-    public async Task<Result<string>> UpdateIfExistsAsync(Movie movie)
+    public async Task<Result<string>> UpdateAsync(Movie movie)
     {
-        if (movie.EntityDirectoryInfo is null)
+        if (movie.AssociatedFolderInfo is null)
         {
             return Result.Failure<string>(new Error($"Associated folder isn't created."));
         }
 
-        var currentDirectory = new DirectoryInfo(_root.CombineWith(movie.EntityDirectoryInfo.Path));
+        var currentDirectory = new DirectoryInfo(_root.CombineWith(movie.AssociatedFolderInfo.Path));
         if (!currentDirectory.Exists) 
         {
             return Result.Failure<string>(new Error($"Associated folder isn't exists."));
@@ -81,6 +82,6 @@ public class MovieToFolderService : IMovieToFolderService
 
     private string GetDirectoryName(Movie movie)
     {
-        return $"{movie.ProductionInfo?.Year} {DomainServicesConstants.MovieDirectoryNameSeparator} {movie.Title}";
+        return $"{movie.ProductionInfo?.Year} {DomainServicesConstants.MovieFolderNameSeparator} {movie.Title}";
     }
 }

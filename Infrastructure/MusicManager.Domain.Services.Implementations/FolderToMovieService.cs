@@ -1,6 +1,7 @@
 ﻿using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
+using MusicManager.Domain.Services.Storage;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 
@@ -74,7 +75,7 @@ public class FolderToMovieService :
     private (bool isSuccessfullyExtracted, int year, string? title) GetMovieInfoFromDirectoryName(string directoryName)
     {
         var info = directoryName
-            .Split(DomainServicesConstants.MovieDirectoryNameSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Split(DomainServicesConstants.MovieFolderNameSeparator, StringSplitOptions.RemoveEmptyEntries)
             .Select(i => i.TrimEnd().TrimStart())
             .ToList();
 

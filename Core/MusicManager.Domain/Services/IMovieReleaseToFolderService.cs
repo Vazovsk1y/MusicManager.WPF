@@ -5,9 +5,9 @@ namespace MusicManager.Domain.Services;
 
 public interface IMovieReleaseToFolderService
 {
-    Task<Result<string>> CreateAssociatedFolderAndFileAsync(MovieRelease movieRelease, Movie parent);
+    Task<Result<string>> CreateAssociatedFolderAndFileAsync(MovieRelease movieRelease, Movie parent, CancellationToken cancellationToken = default);
 
-    Task<Result<string>> CreateFolderLinkAsync(Movie addLinkTo, string movieReleaseLinkTargetPath);
+    Task<Result<string>> CreateFolderLinkAsync(MovieRelease movieRelease, Movie movie, CancellationToken cancellationToken = default);
 
-    Task<Result<string>> UpdateIfExistsAsync(MovieRelease movieRelease);
+    Task<Result<string>> UpdateAsync(MovieRelease movieRelease, CancellationToken cancellationToken = default);
 }

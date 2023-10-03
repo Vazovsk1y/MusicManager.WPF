@@ -7,7 +7,7 @@ public static class IQueryableExtensions
 {
     public static bool IsSongwriterWithPassedEntityDirectoryInfoExists(this IQueryable<Songwriter> songwriters, EntityDirectoryInfo? entityDirectoryInfo)
     {
-        return songwriters.Any(e => e.EntityDirectoryInfo == entityDirectoryInfo);
+        return songwriters.Any(e => e.AssociatedFolderInfo == entityDirectoryInfo);
     }
 }
 

@@ -52,13 +52,15 @@ public partial class DiscType : ValueObject<DiscType>
 
     public static IEnumerable<DiscType> EnumerateRange(byte count = 5)
     {
-        return new List<DiscType>(Enumerable.Range(2, count - 1).Select(e => new DiscType(e)))
+        yield return CD;
+        yield return LP;
+        yield return Unknown;
+        yield return Bootleg;
+
+        for (int i = 2; i < count; i++)
         {
-            CD,
-            LP,
-            Bootleg,
-            Unknown,
-        };
+            yield return new DiscType(i);
+        }
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()

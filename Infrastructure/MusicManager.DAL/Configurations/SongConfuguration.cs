@@ -27,6 +27,6 @@ internal class SongConfuguration : IEntityTypeConfiguration<Song>
 
         entityBuilder.Property(e => e.Order).IsRequired();
 
-        entityBuilder.Property(e => e.Name).IsRequired();
+        entityBuilder.Property(e => e.Title).IsRequired();
     }
 }

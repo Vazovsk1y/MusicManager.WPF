@@ -1,6 +1,7 @@
 ﻿using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
+using MusicManager.Domain.Services.Storage;
 using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.Services.Implementations;
@@ -65,7 +66,7 @@ public class FolderToSongwriterService :
 
     private (bool isInfoSuccessfullyExtracted, string? name, string? surname) GetSongwriterInfoFromDirectoryName(string directoryName)
     {
-        var info = directoryName.Split(DomainServicesConstants.SongwriterDirectoryNameSeparator, StringSplitOptions.RemoveEmptyEntries);
+        var info = directoryName.Split(DomainServicesConstants.SongwriterFolderNameSeparator, StringSplitOptions.RemoveEmptyEntries);
 
         return info.Length < 2 ? (false, null, null) : (true, info[0], info[1]);
     }

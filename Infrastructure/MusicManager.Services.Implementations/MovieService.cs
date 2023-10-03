@@ -59,20 +59,20 @@ public class MovieService : IMovieService
             return Result.Failure(ServicesErrors.MovieReleaseWithPassedIdIsNotExists());
         }
 
-        if (movieRelease.EntityDirectoryInfo is null)
+        if (movieRelease.AssociatedFolderInfo is null)
         {
             return Result.Failure(new Error("Movie release directory info is not created."));
         }
 
         if (createAssociatedLink)
         {
-			var settingLinkResult = await _movieReleaseToFolderService.CreateFolderLinkAsync(movie, _root.CombineWith(movieRelease.EntityDirectoryInfo!.Path));
+			var settingLinkResult = await _movieReleaseToFolderService.CreateFolderLinkAsync(movieRelease, movie);
 			if (settingLinkResult.IsFailure)
 			{
 				return settingLinkResult;
 			}
 
-			var addingResult = movie.AddRelease(movieRelease, true, settingLinkResult.Value);
+			var addingResult = movie.AddRelease(movieRelease, settingLinkResult.Value);
 			if (addingResult.IsFailure)
 			{
 				return addingResult;
@@ -80,7 +80,7 @@ public class MovieService : IMovieService
 		}
         else
         {
-			var addingResult = movie.AddRelease(movieRelease, true);
+			var addingResult = movie.AddRelease(movieRelease);
 			if (addingResult.IsFailure)
 			{
 				return addingResult;
@@ -187,13 +187,13 @@ public class MovieService : IMovieService
         var movie = movieCreationResult.Value;
         if (createAssociatedFolder)
         {
-            var createdAssociatedFolderAndFileResult = await _movieToFolderService.CreateAssociatedAsync(movie, songwriter);
+            var createdAssociatedFolderAndFileResult = await _movieToFolderService.CreateAssociatedFolderAndFileAsync(movie, songwriter);
             if (createdAssociatedFolderAndFileResult.IsFailure)
             {
                 return Result.Failure<MovieId>(createdAssociatedFolderAndFileResult.Error);
             }
 
-            movie.SetDirectoryInfo(createdAssociatedFolderAndFileResult.Value);
+            movie.SetAssociatedFolder(createdAssociatedFolderAndFileResult.Value);
         }
        
         songwriter.AddMovie(movie);
@@ -223,7 +223,7 @@ public class MovieService : IMovieService
             return Result.Failure<MovieDTO>(ServicesErrors.SongwriterWithPassedIdIsNotExists());
         }
 
-        var addingResult = songwriter.AddMovie(movie, true);
+        var addingResult = songwriter.AddMovie(movie);
         if (addingResult.IsFailure)
         {
             return Result.Failure<MovieDTO>(addingResult.Error);
@@ -289,15 +289,15 @@ public class MovieService : IMovieService
             return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
         }
 
-        if (movie.EntityDirectoryInfo is not null)
+        if (movie.AssociatedFolderInfo is not null)
         {
-			var folderUpdatingResult = await _movieToFolderService.UpdateIfExistsAsync(movie);
+			var folderUpdatingResult = await _movieToFolderService.UpdateAsync(movie);
 			if (folderUpdatingResult.IsFailure)
 			{
                 return folderUpdatingResult;
 			}
 
-			movie.SetDirectoryInfo(folderUpdatingResult.Value);
+			movie.SetAssociatedFolder(folderUpdatingResult.Value);
 		}
 
 		await _dbContext.SaveChangesAsync(cancellationToken);

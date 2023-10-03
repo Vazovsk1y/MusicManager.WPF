@@ -214,7 +214,7 @@ public partial class CueFileInteractor : ICueFileInteractor
         {
             if (row.Contains(AudioKeyWord))
             {
-                track.TrackPosition = GetTrackPosition(row);
+                track.TrackOrder = GetTrackPosition(row);
                 continue;
             }
 

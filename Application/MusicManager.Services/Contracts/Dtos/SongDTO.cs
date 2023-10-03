@@ -7,9 +7,9 @@ namespace MusicManager.Services.Contracts.Dtos;
 public record SongDTO(
     SongId Id, 
     DiscId DiscId,
-    string Name,
-    int SongNumber,
-    SongFileType ExecutableType,
+    string Title,
+    int Order,
+    AudioType AudioType,
     string? DiscNumber,
     TimeSpan Duration
     );

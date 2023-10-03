@@ -20,23 +20,26 @@ public class PlaybackInfo : ValueObject<PlaybackInfo>
 
     public SongId SongId { get; private set; }
 
-    public string ExecutableFileFullPath { get; }
+    public string ExecutableFilePath { get; }
+
+    public AudioType AudioType { get; init; }
+
+    public TimeSpan Duration { get; init; }
 
     public CueInfo? CueInfo { get; private set; }
 
-    public SongFileType ExecutableType { get; init; }
+	#endregion
 
-    public TimeSpan SongDuration { get; init; }
+	#region --Constructors--
 
-    #endregion
+#pragma warning disable CS8618 
+	protected PlaybackInfo() { } // for EF core
 
-    #region --Constructors--
+#pragma warning restore CS8618 
 
-    protected PlaybackInfo() { } // for EF core
-
-    private PlaybackInfo(string fullPath, SongId songId)
+	private PlaybackInfo(string path, SongId songId)
     {
-        ExecutableFileFullPath = fullPath;
+        ExecutableFilePath = path;
         SongId = songId;
     }
 
@@ -45,84 +48,83 @@ public class PlaybackInfo : ValueObject<PlaybackInfo>
     #region --Methods--
 
     internal static Result<PlaybackInfo> Create(
-        string fullPath,
+        string executableFilePath,
         SongId songId,
         TimeSpan duration)
     {
-        if (string.IsNullOrWhiteSpace(fullPath))
+        if (string.IsNullOrWhiteSpace(executableFilePath))
         {
-            return Result.Failure<PlaybackInfo>(DomainErrors.NullOrEmptyStringPassed());
+            return Result.Failure<PlaybackInfo>(DomainErrors.NullOrEmptyStringPassed("executable song file path"));
         }
 
-        string fileExtension = Path.GetExtension(fullPath);
-        return fileExtension switch
+        string fileExtension = Path.GetExtension(executableFilePath);
+        return fileExtension.ToLower() switch
         {
-            DomainConstants.FlacExtension => new PlaybackInfo(fullPath, songId)
+            DomainConstants.FlacExtension => new PlaybackInfo(executableFilePath, songId)
             {
-                SongDuration = duration,
-                ExecutableType = SongFileType.Flac,
+                Duration = duration,
+                AudioType = AudioType.Flac,
             },
-            DomainConstants.Mp3Extension => new PlaybackInfo(fullPath, songId)
+            DomainConstants.Mp3Extension => new PlaybackInfo(executableFilePath, songId)
             {
-                SongDuration = duration,
-                ExecutableType = SongFileType.Mp3,
+                Duration = duration,
+                AudioType = AudioType.Mp3,
             },
-            DomainConstants.WVExtension => new PlaybackInfo(fullPath, songId)
+            DomainConstants.WVExtension => new PlaybackInfo(executableFilePath, songId)
             {
-                SongDuration = duration,
-                ExecutableType = SongFileType.WV,
+                Duration = duration,
+                AudioType = AudioType.WV,
             },
-            DomainConstants.ApeExtension => new PlaybackInfo(fullPath, songId)
+            DomainConstants.ApeExtension => new PlaybackInfo(executableFilePath, songId)
             {
-                SongDuration = duration,
-                ExecutableType = SongFileType.Ape,
+                Duration = duration,
+                AudioType = AudioType.Ape,
             },
-            _ => new PlaybackInfo(fullPath, songId)
+            _ => new PlaybackInfo(executableFilePath, songId)
             {
-                SongDuration = duration,
-                ExecutableType = SongFileType.Unknown,
+                Duration = duration,
+                AudioType = AudioType.Unknown,
             }
         };
     }
 
     internal static Result<PlaybackInfo> Create(
-        string fullPath,
+        string executableFilePath,
         SongId songId,
         TimeSpan duration,
-        string cueFileFullPath,
+        string cueFilePath,
         TimeSpan index00,
         TimeSpan index01,
-        string songNameInCue)
+        string songNameInCueFile)
     {
-        if (Path.GetDirectoryName(fullPath) != Path.GetDirectoryName(cueFileFullPath)) 
+        if (Path.GetDirectoryName(executableFilePath) != Path.GetDirectoryName(cueFilePath)) 
         {
-            return Result.Failure<PlaybackInfo>(new Error("Cue file and executable must be place in the same folder together."));
+            return Result.Failure<PlaybackInfo>(DomainErrors.PlaybackInfo.CueFileNotPlacedInTheExecutableFileFolder);
         }
 
-        var creationResult = Create(fullPath, songId, duration);
-
+        var creationResult = Create(executableFilePath, songId, duration);
         if (creationResult.IsFailure)
         {
             return creationResult;
         }
 
-        var cueInfoCreationResult = CueInfo.Create(cueFileFullPath, index00, index01, songNameInCue);
-
+        var cueInfoCreationResult = CueInfo.Create(cueFilePath, index00, index01, songNameInCueFile);
         if (cueInfoCreationResult.IsFailure)
         {
             return Result.Failure<PlaybackInfo>(cueInfoCreationResult.Error);
         }
 
-        var playbackInfo = creationResult.Value;
-        playbackInfo.CueInfo = cueInfoCreationResult.Value;
+        var cueInfo = cueInfoCreationResult.Value;
+		var playbackInfo = creationResult.Value;
+        playbackInfo.CueInfo = cueInfo;
         return playbackInfo;
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()
     {
-        yield return ExecutableFileFullPath;
-        yield return ExecutableType;
-        yield return SongDuration;
+        yield return ExecutableFilePath;
+        yield return AudioType;
+        yield return Duration;
         yield return CueInfo;
     }
 

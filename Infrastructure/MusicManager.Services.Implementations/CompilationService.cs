@@ -126,7 +126,7 @@ public class CompilationService : ICompilationService
                 return Result.Failure<DiscId>(createdAssociatedFolderAndFileResult.Error);
             }
 
-            compilation.SetDirectoryInfo(createdAssociatedFolderAndFileResult.Value);
+            compilation.SetAssociatedFolder(createdAssociatedFolderAndFileResult.Value);
         }
         
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -155,7 +155,7 @@ public class CompilationService : ICompilationService
             return Result.Failure<CompilationDTO>(ServicesErrors.SongwriterWithPassedIdIsNotExists());
         }
 
-        var addingResult = songwriter.AddCompilation(compilation, true);
+        var addingResult = songwriter.AddCompilation(compilation);
         if (addingResult.IsFailure)
         {
             return Result.Failure<CompilationDTO>(addingResult.Error);
@@ -209,15 +209,15 @@ public class CompilationService : ICompilationService
             return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
         }
 
-        if (compilation.EntityDirectoryInfo is not null)
+        if (compilation.AssociatedFolderInfo is not null)
         {
-			var folderUpdatingResult = await _compilationToFolderService.UpdateIfExistsAsync(compilation);
+			var folderUpdatingResult = await _compilationToFolderService.UpdateAsync(compilation);
 			if (folderUpdatingResult.IsFailure)
 			{
                 return folderUpdatingResult;
 			}
 
-			compilation.SetDirectoryInfo(folderUpdatingResult.Value);
+			compilation.SetAssociatedFolder(folderUpdatingResult.Value);
 		}
 
 		await _dbContext.SaveChangesAsync(cancellationToken);

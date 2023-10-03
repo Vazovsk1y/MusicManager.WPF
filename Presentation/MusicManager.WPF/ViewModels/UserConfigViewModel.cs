@@ -34,7 +34,7 @@ internal partial class UserConfigViewModel :
 		using var scope = _serviceScopeFactory.CreateScope();
 		var config = scope.ServiceProvider.GetRequiredService<IUserConfig>();
         config.CreateAssociatedFolder = CreateAssociatedFolder;
-        config.RootPath = RootPath;
+        config.Path = RootPath;
         config.Save();
 	}
 
@@ -57,7 +57,7 @@ internal partial class UserConfigViewModel :
     {
         using var scope = _serviceScopeFactory.CreateScope();
         var config = scope.ServiceProvider.GetRequiredService<IUserConfig>();
-        RootPath = config.RootPath;
+        RootPath = config.Path;
         CreateAssociatedFolder = config.CreateAssociatedFolder;
     }
 }

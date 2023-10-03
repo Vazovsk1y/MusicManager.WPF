@@ -13,11 +13,14 @@ public class CueInfo : ValueObject<CueInfo>
 
     public TimeSpan Index01 { get; init; }
 
-    public string SongNameInCue { get; init; }
+    public string SongTitleInCue { get; init; }
 
-    private CueInfo() { }
+#pragma warning disable CS8618
+	private CueInfo() { }
 
-    internal static Result<CueInfo> Create(
+#pragma warning restore CS8618
+
+	internal static Result<CueInfo> Create(
         string cueFilePath, 
         TimeSpan index00, 
         TimeSpan index01, 
@@ -28,9 +31,9 @@ public class CueInfo : ValueObject<CueInfo>
             return Result.Failure<CueInfo>(DomainErrors.NullOrEmptyStringPassed());
         }
 
-        if (!cueFilePath.EndsWith(DomainConstants.CueExtension))
+        if (!cueFilePath.EndsWith(DomainConstants.CueExtension, StringComparison.OrdinalIgnoreCase))
         {
-            return Result.Failure<CueInfo>(DomainErrors.SongPlayInfo.IncorrectCuePathPassed(cueFilePath));
+            return Result.Failure<CueInfo>(DomainErrors.PlaybackInfo.IncorrectCuePathPassed(cueFilePath));
         }
 
         return new CueInfo()
@@ -38,7 +41,7 @@ public class CueInfo : ValueObject<CueInfo>
             CueFilePath = cueFilePath,
             Index00 = index00,
             Index01 = index01,
-            SongNameInCue = songNameInCueFile
+            SongTitleInCue = songNameInCueFile
         };
     }
 

@@ -11,7 +11,7 @@ public static class Mapper
         return new SongwriterDTO(
             songwriter.Id,
             songwriter.Name,
-            songwriter.Surname,
+            songwriter.LastName,
             songwriter.Movies.Select(e => e.ToDTO()),
             songwriter.Compilations.Select(e => e.ToDTO())
             );
@@ -21,7 +21,7 @@ public static class Mapper
     {
         return new SongwriterLookupDTO(
             songwriter.Id,
-            $"{songwriter.Name} {songwriter.Surname}"
+            $"{songwriter.Name} {songwriter.LastName}"
             );
     }
 
@@ -40,7 +40,7 @@ public static class Mapper
 
     public static MovieReleaseLinkDTO ToDTO(this MovieReleaseLink movieReleaseLink)
     {
-        return new MovieReleaseLinkDTO(movieReleaseLink.MovieRelease.ToDTO(), movieReleaseLink.ReleaseLink is null);
+        return new MovieReleaseLinkDTO(movieReleaseLink.MovieRelease.ToDTO(), movieReleaseLink.ReleaseLinkInfo is null);
     }
 
     public static MovieLookupDTO ToLookupDTO(this Movie movie)
@@ -82,11 +82,11 @@ public static class Mapper
         return new SongDTO(
             song.Id,
             song.DiscId,
-            song.Name,
+            song.Title,
             song.Order,
-            song.PlaybackInfo.ExecutableType,
+            song.PlaybackInfo.AudioType,
             song.DiscNumber?.Value,
-            song.PlaybackInfo.SongDuration
+            song.PlaybackInfo.Duration
             );
     }
 }

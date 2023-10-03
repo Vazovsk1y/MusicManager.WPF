@@ -1,7 +1,9 @@
 ﻿using IWshRuntimeLibrary;
 using Microsoft.EntityFrameworkCore;
+using MusicManager.Domain.Constants;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
+using MusicManager.Domain.Services.Storage;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 using MusicManager.Repositories.Data;
@@ -22,14 +24,54 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
         _root = root;
     }
 
-    public async Task<Result<string>> CreateAssociatedFolderAndFileAsync(MovieRelease movieRelease, Movie parent)
+	public Task<Result<string>> CreateFolderLinkAsync(MovieRelease movieRelease, Movie movie, CancellationToken cancellationToken = default)
     {
-        if (parent.EntityDirectoryInfo is null)
+		if (movie.AssociatedFolderInfo is null)
+		{
+			return Task.FromResult(Result.Failure<string>(new Error("Movie directory info is not created. Can't add link to this movie.")));
+		}
+
+        if (movieRelease.AssociatedFolderInfo is null)
+        {
+			return Task.FromResult(Result.Failure<string>(new Error("Movie release directory info is not created. Can't add this mr to movie.")));
+		}
+
+		string originalMovieReleaseFolder = _root.CombineWith(movieRelease.AssociatedFolderInfo.Path);
+		string shortcutStorageFolder = _root.CombineWith(movie.AssociatedFolderInfo.Path);
+
+		if (!Directory.Exists(shortcutStorageFolder))
+		{
+			return Task.FromResult(Result.Failure<string>(new Error("Movie directory is not exists.")));
+		}
+
+		if (!Directory.Exists(originalMovieReleaseFolder))
+		{
+			return Task.FromResult(Result.Failure<string>(new Error("Target movie release directory is not exists.")));
+		}
+
+		string shorcutName = $"{Path.GetFileName(originalMovieReleaseFolder)} - shortcut{DomainConstants.LnkExtension}";
+		string shorcutFullPath = Path.Combine(shortcutStorageFolder, shorcutName);
+
+        CreateShortcutFile(originalMovieReleaseFolder, shorcutFullPath);
+		return Task.FromResult(Result.Success(shorcutFullPath.GetRelational(_root)));
+	}
+
+    private static void CreateShortcutFile(string targetPath, string shorcutPath)
+    {
+		WshShell shell = new();
+		WshShortcut shortcut = (WshShortcut)shell.CreateShortcut(shorcutPath);
+		shortcut.TargetPath = targetPath;
+		shortcut.Save();
+	}
+
+	public async Task<Result<string>> CreateAssociatedFolderAndFileAsync(MovieRelease movieRelease, Movie parent, CancellationToken cancellationToken = default)
+    {
+        if (parent.AssociatedFolderInfo is null)
         {
             return Result.Failure<string>(new Error("Parent directory info is not created."));
         }
 
-        var rootDirectory = new DirectoryInfo(_root.CombineWith(parent.EntityDirectoryInfo.Path));
+        var rootDirectory = new DirectoryInfo(_root.CombineWith(parent.AssociatedFolderInfo.Path));
         if (!rootDirectory.Exists)
         {
             return Result.Failure<string>(new Error("Parent directory is not exists."));
@@ -40,7 +82,7 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
         string createdMovieReleaseRelationalPath = createdMovieReleaseDirectoryFullPath.GetRelational(_root);
 
         if (Directory.Exists(createdMovieReleaseDirectoryFullPath)
-            || await _dbContext.MovieReleases.AnyAsync(e => e.EntityDirectoryInfo == EntityDirectoryInfo.Create(createdMovieReleaseRelationalPath).Value))
+            || await _dbContext.MovieReleases.AnyAsync(e => e.AssociatedFolderInfo == EntityDirectoryInfo.Create(createdMovieReleaseRelationalPath).Value))
         {
             return Result.Failure<string>(new Error("Directory for this movie release is already exists or movie release with that directory info is already added to database."));
         }
@@ -56,48 +98,19 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
         return createdMovieReleaseRelationalPath;
     }
 
-    public Task<Result<string>> CreateFolderLinkAsync(Movie addLinkTo, string movieReleaseLinkTargetPath)
+    
+
+    public async Task<Result<string>> UpdateAsync(MovieRelease movieRelease, CancellationToken cancellationToken = default)
     {
-        if (addLinkTo.EntityDirectoryInfo is null)
-        {
-            return Task.FromResult(Result.Failure<string>(new Error("Movie directory info is not created. Can't add link to this movie.")));
-        }
-
-        string targetDirectory = _root.CombineWith(movieReleaseLinkTargetPath);
-        string shortcutStorageDirectory = _root.CombineWith(addLinkTo.EntityDirectoryInfo.Path);
-
-        if (!Directory.Exists(shortcutStorageDirectory))
-        {
-            return Task.FromResult(Result.Failure<string>(new Error("Movie directory is not exists.")));
-        }
-
-        if (!Directory.Exists(targetDirectory))
-        {
-            return Task.FromResult(Result.Failure<string>(new Error("Target movie release directory is not exists.")));
-        }
-        
-        string shorcutName = $"{Path.GetFileName(targetDirectory)} - shortcut.lnk";
-        string shorcutFullPath = Path.Combine(shortcutStorageDirectory, shorcutName);
-
-        WshShell shell = new();
-        WshShortcut shortcut = (WshShortcut)shell.CreateShortcut(shorcutFullPath);
-        shortcut.TargetPath = targetDirectory;
-        shortcut.Save();
-
-        return Task.FromResult(Result.Success(shorcutFullPath.GetRelational(_root)));
-    }
-
-    public async Task<Result<string>> UpdateIfExistsAsync(MovieRelease movieRelease)
-    {
-        if (movieRelease.EntityDirectoryInfo is null)
+        if (movieRelease.AssociatedFolderInfo is null)
         {
             return Result.Failure<string>(new Error("Movie release directory info is not created."));
         }
 
 		var moviesWhereStoresActualFolders = movieRelease.MoviesLinks.Where(item =>
 		item.MovieReleaseId == movieRelease.Id
-		&& item.ReleaseLink is null
-		&& item.Movie.EntityDirectoryInfo is not null).Select(e => e.Movie);
+		&& item.ReleaseLinkInfo is null
+		&& item.Movie.AssociatedFolderInfo is not null).Select(e => e.Movie);
 
         if (!moviesWhereStoresActualFolders.Any())
         {
@@ -106,57 +119,61 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
 
 		InvalidOperationExceptionHelper.ThrowIfTrue(moviesWhereStoresActualFolders.Count() > 1, "Detected more than one actual folder created.");
 
-        var previousFolderInfo = new DirectoryInfo(_root.CombineWith(movieRelease.EntityDirectoryInfo!.Path));
-        if (!previousFolderInfo.Exists)
+        string previousFolderFullPath = _root.CombineWith(movieRelease.AssociatedFolderInfo!.Path);
+        string previousFolderName = Path.GetFileName(previousFolderFullPath);
+        if (!Directory.Exists(previousFolderFullPath))
         {
             return Result.Failure<string>(new Error("Original directory is not exists."));
         }
 
         string newDirectoryName = GetDirectoryName(movieRelease);
         var movieWhereOriginalMovieReleaseFolderStores = moviesWhereStoresActualFolders.First();
-		string newDirectoryFullPath = Path.Combine(_root.CombineWith(movieWhereOriginalMovieReleaseFolderStores.EntityDirectoryInfo!.Path), newDirectoryName);
-        if (previousFolderInfo.FullName != newDirectoryFullPath)
+		string newDirectoryFullPath = Path.Combine(_root.CombineWith(movieWhereOriginalMovieReleaseFolderStores.AssociatedFolderInfo!.Path), newDirectoryName);
+        if (previousFolderFullPath != newDirectoryFullPath)
         {
-            previousFolderInfo.MoveTo(newDirectoryFullPath);
+            Directory.Move(previousFolderFullPath, newDirectoryFullPath);
         }
 
         await movieRelease
             .ToJson()
             .AddSerializedJsonEntityToAsync(Path.Combine(newDirectoryFullPath, MovieReleaseEntityJson.FileName));
 
-		string previousDirectoryName = previousFolderInfo.Name;
         var moviesWhereStoresLinks = movieRelease.MoviesLinks.Select(e => e.Movie).ToList();
         moviesWhereStoresLinks.Remove(movieWhereOriginalMovieReleaseFolderStores);
 
-		await UpdateAllExistingLinks(moviesWhereStoresLinks, previousDirectoryName, newDirectoryFullPath);
+		await UpdateAllExistingLinks(moviesWhereStoresLinks, previousFolderName, newDirectoryFullPath);
         return Result.Success(newDirectoryFullPath.GetRelational(_root));
     }
 
     private async Task UpdateAllExistingLinks(IEnumerable<Movie> movies, string previousDirectoryName, string newDirectoryFullPath)
     {
         var moviesToUpdateLinksIn = movies
-            .Where(e => e.ReleasesLinks.Any(item => item.ReleaseLink is not null));
+            .Where(e => e.ReleasesLinks.Any(item => item.ReleaseLinkInfo is not null));
 
         foreach (var item in moviesToUpdateLinksIn)
         {
-            string linkStorageDirectory = _root.CombineWith(item.EntityDirectoryInfo!.Path);
+            string linkStorageDirectory = _root.CombineWith(item.AssociatedFolderInfo!.Path);
 
             var linkInfo = new DirectoryInfo(Path.Combine(linkStorageDirectory, previousDirectoryName));
             if (linkInfo.Exists && linkInfo.LinkTarget is not null)
             {
                 linkInfo.Delete();
-                await CreateFolderLinkAsync(item, newDirectoryFullPath);
+				string shorcutName = $"{Path.GetFileName(newDirectoryFullPath)} - shortcut{DomainConstants.LnkExtension}";
+				string shorcutFullPath = Path.Combine(linkStorageDirectory, shorcutName);
+				CreateShortcutFile(newDirectoryFullPath, shorcutFullPath);
                 continue;
             }
 
             var shortcutInfo = new DirectoryInfo(linkStorageDirectory)
                 .EnumerateFiles()
-                .FirstOrDefault(e => e.Name.Contains(previousDirectoryName) && e.Extension == ".lnk");
+                .FirstOrDefault(e => e.Name.Contains(previousDirectoryName) && e.Extension == DomainConstants.LnkExtension);
             if (shortcutInfo is not null)
             {
                 shortcutInfo.Delete();
-                await CreateFolderLinkAsync(item, newDirectoryFullPath);
-            }
+				string shorcutName = $"{Path.GetFileName(newDirectoryFullPath)} - shortcut{DomainConstants.LnkExtension}";
+				string shorcutFullPath = Path.Combine(linkStorageDirectory, shorcutName);
+				CreateShortcutFile(newDirectoryFullPath, shorcutFullPath);
+			}
         }
     }
 
@@ -168,8 +185,8 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
             return baseMovieReleaseDirectoryName;
         }
 
-        string createdMovieReleaseDirectoryName = $"{baseMovieReleaseDirectoryName} {DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo?.Country ?? ProductionInfo.UndefinedCountry} " +
-        $"{DomainServicesConstants.DiscDirectoryNameSeparator} {movieRelease.ProductionInfo!.Year}";
+        string createdMovieReleaseDirectoryName = $"{baseMovieReleaseDirectoryName} {DomainServicesConstants.DiscFolderNameSeparator} {movieRelease.ProductionInfo?.Country ?? ProductionInfo.UndefinedCountry} " +
+        $"{DomainServicesConstants.DiscFolderNameSeparator} {movieRelease.ProductionInfo!.Year}";
 
         return createdMovieReleaseDirectoryName;
     }

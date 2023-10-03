@@ -121,7 +121,7 @@ public class SongwriterService : ISongwriterService
             {
                 return Result.Failure<SongwriterId>(creatingAssociatedFolderAndFileResult.Error);
             }
-            createdSongwriter.SetDirectoryInfo(creatingAssociatedFolderAndFileResult.Value);
+            createdSongwriter.SetAssociatedFolder(creatingAssociatedFolderAndFileResult.Value);
         }
 
         await _dbContext.Songwriters.AddAsync(createdSongwriter, cancellationToken);
@@ -141,7 +141,7 @@ public class SongwriterService : ISongwriterService
         }
 
         var songwriter = songwriterCreationResult.Value;
-        if (_dbContext.Songwriters.IsSongwriterWithPassedEntityDirectoryInfoExists(songwriter.EntityDirectoryInfo))
+        if (_dbContext.Songwriters.IsSongwriterWithPassedEntityDirectoryInfoExists(songwriter.AssociatedFolderInfo))
         {
             return Result.Failure<SongwriterDTO>(new Error("Songwriter with passed directory path is already exists."));
         }

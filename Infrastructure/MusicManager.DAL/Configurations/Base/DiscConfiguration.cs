@@ -23,7 +23,7 @@ internal class DiscConfiguration : IEntityTypeConfiguration<Disc>
         entityBuilder.OwnsOne(e => e.ProductionInfo);
 
         entityBuilder
-            .Property(e => e.EntityDirectoryInfo)
+            .Property(e => e.AssociatedFolderInfo)
             .HasConversion(
             e => e != null ? e.Path : null,
             e => e != null ? EntityDirectoryInfo.Create(e).Value : null)

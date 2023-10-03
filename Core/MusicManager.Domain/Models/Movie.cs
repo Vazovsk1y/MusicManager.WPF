@@ -22,31 +22,33 @@ public class Movie : IAggregateRoot
 
     public ProductionInfo ProductionInfo { get; private set; }
 
+    public string Title { get; private set; }
+
     public Director? Director { get; private set; } 
 
-    public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
-
-    public string Title { get; private set; } = string.Empty;
+    public EntityDirectoryInfo? AssociatedFolderInfo { get; private set; }
 
     public IReadOnlyCollection<MovieReleaseLink> ReleasesLinks => _releasesLinks.ToList();
 
-    #endregion
+	#endregion
 
-    #region --Constructors--
+	#region --Constructors--
 
-    protected Movie() { } // for EF
+#pragma warning disable CS8618 
+	protected Movie() { } // for EF
 
-    private Movie(SongwriterId songwriterId) 
+	private Movie(SongwriterId songwriterId) 
     {
         SongwriterId = songwriterId;
         Id = MovieId.Create();
     }
+#pragma warning restore CS8618 
 
-    #endregion
+	#endregion
 
-    #region --Methods--
+	#region --Methods--
 
-    public static Result<Movie> Create(
+	public static Result<Movie> Create(
         SongwriterId songwriterId,
         string title, 
         int productionYear, 
@@ -72,7 +74,7 @@ public class Movie : IAggregateRoot
     public static Result<Movie> Create(
         SongwriterId songwriterId,
         string title,
-        string directoryFullPath,
+        string associatedFolderPath,
         int productionYear,
         string? productionCountry = null)
     {
@@ -82,7 +84,7 @@ public class Movie : IAggregateRoot
             return creationResult;
         }
 
-        var entityDirInfoRes = creationResult.Value.SetDirectoryInfo(directoryFullPath);
+        var entityDirInfoRes = creationResult.Value.SetAssociatedFolder(associatedFolderPath);
 
         return entityDirInfoRes.IsFailure ?
             Result.Failure<Movie>(entityDirInfoRes.Error)
@@ -90,7 +92,7 @@ public class Movie : IAggregateRoot
             creationResult.Value;
     }
 
-    public Result SetDirectoryInfo(string path)
+    public Result SetAssociatedFolder(string path)
     {
         var result = EntityDirectoryInfo.Create(path);
 
@@ -99,56 +101,53 @@ public class Movie : IAggregateRoot
             return Result.Failure(result.Error);
         }
 
-        EntityDirectoryInfo = result.Value;
+        AssociatedFolderInfo = result.Value;
         return Result.Success();
     }
 
     public Result SetProductionInfo(string? productionCountry, int productionYear)
     {
-        var result = ProductionInfo.Create(productionCountry, productionYear);
+		var result = ProductionInfo.Create(productionCountry, productionYear);
 
-        if (result.IsSuccess)
-        {
-            ProductionInfo = result.Value;
-            return Result.Success();
-        }
+		if (result.IsFailure)
+		{
+			return Result.Failure(result.Error);
+		}
 
-        return Result.Failure(result.Error);
-    }
+		ProductionInfo = result.Value;
+		return Result.Success();
+	}
 
-    public Result AddRelease(MovieRelease release, bool checkDirectoryInfo = false, string? realeseLinkPath = null)
+	public Result AddRelease(MovieRelease release, string? releaseLinkPath = null)
     {
         if (release is null)
         {
-            return Result.Failure(DomainErrors.NullEntityPassed(nameof(release)));
+            return Result.Failure(DomainErrors.NullPassed(nameof(release)));
         }
 
-        if (_releasesLinks.SingleOrDefault(i => i.MovieRelease.Id == release.Id) is not null)
+        if (IsReleaseExists())
         {
-            return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(release)));
+            return Result.Failure(DomainErrors.PassedEntityAlreadyAdded(nameof(release)));
         }
 
-        if (checkDirectoryInfo &&
-            _releasesLinks.SingleOrDefault(m =>
-            m.MovieRelease.EntityDirectoryInfo == release.EntityDirectoryInfo) is not null)
-        {
-            return Result.Failure(new Error($"MovieRelease with passed directory info is already exists."));
-        }
-
-        var linkCreationResult = MovieReleaseLink.Create(release, this, realeseLinkPath);
+        var linkCreationResult = MovieReleaseLink.Create(release, this, releaseLinkPath);
         if (linkCreationResult.IsFailure)
         {
             return Result.Failure(linkCreationResult.Error);
         }
 
-        var addingDiscResult = release.AddMovieLink(linkCreationResult.Value);
-        if (addingDiscResult.IsFailure)
-        {
-            return Result.Failure(addingDiscResult.Error);
-        }
-
-        _releasesLinks.Add(linkCreationResult.Value);
+        var link = linkCreationResult.Value;
+		release.AddMovieLink(link);
+        _releasesLinks.Add(link);
         return Result.Success();
+
+        bool IsReleaseExists()
+        {
+            return _releasesLinks.SingleOrDefault(lnk => 
+            lnk.MovieReleaseId == release.Id
+            || 
+            (lnk.ReleaseLinkInfo?.Path == releaseLinkPath && lnk.MovieRelease.AssociatedFolderInfo == release.AssociatedFolderInfo)) is not null;
+		}
     }
 
     public Result SetTitle(string title)
@@ -166,7 +165,7 @@ public class Movie : IAggregateRoot
     {
         if (director is null)
         {
-            return Result.Failure(DomainErrors.NullEntityPassed("director"));
+            return Result.Failure(DomainErrors.NullPassed("director"));
         }
 
         Director?.RemoveMovie(Id);

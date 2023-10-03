@@ -24,80 +24,64 @@ public class Song : IAggregateRoot
 
     public PlaybackInfo PlaybackInfo { get; private set; }
 
-    public string Name { get; private set; } = string.Empty;
+    public string Title { get; private set; }
 
     public int Order { get; private set; }
 
     public bool IsFromCue => PlaybackInfo.CueInfo is not null;
 
-    #endregion
+	#endregion
 
-    #region --Constructors--
+	#region --Constructors--
 
-    private Song(string name, DiscId discId)
-    {
+#pragma warning disable CS8618
+	private Song(string title, DiscId discId)
+	{
         Id = SongId.Create();
         DiscId = discId;
-        Name = name;
+        Title = title;
     }
 
-    #endregion
+#pragma warning restore CS8618
 
-    #region --Methods--
+	#endregion
 
-    private static Result<Song> Create(
-        DiscId discId,
-        string name,
-        int order)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return Result.Failure<Song>(DomainErrors.NullOrEmptyStringPassed(nameof(name)));
-        }
-
-        if (int.IsNegative(order))
-        {
-            return Result.Failure<Song>(new("Song order must be non-negative number."));
-        }
-
-        return new Song(name, discId)
-        {
-            Order = order
-        };
-    }
+	#region --Methods--
 
     private static Result<Song> Create(
         DiscId discId, 
-        string name,
+        string title,
         int order,
-        int discNumber)
-    {
-        var songCreationResult = Create(discId, name, order);
-        if (songCreationResult.IsFailure)
-        {
-            return songCreationResult;
-        }
+        DiscNumber? discNumber = null)
+	{
+		if (string.IsNullOrWhiteSpace(title))
+		{
+			return Result.Failure<Song>(DomainErrors.NullOrEmptyStringPassed(nameof(title)));
+		}
 
-        var song = songCreationResult.Value;
-        var discNumberCreationResult = DiscNumber.Create(discNumber);
-        if (discNumberCreationResult.IsFailure)
-        {
-            return Result.Failure<Song>(discNumberCreationResult.Error);
-        }
+		if (int.IsNegative(order))
+		{
+			return Result.Failure<Song>(DomainErrors.Song.SongOrderCouldNotBeNegativeNumber);
+		}
 
-        song.DiscNumber = discNumberCreationResult.Value;
-        return song;
-    }
+		var song = new Song(title, discId)
+		{
+			Order = order
+		};
 
-    public static Result<Song> Create(
+		song.DiscNumber = discNumber;
+		return song;
+	}
+
+	public static Result<Song> Create(
         DiscId discId, 
-        string name,
+        string title,
         int order,
-        int discNumber, 
-        string songFileFullPath,
-        TimeSpan songDuration)
+        string executableFilePath,
+        TimeSpan duration,
+		DiscNumber? discNumber = null)
     {
-        var songCreationResult = Create(discId, name, order, discNumber);
+        var songCreationResult = Create(discId, title, order, discNumber);
 
         if (songCreationResult.IsFailure)
         {
@@ -105,32 +89,7 @@ public class Song : IAggregateRoot
         }
 
         var song = songCreationResult.Value;
-        var settingInfoResult = song.SetPlaybackInfo(songFileFullPath, songDuration);
-
-        if (settingInfoResult.IsFailure)
-        {
-            return Result.Failure<Song>(settingInfoResult.Error);
-        }
-
-        return song;
-    }
-
-    public static Result<Song> Create(
-        DiscId discId,
-        string name,
-        int order,
-        string songFileFullPath,
-        TimeSpan songDuration)
-    {
-        var songCreationResult = Create(discId, name, order);
-
-        if (songCreationResult.IsFailure)
-        {
-            return songCreationResult;
-        }
-
-        var song = songCreationResult.Value;
-        var settingInfoResult = song.SetPlaybackInfo(songFileFullPath, songDuration);
+        var settingInfoResult = song.SetPlaybackInfo(executableFilePath, duration);
 
         if (settingInfoResult.IsFailure)
         {
@@ -142,17 +101,17 @@ public class Song : IAggregateRoot
 
     public static Result<Song> Create(
         DiscId discId, 
-        string name,
+        string title,
         int order,
-        int discNumber,
-        string songFileFullPath,
-        TimeSpan songDuration,
-        string cueFileFullPath,
+        string executableFilePath,
+        TimeSpan duration,
+        string cueFilePath,
         TimeSpan index00,
         TimeSpan index01,
-        string songNameInCue)
+        string songNameInCueFile,
+		DiscNumber? discNumber = null)
     {
-        var songCreationResult = Create(discId, name, order, discNumber);
+        var songCreationResult = Create(discId, title, order, discNumber);
 
         if (songCreationResult.IsFailure)
         {
@@ -160,7 +119,7 @@ public class Song : IAggregateRoot
         }
 
         var song = songCreationResult.Value;
-        var settingPlayInfoResult = song.SetPlaybackInfo(songFileFullPath, songDuration, cueFileFullPath, index00, index01, songNameInCue);
+        var settingPlayInfoResult = song.SetPlaybackInfo(executableFilePath, duration, cueFilePath, index00, index01, songNameInCueFile);
 
         if (settingPlayInfoResult.IsFailure)
         {
@@ -170,65 +129,33 @@ public class Song : IAggregateRoot
         return song;
     }
 
-    public static Result<Song> Create(
-        DiscId discId, 
-        string name,
-        int order,
-        string songFileFullPath,
-        TimeSpan songDuration,
-        string cueFileFullPath,
-        TimeSpan index00,
-        TimeSpan index01,
-        string songNameInCue)
+    public Result SetPlaybackInfo(string executableFilePath, TimeSpan duration)
     {
-        var songCreationResult = Create(discId, name, order);
-
-        if (songCreationResult.IsFailure)
+        var creatingPlaybackInfoResult = PlaybackInfo.Create(executableFilePath, Id, duration);
+        if (creatingPlaybackInfoResult.IsFailure)
         {
-            return songCreationResult;
+            return Result.Failure(creatingPlaybackInfoResult.Error);
         }
 
-        var song = songCreationResult.Value;
-        var settingPlayInfoResult = song.SetPlaybackInfo(songFileFullPath, songDuration, cueFileFullPath, index00, index01, songNameInCue);
-
-        if (settingPlayInfoResult.IsFailure)
-        {
-            return Result.Failure<Song>(settingPlayInfoResult.Error);
-        }
-
-        return song;
-    }
-
-    public Result SetPlaybackInfo(
-        string fullPath, 
-        TimeSpan duration)
-    {
-        var settingSongFileInfoResult = PlaybackInfo.Create(fullPath, Id, duration);
-
-        if (settingSongFileInfoResult.IsFailure)
-        {
-            return Result.Failure(settingSongFileInfoResult.Error);
-        }
-
-        PlaybackInfo = settingSongFileInfoResult.Value;
+        PlaybackInfo = creatingPlaybackInfoResult.Value;
         return Result.Success();
     }
 
     public Result SetPlaybackInfo(
-        string fullPath, 
+        string executableFilePath, 
         TimeSpan duration, 
-        string cueFileFullPath,
+        string cueFilePath,
         TimeSpan index00,
         TimeSpan index01,
-        string songNameInCue)
+        string songNameInCueFile)
     {
-        var settingSongFileInfoResult = PlaybackInfo.Create(fullPath, Id, duration, cueFileFullPath, index00, index01, songNameInCue);
-
-        if (settingSongFileInfoResult.IsFailure)
+        var creatingPlaybackInfoResult = PlaybackInfo.Create(executableFilePath, Id, duration, cueFilePath, index00, index01, songNameInCueFile);
+        if (creatingPlaybackInfoResult.IsFailure)
         {
-            return Result.Failure(settingSongFileInfoResult.Error);
+            return Result.Failure(creatingPlaybackInfoResult.Error);
         }
-        PlaybackInfo = settingSongFileInfoResult.Value;
+
+        PlaybackInfo = creatingPlaybackInfoResult.Value;
         return Result.Success();
     }
 
@@ -236,21 +163,21 @@ public class Song : IAggregateRoot
     {
         if (discNumber is null)
         {
-            return Result.Failure(DomainErrors.NullEntityPassed(nameof(discNumber)));
+            return Result.Failure(DomainErrors.NullPassed(nameof(discNumber)));
         }
 
         DiscNumber = discNumber;
         return Result.Success();
     }
 
-    public Result SetName(string name)
+    public Result SetTitle(string title)
     {
-        if (string.IsNullOrWhiteSpace(name))
+        if (string.IsNullOrWhiteSpace(title))
         {
-            return Result.Failure(DomainErrors.NullOrEmptyStringPassed(nameof(name)));
+            return Result.Failure(DomainErrors.NullOrEmptyStringPassed("song title"));
         }
 
-        Name = name;
+        Title = title;
         return Result.Success();
     }
 
@@ -258,7 +185,7 @@ public class Song : IAggregateRoot
     {
         if (int.IsNegative(order))
         {
-            return Result.Failure<Song>(new("Song order must be non-negative number."));
+            return Result.Failure<Song>(DomainErrors.Song.SongOrderCouldNotBeNegativeNumber);
         }
 
         Order = order;

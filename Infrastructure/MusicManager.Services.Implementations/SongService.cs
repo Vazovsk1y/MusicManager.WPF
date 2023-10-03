@@ -94,7 +94,7 @@ public class SongService : ISongService
                     return Result.Failure<IEnumerable<SongDTO>>(movingCueFileResult.Error);
                 }
 
-                var movingExecutableFileResult = await _songToFile.CopyToAsync(anySong.PlaybackInfo.ExecutableFileFullPath, disc, songAddDTO.DiscNumber);
+                var movingExecutableFileResult = await _songToFile.CopyToAsync(anySong.PlaybackInfo.ExecutableFilePath, disc, songAddDTO.DiscNumber);
                 if (movingExecutableFileResult.IsFailure)
                 {
                     return Result.Failure<IEnumerable<SongDTO>>(movingExecutableFileResult.Error);
@@ -104,11 +104,11 @@ public class SongService : ISongService
                 {
                     item.SetPlaybackInfo(
                         movingExecutableFileResult.Value,
-                        item.PlaybackInfo.SongDuration,
+                        item.PlaybackInfo.Duration,
                         movingCueFileResult.Value,
                         item.PlaybackInfo.CueInfo.Index00,
                         item.PlaybackInfo.CueInfo.Index01,
-                        item.PlaybackInfo.CueInfo.SongNameInCue);
+                        item.PlaybackInfo.CueInfo.SongTitleInCue);
                 }
             }
 
@@ -130,14 +130,14 @@ public class SongService : ISongService
             var song = result.Value;
             if (moveToParentFolder)
             {
-                var movingExecutableFileResult = await _songToFile.CopyToAsync(song.PlaybackInfo.ExecutableFileFullPath, disc, songAddDTO.DiscNumber);
+                var movingExecutableFileResult = await _songToFile.CopyToAsync(song.PlaybackInfo.ExecutableFilePath, disc, songAddDTO.DiscNumber);
                 if (movingExecutableFileResult.IsFailure)
                 {
                     return Result.Failure<IEnumerable<SongDTO>>(movingExecutableFileResult.Error);
                 }
                 song.SetPlaybackInfo(
                 movingExecutableFileResult.Value,
-                song.PlaybackInfo.SongDuration);
+                song.PlaybackInfo.Duration);
             }
             
             song.SetDiscNumber(songAddDTO.DiscNumber);
@@ -198,7 +198,7 @@ public class SongService : ISongService
 
         var updateActions = new List<Result>()
         {
-            song.SetName(songUpdateDTO.Name),
+            song.SetTitle(songUpdateDTO.Name),
             song.SetOrder(songUpdateDTO.SongOrder)
         };
 
@@ -207,10 +207,10 @@ public class SongService : ISongService
             return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
         }
 
-        var fileUpdatingResult = await _songToFile.UpdateIfExistsAsync(song, cancellationToken);
+        var fileUpdatingResult = await _songToFile.UpdateAsync(song, cancellationToken);
         if (fileUpdatingResult.IsSuccess)
         {
-            song.SetPlaybackInfo(fileUpdatingResult.Value, song.PlaybackInfo.SongDuration);
+            song.SetPlaybackInfo(fileUpdatingResult.Value, song.PlaybackInfo.Duration);
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -229,7 +229,7 @@ public class SongService : ISongService
         var songs = songsResult.Value;
         foreach (var song in songs)
         {
-            var addingResult = disc.AddSong(song, true);
+            var addingResult = disc.AddSong(song);
             if (addingResult.IsFailure && !ignoreAddingResult)
             {
                 return Result.Failure<IEnumerable<Song>>(addingResult.Error);
@@ -249,7 +249,7 @@ public class SongService : ISongService
         }
 
         var song = songResult.Value;
-        var addingResult = disc.AddSong(song, true);
+        var addingResult = disc.AddSong(song);
         if (addingResult.IsFailure && !ignoreAddingResult)
         {
             return Result.Failure<Song>(addingResult.Error);

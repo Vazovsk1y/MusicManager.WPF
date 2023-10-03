@@ -11,7 +11,7 @@ using MusicManager.DAL;
 namespace MusicManager.DAL.Migrations
 {
     [DbContext(typeof(MusicManagerDbContext))]
-    [Migration("20230930153131_Initial")]
+    [Migration("20231003135627_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -26,9 +26,9 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("id");
 
-                    b.Property<string>("EntityDirectoryInfo")
+                    b.Property<string>("AssociatedFolderInfo")
                         .HasColumnType("TEXT")
-                        .HasColumnName("entity_directory_info");
+                        .HasColumnName("associated_folder_info");
 
                     b.Property<string>("Identifier")
                         .IsRequired()
@@ -57,10 +57,10 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("disc_id");
 
-                    b.Property<string>("FullPath")
+                    b.Property<string>("Path")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasColumnName("full_path");
+                        .HasColumnName("path");
 
                     b.HasKey("Id")
                         .HasName("pk_cover");
@@ -113,19 +113,19 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("song_id");
 
-                    b.Property<string>("ExecutableFileFullPath")
+                    b.Property<TimeSpan>("Duration")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("duration");
+
+                    b.Property<string>("ExecutableFilePath")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasColumnName("executable_file_full_path");
+                        .HasColumnName("executable_file_path");
 
                     b.Property<string>("ExecutableType")
                         .IsRequired()
                         .HasColumnType("TEXT")
                         .HasColumnName("executable_type");
-
-                    b.Property<TimeSpan>("SongDuration")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("song_duration");
 
                     b.HasKey("SongId")
                         .HasName("pk_playback_info");
@@ -139,13 +139,13 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("id");
 
+                    b.Property<string>("AssociatedFolderInfo")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("associated_folder_info");
+
                     b.Property<Guid?>("DirectorId")
                         .HasColumnType("TEXT")
                         .HasColumnName("director_id");
-
-                    b.Property<string>("EntityDirectoryInfo")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("entity_directory_info");
 
                     b.Property<Guid>("SongwriterId")
                         .HasColumnType("TEXT")
@@ -182,14 +182,14 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("INTEGER")
                         .HasColumnName("disc_number");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasColumnName("name");
-
                     b.Property<int>("Order")
                         .HasColumnType("INTEGER")
                         .HasColumnName("order");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("title");
 
                     b.HasKey("Id")
                         .HasName("pk_songs");
@@ -206,19 +206,19 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("id");
 
-                    b.Property<string>("EntityDirectoryInfo")
+                    b.Property<string>("AssociatedFolderInfo")
                         .HasColumnType("TEXT")
-                        .HasColumnName("entity_directory_info");
+                        .HasColumnName("associated_folder_info");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("last_name");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT")
                         .HasColumnName("name");
-
-                    b.Property<string>("Surname")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasColumnName("surname");
 
                     b.HasKey("Id")
                         .HasName("pk_songwriters");
@@ -296,13 +296,13 @@ namespace MusicManager.DAL.Migrations
                         .HasConstraintName("fk_movie_release_links_movies_movie_temp_id");
 
                     b.HasOne("MusicManager.Domain.Models.MovieRelease", "MovieRelease")
-                        .WithMany("Movies")
+                        .WithMany("MoviesLinks")
                         .HasForeignKey("MovieReleaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_movie_release_links_discs_movie_release_temp_id2");
 
-                    b.OwnsOne("MusicManager.Domain.ValueObjects.EntityDirectoryInfo", "ReleaseLink", b1 =>
+                    b.OwnsOne("MusicManager.Domain.ValueObjects.EntityDirectoryInfo", "ReleaseLinkInfo", b1 =>
                         {
                             b1.Property<Guid>("MovieReleaseLinkMovieId")
                                 .HasColumnType("TEXT")
@@ -315,7 +315,7 @@ namespace MusicManager.DAL.Migrations
                             b1.Property<string>("Path")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasColumnName("release_link_path");
+                                .HasColumnName("release_link_info_path");
 
                             b1.HasKey("MovieReleaseLinkMovieId", "MovieReleaseLinkMovieReleaseId");
 
@@ -330,7 +330,7 @@ namespace MusicManager.DAL.Migrations
 
                     b.Navigation("MovieRelease");
 
-                    b.Navigation("ReleaseLink");
+                    b.Navigation("ReleaseLinkInfo");
                 });
 
             modelBuilder.Entity("MusicManager.Domain.Entities.PlaybackInfo", b =>
@@ -361,10 +361,10 @@ namespace MusicManager.DAL.Migrations
                                 .HasColumnType("TEXT")
                                 .HasColumnName("cue_info_index01");
 
-                            b1.Property<string>("SongNameInCue")
+                            b1.Property<string>("SongTitleInCue")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasColumnName("cue_info_song_name_in_cue");
+                                .HasColumnName("cue_info_song_title_in_cue");
 
                             b1.HasKey("PlaybackInfoSongId");
 
@@ -490,7 +490,7 @@ namespace MusicManager.DAL.Migrations
 
             modelBuilder.Entity("MusicManager.Domain.Models.MovieRelease", b =>
                 {
-                    b.Navigation("Movies");
+                    b.Navigation("MoviesLinks");
                 });
 #pragma warning restore 612, 618
         }
