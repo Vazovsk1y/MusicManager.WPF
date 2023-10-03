@@ -44,7 +44,7 @@ public class SongwriterService : ISongwriterService
         }
 
         IEnumerable<MovieId> deletedMoviesIds = songwriter.Movies.Select(e => e.Id);
-        var movieReleasesToRemove = _dbContext.MovieReleases
+        var movieReleasesToRemove = _dbContext.MoviesReleases
             .Include(e => e.MoviesLinks)
             .Where(Filter);
 

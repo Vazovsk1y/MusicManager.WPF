@@ -50,7 +50,7 @@ public class MovieService : IMovieService
         }
 
         var movieRelease = await _dbContext
-            .MovieReleases
+            .MoviesReleases
             .Include(e => e.MoviesLinks)
             .SingleOrDefaultAsync(e => e.Id == dto.DiscId, cancellationToken);
 
@@ -108,12 +108,12 @@ public class MovieService : IMovieService
             return removingResult;
         }
 
-        var moviesReleasesToRemove = _dbContext.MovieReleases
+        var moviesReleasesToRemove = _dbContext.MoviesReleases
             .Include(e => e.MoviesLinks)
             .ThenInclude(e => e.MovieRelease)
             .Where(e => e.MoviesLinks.Any(e => e.MovieId == movieId) && e.MoviesLinks.Count == 1);
 
-        _dbContext.MovieReleases.RemoveRange(moviesReleasesToRemove);
+        _dbContext.MoviesReleases.RemoveRange(moviesReleasesToRemove);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

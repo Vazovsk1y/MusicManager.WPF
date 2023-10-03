@@ -82,7 +82,7 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
         string createdMovieReleaseRelationalPath = createdMovieReleaseDirectoryFullPath.GetRelational(_root);
 
         if (Directory.Exists(createdMovieReleaseDirectoryFullPath)
-            || await _dbContext.MovieReleases.AnyAsync(e => e.AssociatedFolderInfo == EntityDirectoryInfo.Create(createdMovieReleaseRelationalPath).Value))
+            || await _dbContext.MoviesReleases.AnyAsync(e => e.AssociatedFolderInfo == EntityDirectoryInfo.Create(createdMovieReleaseRelationalPath).Value))
         {
             return Result.Failure<string>(new Error("Directory for this movie release is already exists or movie release with that directory info is already added to database."));
         }
