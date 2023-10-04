@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MusicManager.WPF.Views.Controls" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:b="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors"
              xmlns:viewmodels="clr-namespace:MusicManager.WPF.ViewModels"
              xmlns:viewmodelsEnt="clr-namespace:MusicManager.WPF.ViewModels.Entities"
              d:DataContext="{d:DesignInstance Type=viewmodels:SongwirtersPanelViewModel, IsDesignTimeCreatable=True}"
@@ -12,12 +14,20 @@
     <Grid>
         <StackPanel>
             <Button Command="{Binding AddSongwriterFromFolderCommand}" Content="AddFromFolder"/>
-            <ComboBox ItemsSource="{Binding Songwriters}" SelectedItem="{Binding SelectedSongwriter}">
+            <ComboBox x:Name="cm" ItemsSource="{Binding Songwriters}" SelectedItem="{Binding SelectedSongwriter}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type viewmodelsEnt:SongwriterViewModel}">
                         <TextBlock Text="{Binding FullName}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
+
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName = "SelectionChanged">
+                        <i:InvokeCommandAction Command = "{Binding SelectionChangedCommand, UpdateSourceTrigger=PropertyChanged}"
+                                        CommandParameter="{Binding ElementName=cm, Path=SelectedItem}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                
             </ComboBox>
             <Button Content="Add" Command="{Binding AddSongwriterCommand}"/>
             <Button Content="Delete" Command="{Binding DeleteSongwriterCommand}"/>

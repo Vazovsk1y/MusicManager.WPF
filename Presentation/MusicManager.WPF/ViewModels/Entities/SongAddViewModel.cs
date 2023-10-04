@@ -21,7 +21,7 @@ internal partial class SongAddViewModel :
     DialogViewModel<SongAddWindow>
 {
     private readonly ISongService _songService;
-    private readonly IFileManagerInteractor _fileManagerInteractor;
+    private readonly IFileSystemManager _fileManagerInteractor;
     private readonly ISongFileFactory _songFileFactory;
 
     [ObservableProperty]
@@ -56,7 +56,7 @@ internal partial class SongAddViewModel :
     public SongAddViewModel(
         IUserDialogService<SongAddWindow> dialogService,
         ISongService songService,
-        IFileManagerInteractor fileManagerInteractor,
+        IFileSystemManager fileManagerInteractor,
         ISongFileFactory songFileFactory,
         UserConfigViewModel settingsViewModel) : base(dialogService, settingsViewModel)
     {

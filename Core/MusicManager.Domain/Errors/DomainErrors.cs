@@ -28,21 +28,12 @@ internal static class DomainErrors
     {
         public static Error CoverWithPassedPathAlreadyAdded(string coverPath) => new ($"Cover with passed path [{coverPath}] has already added.");
 
-        public static readonly Error UnableToRemoveSongWithPassedId = new("The song with the passed id has not been added deletion is not possible.");
-
 		public static readonly Error ProductionYearCanNotBeNullForOtherTypesExceptBootlegAndUnknown = new("Production year must be set for other disc types except bootleg and unknown.");
 	}
 
     internal static class Song
     {
         public static readonly Error SongOrderCouldNotBeNegativeNumber = new("Song order must be non-negative number.");
-	}
-
-    internal static class Songwriter
-    {
-		public static readonly Error UnableToRemoveCompilationWithPassedId = new("The compilation with the passed id has not been added deletion is not possible.");
-
-		public static readonly Error UnableToRemoveMovieWithPassedId = new("The movie with the passed id has not been added deletion is not possible.");
 	}
 
     internal static class DiscNumber

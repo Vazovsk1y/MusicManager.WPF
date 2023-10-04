@@ -4,7 +4,7 @@ namespace MusicManager.Services.Contracts.Factories;
 
 public interface IMovieFolderFactory
 {
-    Result<MovieFolder> Create(DirectoryInfo movieDirectory);
+    Result<MovieFolder> Create(DirectoryInfo movieDirectoryInfo);
 }
 
 

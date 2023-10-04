@@ -8,5 +8,4 @@ public record MovieDTO(
     string Title,
     string? ProductionCountry,
     int ProductionYear,
-    DirectorDTO? Director,
-    IEnumerable<MovieReleaseLinkDTO> MoviesReleasesLinks);
+    DirectorDTO? Director);

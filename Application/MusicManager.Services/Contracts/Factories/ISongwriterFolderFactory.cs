@@ -4,7 +4,7 @@ namespace MusicManager.Services.Contracts.Factories;
 
 public interface ISongwriterFolderFactory
 {
-    Result<SongwriterFolder> Create(DirectoryInfo songwriterDirectory);
+    Result<SongwriterFolder> Create(DirectoryInfo songwriterDirectoryInfo);
 }
 
 

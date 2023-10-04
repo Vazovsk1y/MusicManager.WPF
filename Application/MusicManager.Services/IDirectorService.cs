@@ -6,7 +6,7 @@ namespace MusicManager.Services;
 
 public interface IDirectorService
 {
-    Task<Result<IEnumerable<DirectorDTO>>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<Result<IReadOnlyCollection<DirectorDTO>>> GetAllAsync(CancellationToken cancellationToken = default);
 
     Task<Result<DirectorId>> SaveAsync(string fullName, CancellationToken cancellationToken = default);
 }

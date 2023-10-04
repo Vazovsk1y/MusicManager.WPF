@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services;
 using MusicManager.Domain.Shared;
@@ -17,32 +16,30 @@ public class MovieService : IMovieService
     private readonly IApplicationDbContext _dbContext;
     private readonly IMovieToFolderService _movieToFolderService;
     private readonly IMovieReleaseToFolderService _movieReleaseToFolderService;
-    private readonly IRoot _root;
 
     public MovieService(
         IFolderToMovieService pathToMovieService,
         IMovieReleaseService movieReleaseService,
         IApplicationDbContext dbContext,
         IMovieToFolderService movieToFolderService,
-        IMovieReleaseToFolderService movieReleaseToFolderService,
-        IRoot root)
+        IMovieReleaseToFolderService movieReleaseToFolderService)
     {
         _pathToMovieService = pathToMovieService;
         _movieReleaseService = movieReleaseService;
         _dbContext = dbContext;
         _movieToFolderService = movieToFolderService;
         _movieReleaseToFolderService = movieReleaseToFolderService;
-        _root = root;
     }
 
-    public async Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, bool createAssociatedLink = true, CancellationToken cancellationToken = default)
+    public async Task<Result> AddReleaseAsync(MovieReleaseMovieDTO dto, bool createAssociatedLink = true, CancellationToken cancellationToken = default)
     {
         var movie = await _dbContext
             .Movies
             .Include(e => e.ReleasesLinks)
             .ThenInclude(e => e.MovieRelease)
             .ThenInclude(e => e.MoviesLinks)
-            .SingleOrDefaultAsync(e => e.Id == dto.MovieId, cancellationToken);
+            .SingleOrDefaultAsync(e => e.Id == dto.MovieId, cancellationToken)
+            .ConfigureAwait(false);
 
         if (movie is null)
         {
@@ -59,14 +56,9 @@ public class MovieService : IMovieService
             return Result.Failure(ServicesErrors.MovieReleaseWithPassedIdIsNotExists());
         }
 
-        if (movieRelease.AssociatedFolderInfo is null)
-        {
-            return Result.Failure(new Error("Movie release directory info is not created."));
-        }
-
         if (createAssociatedLink)
         {
-			var settingLinkResult = await _movieReleaseToFolderService.CreateFolderLinkAsync(movieRelease, movie);
+			var settingLinkResult = await _movieReleaseToFolderService.CreateFolderLinkAsync(movieRelease, movie, cancellationToken);
 			if (settingLinkResult.IsFailure)
 			{
 				return settingLinkResult;
@@ -91,67 +83,41 @@ public class MovieService : IMovieService
         return Result.Success();
     }
 
-    public async Task<Result> DeleteAsync(SongwriterId songwriterId, MovieId movieId, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(MovieId movieId, CancellationToken cancellationToken = default)
     {
-        var sonwriter = await _dbContext.Songwriters
-            .Include(e => e.Movies)
-            .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellationToken);
+        var movie = await _dbContext.Movies
+            .Include(e => e.ReleasesLinks)
+            .SingleOrDefaultAsync(e => e.Id == movieId, cancellationToken);
 
-        if (sonwriter is null)
+        if (movie is null)
         {
-            return Result.Failure(ServicesErrors.SongwriterWithPassedIdIsNotExists());
-        }
-
-        var removingResult = sonwriter.RemoveMovie(movieId);
-        if (removingResult.IsFailure)
-        {
-            return removingResult;
+            return Result.Failure(ServicesErrors.MovieWithPassedIdIsNotExists());
         }
 
         var moviesReleasesToRemove = _dbContext.MoviesReleases
             .Include(e => e.MoviesLinks)
             .ThenInclude(e => e.MovieRelease)
+            .ThenInclude(e => e.Songs)
             .Where(e => e.MoviesLinks.Any(e => e.MovieId == movieId) && e.MoviesLinks.Count == 1);
 
+        _dbContext.Movies.Remove(movie);
         _dbContext.MoviesReleases.RemoveRange(moviesReleasesToRemove);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 
-    public async Task<Result<IEnumerable<MovieDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default)
+    public async Task<Result<IReadOnlyCollection<MovieDTO>>> GetAllAsync(SongwriterId parentId, CancellationToken cancellation = default)
     {
-        var result = new List<MovieDTO>();
-        var songwriter = await _dbContext
-            .Songwriters
+        var result = await _dbContext.Movies
             .AsNoTracking()
-            .Include(e => e.Movies)
-            .ThenInclude(e => e.Director)
-            .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellation);
-
-        if (songwriter is null)
-        {
-            return Result.Failure<IEnumerable<MovieDTO>>(new Error($"Songwriter with passed id is not exists in database."));
-        }
-
-        var movies = songwriter.Movies;
-        foreach (var movie in movies)
-        {
-            var moviesReleasesResult = await _movieReleaseService.GetAllAsync(movie.Id, cancellation);
-            if (moviesReleasesResult.IsFailure)
-            {
-                return Result.Failure<IEnumerable<MovieDTO>>(moviesReleasesResult.Error);
-            }
-
-            result.Add(movie.ToDTO() with
-            {
-                MoviesReleasesLinks = moviesReleasesResult.Value
-            });
-        }
+            .Where(e => e.SongwriterId == parentId)
+            .Select(e => e.ToDTO())
+            .ToListAsync(cancellation);
 
         return result;
     }
 
-    public async Task<Result<IEnumerable<MovieLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<IReadOnlyCollection<MovieLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken = default)
     {
         return await _dbContext
             .Movies
@@ -187,7 +153,7 @@ public class MovieService : IMovieService
         var movie = movieCreationResult.Value;
         if (createAssociatedFolder)
         {
-            var createdAssociatedFolderAndFileResult = await _movieToFolderService.CreateAssociatedFolderAndFileAsync(movie, songwriter);
+            var createdAssociatedFolderAndFileResult = await _movieToFolderService.CreateAssociatedFolderAndFileAsync(movie, songwriter, cancellationToken);
             if (createdAssociatedFolderAndFileResult.IsFailure)
             {
                 return Result.Failure<MovieId>(createdAssociatedFolderAndFileResult.Error);
@@ -231,7 +197,6 @@ public class MovieService : IMovieService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var moviesReleasesLinksDtos = new List<MovieReleaseLinkDTO>();
         foreach (var movieReleaseFolder in movieFolder.MoviesReleasesFolders)
         {
             var result = await _movieReleaseService.SaveFromFolderAsync(movieReleaseFolder, movie.Id, cancellationToken);
@@ -239,15 +204,9 @@ public class MovieService : IMovieService
             {
                 return Result.Failure<MovieDTO>(result.Error);
             }
-
-            var movieReleaseDto = result.Value;
-            moviesReleasesLinksDtos.Add(new MovieReleaseLinkDTO(movieReleaseDto, movieReleaseFolder.LinkPath is null));
         }
 
-        return movie.ToDTO() with
-        {
-            MoviesReleasesLinks = moviesReleasesLinksDtos,
-        };
+        return movie.ToDTO();
     }
 
     public async Task<Result> UpdateAsync(MovieUpdateDTO movieUpdateDTO, CancellationToken cancellationToken = default)
@@ -278,7 +237,7 @@ public class MovieService : IMovieService
 
             if (director is null)
             {
-                return Result.Failure(new Error("Director with passed id isnt exists."));
+                return Result.Failure(new Error("Director with passed id isnt exists in database."));
             }
 
             updateActions.Add(movie.SetDirector(director));

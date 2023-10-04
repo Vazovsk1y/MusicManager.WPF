@@ -1,3 +1,3 @@
 ﻿namespace MusicManager.Services.Contracts.Dtos;
 
-public record MovieReleaseLinkDTO(MovieReleaseDTO MovieReleaseDTO, bool IsFolder);
+public record MovieReleaseLinkDTO(MovieReleaseDTO MovieRelease, bool IsReleaseAddedAsFolder);

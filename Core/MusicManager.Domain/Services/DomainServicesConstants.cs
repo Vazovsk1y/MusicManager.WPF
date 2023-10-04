@@ -16,7 +16,7 @@ public static class DomainServicesConstants
 
     public const string COVERS_FOLDER_NAME = "covers";
 
-    public const string FolderJPG = "folder.jpg";
+    public const string FolderJPGFileName = "folder.jpg";
 
     public static readonly string[] AudioFilesExtensions = new[]
     {

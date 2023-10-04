@@ -104,7 +104,7 @@ internal partial class SongsPanelViewModel :
 		{
 			using var scope = _serviceScopeFactory.CreateScope();
 			var service = scope.ServiceProvider.GetRequiredService<ISongService>();
-			var result = await service.DeleteAsync(SelectedSong!.DiscId, SelectedSong!.SongId);
+			var result = await service.DeleteAsync(SelectedSong!.SongId);
 			if (result.IsFailure)
 			{
 				MessageBoxHelper.ShowErrorBox(result.Error.Message);

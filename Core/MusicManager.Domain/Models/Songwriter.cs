@@ -125,30 +125,6 @@ public class Songwriter : IAggregateRoot
         return Result.Success();
     }
 
-    public Result RemoveCompilation(DiscId discId)
-    {
-        var compilation = _compilations.SingleOrDefault(e => e.Id == discId);
-        if (compilation is null)
-        {
-            return Result.Failure(DomainErrors.Songwriter.UnableToRemoveCompilationWithPassedId);
-        }
-
-        _compilations.Remove(compilation);
-        return Result.Success();
-    }
-
-    public Result RemoveMovie(MovieId movieId)
-    {
-        var movie = _movies.SingleOrDefault(e => e.Id == movieId);
-        if (movie is null)
-        {
-            return Result.Failure(DomainErrors.Songwriter.UnableToRemoveMovieWithPassedId);
-        }
-
-        _movies.Remove(movie);
-        return Result.Success();
-    }
-
     #endregion
 }
 

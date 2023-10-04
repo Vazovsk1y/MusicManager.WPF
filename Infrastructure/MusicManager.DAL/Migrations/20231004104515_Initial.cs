@@ -168,7 +168,7 @@ namespace MusicManager.DAL.Migrations
                 {
                     song_id = table.Column<Guid>(type: "TEXT", nullable: false),
                     executable_file_path = table.Column<string>(type: "TEXT", nullable: false),
-                    executable_type = table.Column<string>(type: "TEXT", nullable: false),
+                    audio_type = table.Column<string>(type: "TEXT", nullable: false),
                     duration = table.Column<TimeSpan>(type: "TEXT", nullable: false),
                     cue_info_cue_file_path = table.Column<string>(type: "TEXT", nullable: true),
                     cue_info_index00 = table.Column<TimeSpan>(type: "TEXT", nullable: true),

@@ -9,15 +9,15 @@ public interface IMovieService
 {
     Task<Result<MovieDTO>> SaveFromFolderAsync(MovieFolder movieFolder, SongwriterId songwriterId, CancellationToken cancellationToken = default);
 
-    Task<Result<IEnumerable<MovieDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default);
+    Task<Result<IReadOnlyCollection<MovieDTO>>> GetAllAsync(SongwriterId parentId, CancellationToken cancellation = default);
 
-    Task<Result<IEnumerable<MovieLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken = default);
+    Task<Result<IReadOnlyCollection<MovieLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken = default);
 
     Task<Result<MovieId>> SaveAsync(MovieAddDTO movieAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default);
 
-    Task<Result> AddExistingMovieRelease(ExistingMovieReleaseToMovieDTO dto, bool createAssociatedLink = true, CancellationToken cancellationToken = default);
+    Task<Result> AddReleaseAsync(MovieReleaseMovieDTO relationDto, bool createAssociatedLink = true, CancellationToken cancellationToken = default);
 
     Task<Result> UpdateAsync(MovieUpdateDTO movieUpdateDTO, CancellationToken cancellationToken = default);
 
-    Task<Result> DeleteAsync(SongwriterId songwriterId, MovieId movieId, CancellationToken cancellationToken = default);
+    Task<Result> DeleteAsync(MovieId movieId, CancellationToken cancellationToken = default);
 }

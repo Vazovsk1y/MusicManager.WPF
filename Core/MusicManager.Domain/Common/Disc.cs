@@ -113,18 +113,6 @@ public class Disc : IAggregateRoot
         return Result.Success();
     }
 
-    public virtual Result RemoveSong(SongId songId)
-    {
-        var song = _songs.SingleOrDefault(e => e.Id == songId);
-        if (song is null)
-        {
-            return Result.Failure(DomainErrors.Disc.UnableToRemoveSongWithPassedId);
-        }
-
-        _songs.Remove(song);
-        return Result.Success();
-    }
-
     public virtual Result SetProductionInfo(string? productionCountry, int? productionYear)
     {
         if (productionYear is null)

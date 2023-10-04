@@ -15,9 +15,9 @@ namespace MusicManager.Services.Implementations;
 public class MovieReleaseService : IMovieReleaseService
 {
     private readonly IFolderToMovieReleaseService _pathToMovieReleaseService;
-    private readonly ISongService _songService;
-    private readonly IApplicationDbContext _dbContext;
     private readonly IMovieReleaseToFolderService _movieReleaseToFolderService;
+    private readonly IApplicationDbContext _dbContext;
+    private readonly ISongService _songService;
     private readonly IRoot _root;
 
     public MovieReleaseService(
@@ -34,10 +34,26 @@ public class MovieReleaseService : IMovieReleaseService
         _root = root;
     }
 
+	public async Task<Result<MovieReleaseDTO>> GetAsync(DiscId discId, CancellationToken cancellationToken = default)
+    {
+        var movieRelease = await _dbContext
+            .MoviesReleases
+            .SingleOrDefaultAsync(e => e.Id == discId, cancellationToken);
+
+        if (movieRelease is null)
+        {
+            return Result.Failure<MovieReleaseDTO>(ServicesErrors.MovieReleaseWithPassedIdIsNotExists());
+        }
+
+        return movieRelease.ToDTO();
+    }
+
 	public async Task<Result> DeleteAsync(DiscId discId, CancellationToken cancellationToken = default)
 	{
         var movieRelease = await _dbContext.MoviesReleases
             .Include(e => e.MoviesLinks)
+            .Include(e => e.Songs)
+            .Include(e => e.Covers)
             .SingleOrDefaultAsync(e => e.Id == discId, cancellationToken);
 
         if (movieRelease is null)
@@ -50,43 +66,39 @@ public class MovieReleaseService : IMovieReleaseService
         return Result.Success();
 	}
 
-	public async Task<Result<IEnumerable<MovieReleaseLinkDTO>>> GetAllAsync(MovieId movieId, CancellationToken cancellationToken = default)
+	public async Task<Result<IReadOnlyCollection<MovieReleaseLinkDTO>>> GetLinksAsync(MovieId parentId, CancellationToken cancellationToken = default)
     {
-        var result = new List<MovieReleaseLinkDTO>();
         var movie = await _dbContext
             .Movies
+            .AsNoTracking()
             .Include(e => e.ReleasesLinks)
             .ThenInclude(e => e.MovieRelease)
-            .SingleOrDefaultAsync(e => e.Id == movieId, cancellationToken);
+            .SingleOrDefaultAsync(e => e.Id == parentId, cancellationToken);
 
         if (movie is null)
         {
-            return Result.Failure<IEnumerable<MovieReleaseLinkDTO>>(ServicesErrors.MovieWithPassedIdIsNotExists());
+            return Result.Failure<IReadOnlyCollection<MovieReleaseLinkDTO>>(ServicesErrors.MovieWithPassedIdIsNotExists());
         }
 
-        var moviesReleases = movie.ReleasesLinks;
-        foreach (var movieReleaseLink in moviesReleases)
-        {
-            var songsResult = await _songService.GetAllAsync(movieReleaseLink.MovieRelease.Id, cancellationToken);
-            if (songsResult.IsFailure)
-            {
-                return Result.Failure<IEnumerable<MovieReleaseLinkDTO>>(songsResult.Error);
-            }
+        return movie.ReleasesLinks.Select(e => e.ToDTO()).ToList();
+    }
 
-            var movieReleaseDTO = movieReleaseLink.MovieRelease.ToDTO() with
-            {
-                SongDTOs = songsResult.Value
-            };
-
-            result.Add(new MovieReleaseLinkDTO(movieReleaseDTO, movieReleaseLink.ReleaseLinkInfo is null));
-        }
+	public async Task<Result<IReadOnlyCollection<MovieReleaseLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await _dbContext.
+            MoviesReleases
+            .AsNoTracking()
+            .Select(e => new MovieReleaseLookupDTO(e.Id, e.Identifier, e.Type))
+            .ToListAsync(cancellationToken);
 
         return result;
     }
 
-    public async Task<Result<DiscId>> SaveAsync(MovieReleaseAddDTO movieReleaseAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default)
+	public async Task<Result<DiscId>> SaveAsync(MovieReleaseAddDTO movieReleaseAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default)
     {
-        bool hasDuplicates = movieReleaseAddDTO.MoviesLinks.GroupBy(x => x).Any(g => g.Count() > 1);
+        var associatedMoviesLinks = movieReleaseAddDTO.AssociatedMoviesLinks.ToList();
+		bool hasDuplicates = associatedMoviesLinks.GroupBy(x => x).Any(g => g.Count() > 1);
+
         if (hasDuplicates)
         {
             return Result.Failure<DiscId>(new("Can't add the same movie release to the one movie twice.\nMovies links contains duplicates."));
@@ -97,7 +109,7 @@ public class MovieReleaseService : IMovieReleaseService
             .Include(e => e.ReleasesLinks)
             .ThenInclude(e => e.MovieRelease)
             .ThenInclude(e => e.MoviesLinks)
-            .Where(e => movieReleaseAddDTO.MoviesLinks.Select(e => e.MovieId).Contains(e.Id))
+            .Where(e => associatedMoviesLinks.Select(e => e.MovieId).Contains(e.Id))
             .ToListAsync(cancellationToken);
 
         if (movies.Count is 0)
@@ -120,31 +132,7 @@ public class MovieReleaseService : IMovieReleaseService
         var movieRelease = creationResult.Value;
         if (createAssociatedFolder)
         {
-            var moviesWhereWillBeStoresActualFolder = movies.Where(e => movieReleaseAddDTO.MoviesLinks.Any(item => item.AddAsFolder && e.Id == item.MovieId));
-            if (!moviesWhereWillBeStoresActualFolder.Any())
-            {
-                return Result.Failure<DiscId>(new Error("Movie where will be store the original movie release folder is not found."));
-            }
-
-            InvalidOperationExceptionHelper.ThrowIfTrue(moviesWhereWillBeStoresActualFolder.Count() > 1, "Detected more than one movie where actual folder must be created.");
-
-            var firstMovie = moviesWhereWillBeStoresActualFolder.First();
-            var createMovieReleaseFolderResult = await _movieReleaseToFolderService.CreateAssociatedFolderAndFileAsync(movieRelease, firstMovie);
-            if (createMovieReleaseFolderResult.IsFailure)
-            {
-                return Result.Failure<DiscId>(createMovieReleaseFolderResult.Error);
-            }
-
-			movieRelease.SetAssociatedFolder(createMovieReleaseFolderResult.Value);
-			firstMovie.AddRelease(movieRelease);
-			movies.Remove(firstMovie);
-
-            var settingLinksResult = await SetLinks(movies, movieRelease);  // foreach other movies we create a folder links instead real folder.
-            if (settingLinksResult.IsFailure)
-            {
-                return Result.Failure<DiscId>(settingLinksResult.Error);
-            }
-
+            var result = await CreateFileSystemRelations(movies, movieRelease, associatedMoviesLinks);
         }
         else
         {
@@ -162,7 +150,7 @@ public class MovieReleaseService : IMovieReleaseService
         return Result.Success(movieRelease.Id);
     }
 
-    public async Task<Result<MovieReleaseDTO>> SaveFromFolderAsync(DiscFolder movieReleaseFolder, MovieId movieId, CancellationToken cancellationToken = default)
+    public async Task<Result<MovieReleaseDTO>> SaveFromFolderAsync(DiscFolder movieReleaseFolder, MovieId parentId, CancellationToken cancellationToken = default)
     {
         var movieReleaseResult = await _pathToMovieReleaseService
             .GetEntityAsync(movieReleaseFolder.Path)
@@ -179,7 +167,7 @@ public class MovieReleaseService : IMovieReleaseService
             .Include(e => e.ReleasesLinks)
             .ThenInclude(e => e.MovieRelease)
             .ThenInclude(e => e.MoviesLinks)
-            .SingleOrDefaultAsync(e => e.Id == movieId, cancellationToken);
+            .SingleOrDefaultAsync(e => e.Id == parentId, cancellationToken);
 
         if (movie is null)
         {
@@ -202,23 +190,16 @@ public class MovieReleaseService : IMovieReleaseService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var songsDtos = new List<SongDTO>();    
-        foreach (var songFile in movieReleaseFolder.Songs)
+        foreach (var songFile in movieReleaseFolder.SongsFiles)
         {
             var result = await _songService.SaveFromFileAsync(songFile, movieRelease.Id, true, cancellationToken);
-
             if (result.IsFailure)
             {
                 return Result.Failure<MovieReleaseDTO>(result.Error);
             }
-
-            songsDtos.AddRange(result.Value);
         }
 
-        return movieRelease.ToDTO() with
-        {
-            SongDTOs = songsDtos,
-        };
+        return movieRelease.ToDTO();
     }
 
     public async Task<Result> UpdateAsync(MovieReleaseUpdateDTO movieReleaseUpdateDTO, CancellationToken cancellationToken = default)
@@ -248,22 +229,38 @@ public class MovieReleaseService : IMovieReleaseService
 
 		if (movieRelease.AssociatedFolderInfo is not null)
 		{
-			var folderUpdatingResult = await _movieReleaseToFolderService.UpdateAsync(movieRelease);
-			if (folderUpdatingResult.IsFailure)
+			var fileSystemRelationsUpdateResult = await _movieReleaseToFolderService.UpdateAsync(movieRelease);
+			if (fileSystemRelationsUpdateResult.IsFailure)
 			{
-                return folderUpdatingResult;
+                return fileSystemRelationsUpdateResult;
 			}
 
-			movieRelease.SetAssociatedFolder(folderUpdatingResult.Value);
+			movieRelease.SetAssociatedFolder(fileSystemRelationsUpdateResult.Value);
 		}
 
 		await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 
-    private async Task<Result> SetLinks(IEnumerable<Movie> movies, MovieRelease movieRelease)
+    private async Task<Result> CreateFileSystemRelations(IList<Movie> movies, MovieRelease movieRelease, IList<MovieLinkDTO> associatedMoviesLinks)
     {
-        foreach (var movie in movies) 
+		var moviesWhereWillBeStoreActualFolder = movies.Where(e => associatedMoviesLinks.Any(item => item.AddReleaseAsFolder && e.Id == item.MovieId));
+
+		InvalidOperationExceptionHelper.ThrowIfTrue(!moviesWhereWillBeStoreActualFolder.Any(), "Movie where will be store the original movie release folder is not found.");
+		InvalidOperationExceptionHelper.ThrowIfTrue(moviesWhereWillBeStoreActualFolder.Count() > 1, "Detected more than one movie where actual folder must be created.");
+
+		var movieWithOriginalFolder = moviesWhereWillBeStoreActualFolder.First();
+		var createMovieReleaseFolderResult = await _movieReleaseToFolderService.CreateAssociatedFolderAndFileAsync(movieRelease, movieWithOriginalFolder);
+		if (createMovieReleaseFolderResult.IsFailure)
+		{
+			return Result.Failure<DiscId>(createMovieReleaseFolderResult.Error);
+		}
+
+		movieRelease.SetAssociatedFolder(createMovieReleaseFolderResult.Value);
+		movieWithOriginalFolder.AddRelease(movieRelease);
+		movies.Remove(movieWithOriginalFolder);              // foreach other movies we create a folder link instead real folder.
+
+		foreach (var movie in movies) 
         {
             var settingLinkResult = await _movieReleaseToFolderService.CreateFolderLinkAsync(movieRelease, movie);
             if (settingLinkResult.IsFailure)

@@ -11,9 +11,7 @@ public static class Mapper
         return new SongwriterDTO(
             songwriter.Id,
             songwriter.Name,
-            songwriter.LastName,
-            songwriter.Movies.Select(e => e.ToDTO()),
-            songwriter.Compilations.Select(e => e.ToDTO())
+            songwriter.LastName
             );
     }
 
@@ -33,8 +31,7 @@ public static class Mapper
             movie.Title,
             movie.ProductionInfo?.Country,
             (int)movie.ProductionInfo!.Year!,
-            movie.Director is null ? null : new DirectorDTO(movie.Director.Id, movie.Director.FullName),
-            movie.ReleasesLinks.Select(e => e.ToDTO())
+            movie.Director is null ? null : new DirectorDTO(movie.Director.Id, movie.Director.FullName)
             );
     }
 
@@ -60,8 +57,7 @@ public static class Mapper
             compilation.Identifier,
             compilation.ProductionInfo?.Country,
             compilation.ProductionInfo?.Year,
-            compilation.Type,
-            compilation.Songs.Select(e => e.ToDTO())
+            compilation.Type
             );
     }
 
@@ -72,8 +68,7 @@ public static class Mapper
             movieRelease.Identifier,
             movieRelease.ProductionInfo?.Country,
             movieRelease.ProductionInfo?.Year,
-            movieRelease.Type,
-            movieRelease.Songs.Select(e => e.ToDTO())
+            movieRelease.Type
             );
     }
 

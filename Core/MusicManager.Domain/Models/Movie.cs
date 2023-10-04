@@ -161,7 +161,7 @@ public class Movie : IAggregateRoot
         return Result.Success();
     }
 
-    public Result SetDirector(Director director)
+    public Result SetDirector(Director? director)
     {
         if (director is null)
         {
@@ -170,7 +170,7 @@ public class Movie : IAggregateRoot
 
         Director?.RemoveMovie(Id);
         Director = director;
-        director.AddMovie(this);
+        director?.AddMovie(this);
         return Result.Success();
     }
 

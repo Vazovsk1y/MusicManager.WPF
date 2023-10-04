@@ -110,6 +110,11 @@ namespace MusicManager.DAL.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("song_id");
 
+                    b.Property<string>("AudioType")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("audio_type");
+
                     b.Property<TimeSpan>("Duration")
                         .HasColumnType("TEXT")
                         .HasColumnName("duration");
@@ -118,11 +123,6 @@ namespace MusicManager.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT")
                         .HasColumnName("executable_file_path");
-
-                    b.Property<string>("ExecutableType")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasColumnName("executable_type");
 
                     b.HasKey("SongId")
                         .HasName("pk_playback_info");

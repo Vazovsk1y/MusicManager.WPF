@@ -11,7 +11,7 @@
     <Grid>
         <StackPanel>
             <ComboBox ItemsSource="{Binding MoviesReleasesToSelectFrom}"
-                      SelectedItem="{Binding SelectedViewModel}"
+                      SelectedItem="{Binding SelectedMovieRelease}"
                       DisplayMemberPath="Identifier"/>
             <Button Content="Ok" Command="{Binding AcceptCommand}"/>
         </StackPanel>

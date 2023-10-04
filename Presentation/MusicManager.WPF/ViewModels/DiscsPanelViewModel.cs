@@ -150,7 +150,7 @@ internal partial class DiscsPanelViewModel :
         {
             using var scope = _serviceScopeFactory.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<ICompilationService>();
-            var result = await service.DeleteAsync(SelectedCompilation!.SongwriterId, SelectedCompilation!.DiscId);
+            var result = await service.DeleteAsync(SelectedCompilation!.DiscId);
             if (result.IsFailure)
             {
                 MessageBoxHelper.ShowErrorBox(result.Error.Message);
@@ -315,16 +315,62 @@ internal partial class DiscsPanelViewModel :
         });
     }
 
-    public async void Receive(MovieReleaseCreatedMessage message)
+	[RelayCommand]
+	private async Task MovieReleaseLinkSelectionChanged(MovieReleaseLinkViewModel movieReleaseLink)
+	{
+		if (movieReleaseLink is null)
+		{
+			return;
+		}
+
+		if (!movieReleaseLink.MovieRelease.IsSongsLoaded)
+		{
+			using var scope = _serviceScopeFactory.CreateScope();
+			var songService = scope.ServiceProvider.GetRequiredService<ISongService>();
+			var songsResult = await songService.GetAllAsync(movieReleaseLink.MovieRelease.DiscId);
+			if (songsResult.IsSuccess)
+			{
+				await Application.Current.Dispatcher.InvokeAsync(() =>
+				{
+					movieReleaseLink.MovieRelease.Songs = new(songsResult.Value.Select(e => e.ToViewModel()));
+					movieReleaseLink.MovieRelease.IsSongsLoaded = true;
+				});
+			}
+		}
+	}
+
+	[RelayCommand]
+	private async Task CompilationSelectionChanged(CompilationViewModel compilation)
+	{
+		if (compilation is null)
+		{
+			return;
+		}
+
+		if (!compilation.IsSongsLoaded)
+		{
+			using var scope = _serviceScopeFactory.CreateScope();
+			var songService = scope.ServiceProvider.GetRequiredService<ISongService>();
+			var songsResult = await songService.GetAllAsync(compilation.DiscId);
+			if (songsResult.IsSuccess)
+			{
+				await Application.Current.Dispatcher.InvokeAsync(() =>
+				{
+					compilation.Songs = new(songsResult.Value.Select(e => e.ToViewModel()));
+					compilation.IsSongsLoaded = true;
+				});
+			}
+		}
+	}
+
+	public async void Receive(MovieReleaseCreatedMessage message)
     {
         await App.Current.Dispatcher.InvokeAsync(() =>
         {
-            //var movies = MoviesPanelViewModel.Movies.Where(e => message.MoviesLinks.Select(e => e.MovieId).Contains(e.MovieId));
-
             foreach (var movieLink in message.MoviesLinks)
             {
                 var movie = MoviesPanelViewModel.Movies.FirstOrDefault(e => movieLink.MovieId == e.MovieId);
-                movie?.MoviesReleasesLinks.Add(new MovieReleaseLinkViewModel { MovieRelease = message.MovieReleaseViewModel, IsFolder = movieLink.AddAsFolder });
+                movie?.MoviesReleasesLinks.Add(new MovieReleaseLinkViewModel { MovieRelease = message.MovieReleaseViewModel, IsFolder = movieLink.AddReleaseAsFolder });
                 message.MovieReleaseViewModel.SetCurrentAsPrevious();
             }
         });

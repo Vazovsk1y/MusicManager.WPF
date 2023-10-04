@@ -52,8 +52,10 @@ internal partial class MovieViewModel :
     public ObservableCollection<MovieReleaseLinkViewModel> MoviesReleasesLinks
     {
         get => _moviesReleasesLinks ??= new();
-        init => SetProperty(ref _moviesReleasesLinks, value);
+        set => SetProperty(ref _moviesReleasesLinks, value);
     }
+
+    public bool IsReleasesLinksLoaded { get; set; }
 
     public void SetCurrentAsPrevious()
     {
