@@ -2,20 +2,7 @@
 
 public static class NullValidator
 {
-    public static bool IsAnyNull(params object?[] values)
-    {
-        foreach (object? value in values)
-        {
-            if (value is null)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static bool IsAllNotNull(params object?[] values)
+    public static bool IsNotNull(params object?[] values)
     {
         foreach (object? value in values)
         {

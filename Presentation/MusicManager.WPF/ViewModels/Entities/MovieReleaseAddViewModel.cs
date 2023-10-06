@@ -113,7 +113,7 @@ internal partial class MovieReleaseAddViewModel : DialogViewModel<MovieReleaseAd
 
 	protected override bool CanAccept()
 	{
-		return NullValidator.IsAllNotNull(SelectedDiscType, SelectedMovie);
+		return NullValidator.IsNotNull(SelectedDiscType, SelectedMovie);
 	}
 
 	protected override async void OnActivated()

@@ -112,6 +112,6 @@ internal partial class SongAddViewModel :
 
     protected override bool CanAccept()
     {
-        return NullValidator.IsAllNotNull(SelectedDisc, SelectedSongPath);
+        return NullValidator.IsNotNull(SelectedDisc, SelectedSongPath);
     }
 }
