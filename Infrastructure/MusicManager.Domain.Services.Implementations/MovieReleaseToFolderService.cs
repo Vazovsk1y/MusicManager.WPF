@@ -56,14 +56,6 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
 		return Task.FromResult(Result.Success(shorcutFullPath.GetRelational(_root)));
 	}
 
-    private static void CreateShortcutFile(string targetPath, string shorcutPath)
-    {
-		WshShell shell = new();
-		WshShortcut shortcut = (WshShortcut)shell.CreateShortcut(shorcutPath);
-		shortcut.TargetPath = targetPath;
-		shortcut.Save();
-	}
-
 	public async Task<Result<string>> CreateAssociatedFolderAndFileAsync(MovieRelease movieRelease, Movie parent, CancellationToken cancellationToken = default)
     {
         if (parent.AssociatedFolderInfo is null)
@@ -97,8 +89,6 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
 
         return createdMovieReleaseRelationalPath;
     }
-
-    
 
     public async Task<Result<string>> UpdateAsync(MovieRelease movieRelease, CancellationToken cancellationToken = default)
     {
@@ -141,11 +131,11 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
         var moviesWhereStoresLinks = movieRelease.MoviesLinks.Select(e => e.Movie).ToList();
         moviesWhereStoresLinks.Remove(movieWhereOriginalMovieReleaseFolderStores);
 
-		await UpdateAllExistingLinks(moviesWhereStoresLinks, previousFolderName, newDirectoryFullPath);
+	    UpdateAllExistingLinks(moviesWhereStoresLinks, previousFolderName, newDirectoryFullPath);
         return Result.Success(newDirectoryFullPath.GetRelational(_root));
     }
 
-    private async Task UpdateAllExistingLinks(IEnumerable<Movie> movies, string previousDirectoryName, string newDirectoryFullPath)
+    private void UpdateAllExistingLinks(IEnumerable<Movie> movies, string previousDirectoryName, string newDirectoryFullPath)
     {
         var moviesToUpdateLinksIn = movies
             .Where(e => e.ReleasesLinks.Any(item => item.ReleaseLinkInfo is not null));
@@ -177,7 +167,7 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
         }
     }
 
-    private string GetDirectoryName(MovieRelease movieRelease)
+    private static string GetDirectoryName(MovieRelease movieRelease)
     {
         string baseMovieReleaseDirectoryName = $"{movieRelease.Type.Value} {movieRelease.Identifier}";
         if (movieRelease.Type == DiscType.Bootleg || movieRelease.Type == DiscType.Unknown)
@@ -190,4 +180,12 @@ public class MovieReleaseToFolderService : IMovieReleaseToFolderService
 
         return createdMovieReleaseDirectoryName;
     }
+
+	private static void CreateShortcutFile(string targetPath, string shorcutPath)
+	{
+		WshShell shell = new();
+		WshShortcut shortcut = (WshShortcut)shell.CreateShortcut(shorcutPath);
+		shortcut.TargetPath = targetPath;
+		shortcut.Save();
+	}
 }

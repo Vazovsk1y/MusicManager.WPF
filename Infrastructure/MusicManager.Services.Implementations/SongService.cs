@@ -209,13 +209,13 @@ public class SongService : ISongService
         return Result.Success();
     }
 
-    private async Task<Result<IEnumerable<Song>>> AddToDiscFromCue(string cueFilePath, Disc disc, bool ignoreAddingResult, CancellationToken cancellationToken)
+    private async Task<Result<IReadOnlyCollection<Song>>> AddToDiscFromCue(string cueFilePath, Disc disc, bool ignoreAddingResult, CancellationToken cancellationToken)
     {
         var songsResult = await _pathToSongService.GetEntitiesFromCueFileAsync(cueFilePath, disc.Id);
 
         if (songsResult.IsFailure)
         {
-            return Result.Failure<IEnumerable<Song>>(songsResult.Error);
+            return Result.Failure<IReadOnlyCollection<Song>>(songsResult.Error);
         }
 
         var songs = songsResult.Value;
@@ -224,7 +224,7 @@ public class SongService : ISongService
             var addingResult = disc.AddSong(song);
             if (addingResult.IsFailure && !ignoreAddingResult)
             {
-                return Result.Failure<IEnumerable<Song>>(addingResult.Error);
+                return Result.Failure<IReadOnlyCollection<Song>>(addingResult.Error);
             }
         }
 

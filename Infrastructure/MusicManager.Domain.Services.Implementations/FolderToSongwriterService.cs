@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Extensions;
+﻿using Microsoft.Extensions.Logging;
+using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Services.Storage;
@@ -24,7 +25,7 @@ public class FolderToSongwriterService :
 
     #region --Constructors--
 
-    public FolderToSongwriterService(IRoot userConfig) : base(userConfig) { }
+    public FolderToSongwriterService(IRoot userConfig, ILogger<FolderToSongwriterService> logger) : base(userConfig, logger) { }
 
     #endregion
 
@@ -32,7 +33,7 @@ public class FolderToSongwriterService :
 
     public Task<Result<Songwriter>> GetEntityAsync(string songwriterPath)
     {
-        var isAbleToMoveNextResult = IsAbleToMoveNext<DirectoryInfo>(songwriterPath);
+        var isAbleToMoveNextResult = IsAbleToParse<DirectoryInfo>(songwriterPath);
         if (isAbleToMoveNextResult.IsFailure)
         {
             return Task.FromResult(Result.Failure<Songwriter>(isAbleToMoveNextResult.Error));

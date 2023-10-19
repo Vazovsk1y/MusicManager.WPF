@@ -1,4 +1,5 @@
-﻿using MusicManager.Domain.Extensions;
+﻿using Microsoft.Extensions.Logging;
+using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Storage;
 using MusicManager.Domain.Shared;
@@ -15,29 +16,27 @@ public partial class FolderToMovieReleaseService :
 
     private readonly ConcurrentDictionary<string, MovieRelease> _cache = new();
 
-    public FolderToMovieReleaseService(IRoot userConfig) : base(userConfig)
+	#endregion
+
+	#region --Properties--
+
+
+
+	#endregion
+
+	#region --Constructors--
+
+	public FolderToMovieReleaseService(IRoot userConfig, ILogger<FolderToMovieReleaseService> logger) : base(userConfig, logger)
+	{
+	}
+
+	#endregion
+
+	#region --Methods--
+
+	public Task<Result<MovieRelease>> GetEntityAsync(string movieReleasePath)
     {
-    }
-
-    #endregion
-
-    #region --Properties--
-
-
-
-    #endregion
-
-    #region --Constructors--
-
-
-
-    #endregion
-
-    #region --Methods--
-
-    public Task<Result<MovieRelease>> GetEntityAsync(string movieReleasePath)
-    {
-        var isAbleToMoveNextResult = IsAbleToMoveNext<DirectoryInfo>(movieReleasePath);
+        var isAbleToMoveNextResult = IsAbleToParse<DirectoryInfo>(movieReleasePath);
         if (isAbleToMoveNextResult.IsFailure)
         {
             return Task.FromResult(Result.Failure<MovieRelease>(isAbleToMoveNextResult.Error));
@@ -92,26 +91,17 @@ public partial class FolderToMovieReleaseService :
 
     private Result<MovieRelease> CreateSimpleDisc(DirectoryInfo discDirectoryInfo)
     {
-        var gettingComponentsResult = GetDiscComponentsFromDirectoryName(discDirectoryInfo.Name);
+        var gettingComponentsResult = GetDiscComponentsFromFolderName(discDirectoryInfo.Name);
 
         if (gettingComponentsResult.IsFailure)
         {
             return Result.Failure<MovieRelease>(gettingComponentsResult.Error);
         }
 
-        var (type, identificator, prodCountry, prodYear) = gettingComponentsResult.Value;
-        if (prodCountry is null)
-        {
-            return MovieRelease.Create(
-                type,
-                identificator,
-                discDirectoryInfo.FullName.GetRelational(_root)
-                );
-        }
-
+        var (type, identifier, prodCountry, prodYear) = gettingComponentsResult.Value;
         var creationDiscResult = MovieRelease.Create(
             type,
-            identificator,
+            identifier,
             discDirectoryInfo.FullName.GetRelational(_root),
             prodYear,
             prodCountry);

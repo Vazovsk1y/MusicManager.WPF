@@ -80,7 +80,7 @@ public class MovieToFolderService : IMovieToFolderService
         return Result.Success(newDirecotryFullPath.GetRelational(_root));
     }
 
-    private string GetDirectoryName(Movie movie)
+    private static string GetDirectoryName(Movie movie)
     {
         return $"{movie.ProductionInfo?.Year} {DomainServicesConstants.MovieFolderNameSeparator} {movie.Title}";
     }

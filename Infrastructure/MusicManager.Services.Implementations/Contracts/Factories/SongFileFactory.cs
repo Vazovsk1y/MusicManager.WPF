@@ -13,7 +13,7 @@ public class SongFileFactory : ISongFileFactory
     {
         if (!songFilePath.Exists)
         {
-            return Result.Failure<SongFile>(DomainServicesErrors.PassedFileIsNotExists(songFilePath.FullName));
+            return Result.Failure<SongFile>(DomainServicesErrors.PassedDirectoryIsNotExists(songFilePath.FullName));
         }
 
         return new SongFile(songFilePath.FullName, string.Equals(songFilePath.Extension, DomainConstants.CueExtension, StringComparison.OrdinalIgnoreCase));
