@@ -32,7 +32,7 @@ public class FolderToSongwriterService :
 
     public Task<Result<Songwriter>> GetEntityAsync(string songwriterPath)
     {
-        var isAbleToMoveNextResult = IsAbleToMoveNext<DirectoryInfo>(songwriterPath);
+        var isAbleToMoveNextResult = IsAbleToParse<DirectoryInfo>(songwriterPath);
         if (isAbleToMoveNextResult.IsFailure)
         {
             return Task.FromResult(Result.Failure<Songwriter>(isAbleToMoveNextResult.Error));
