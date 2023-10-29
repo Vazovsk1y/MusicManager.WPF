@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MusicManager.Services;
+using MusicManager.Services.Contracts.Dtos;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
 using System.Collections.Generic;
@@ -15,12 +16,12 @@ internal abstract partial class MovieReleaseMovieViewModel : ObservableRecipient
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
-    protected MovieReleaseViewModel? _selectedViewModel;
+    protected MovieReleaseLookupDTO? _selectedMovieRelease;
 
-    private IEnumerable<MovieReleaseViewModel>? _movieReleasesToSelectFrom;
-    public IEnumerable<MovieReleaseViewModel> MoviesReleasesToSelectFrom 
+    private IEnumerable<MovieReleaseLookupDTO>? _movieReleasesToSelectFrom;
+    public IEnumerable<MovieReleaseLookupDTO> MoviesReleasesToSelectFrom 
     {
-        get => _movieReleasesToSelectFrom ??= Enumerable.Empty<MovieReleaseViewModel>();
+        get => _movieReleasesToSelectFrom ??= Enumerable.Empty<MovieReleaseLookupDTO>();
         set
         {
             _movieReleasesToSelectFrom = value.OrderBy(e => e.Identifier);
@@ -36,5 +37,5 @@ internal abstract partial class MovieReleaseMovieViewModel : ObservableRecipient
     [RelayCommand(CanExecute = nameof(CanAccept))]
     protected abstract void Accept();
 
-    protected virtual bool CanAccept() => SelectedViewModel is not null;
+    protected virtual bool CanAccept() => SelectedMovieRelease is not null;
 }

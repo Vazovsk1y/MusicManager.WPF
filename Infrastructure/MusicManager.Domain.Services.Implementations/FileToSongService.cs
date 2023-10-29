@@ -3,6 +3,7 @@ using MusicManager.Domain.Common;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Shared;
+using MusicManager.Domain.ValueObjects;
 using NAudio.Wave;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
@@ -17,7 +18,7 @@ namespace MusicManager.Domain.Services.Implementations
 
         private readonly ConcurrentDictionary<(string songFilePath, DiscId parentId), Song> _simpleFilesCache = new();
 
-        private readonly ConcurrentDictionary<(string songFilePath, string cueFilePath, DiscId parentId), IEnumerable<Song>> _cueFilesCache = new();
+        private readonly ConcurrentDictionary<(string songFilePath, string cueFilePath, DiscId parentId), IReadOnlyCollection<Song>> _cueFilesCache = new();
 
         private readonly IRoot _root;
 
@@ -64,21 +65,28 @@ namespace MusicManager.Domain.Services.Implementations
             }
 
             var fileName = Path.GetFileName(songInfo.Name);
-            var parentDirectoryName = new FileInfo(songInfo.Name).Directory?.Name ?? string.Empty;
-            var discNumberMatch = IsDiscNumber().Match(parentDirectoryName);
-
             string songName = songInfo.Tag.Title ?? Path.GetFileNameWithoutExtension(fileName);
-            var songDuration = GetDuration(songFilePath) ?? songInfo.Properties.Duration;
+            string songPath = songFilePath.GetRelational(_root);
+            int songOrder = songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongOrderFromFileName(fileName);
+			var songDuration = GetDurationUsingNAudio(songFilePath) ?? songInfo.Properties.Duration;
 
-            if (discNumberMatch.Success)
+			var parentDirectoryName = new FileInfo(songInfo.Name).Directory?.Name ?? string.Empty;
+			var discNumberMatch = IsDiscNumber().Match(parentDirectoryName);
+			if (discNumberMatch.Success)
             {
+                var discNumberCreationResult = DiscNumber.Create(int.Parse(discNumberMatch.Groups[1].Value));
+                if (discNumberCreationResult.IsFailure)
+                {
+                    return Task.FromResult(Result.Failure<Song>(discNumberCreationResult.Error));
+                }
+
                 var songCreationResult = Song.Create(
                     parentId,
                     songName,
-                    songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
-                    int.Parse(discNumberMatch.Groups[1].Value),
-                    songFilePath.GetRelational(_root),
-                    songDuration
+                    songOrder,
+                    songPath,
+                    songDuration,
+                    discNumberCreationResult.Value
                     );
 
                 if (songCreationResult.IsFailure)
@@ -94,8 +102,8 @@ namespace MusicManager.Domain.Services.Implementations
             var songCreationResultWithoutDiscNumber = Song.Create(
                 parentId,
                 songName,
-                songInfo.Tag.Track > 0 ? (int)songInfo.Tag.Track : GetSongNumberFromFileName(fileName),
-                songFilePath.GetRelational(_root),
+                songOrder,
+                songPath,
                 songDuration
                 );
 
@@ -108,28 +116,28 @@ namespace MusicManager.Domain.Services.Implementations
             return Task.FromResult(Result.Success(songCreationResultWithoutDiscNumber.Value));
         }
 
-        public async Task<Result<IEnumerable<Song>>> GetEntitiesFromCueFileAsync(string cueFilePath, DiscId parentId)
+        public async Task<Result<IReadOnlyCollection<Song>>> GetEntitiesFromCueFileAsync(string cueFilePath, DiscId parentId)
         {
             var cueSheetResult = await _cueFileInteractor.GetCueSheetAsync(cueFilePath);
             if (cueSheetResult.IsFailure)
             {
-                return Result.Failure<IEnumerable<Song>>(cueSheetResult.Error);
+                return Result.Failure<IReadOnlyCollection<Song>>(cueSheetResult.Error);
             }
 
-            var songFilePath = Path.Combine(Path.GetDirectoryName(cueFilePath)!, cueSheetResult.Value.ExecutableFileName);
-            var songInfoResult = GetSongFileInfo(songFilePath);
+            var songExecutableFilePath = Path.Combine(Path.GetDirectoryName(cueFilePath)!, cueSheetResult.Value.ExecutableFileName);
+            var songInfoResult = GetSongFileInfo(songExecutableFilePath);
             if (songInfoResult.IsFailure)
             {
-                return Result.Failure<IEnumerable<Song>>(songInfoResult.Error);
+                return Result.Failure<IReadOnlyCollection<Song>>(songInfoResult.Error);
             }
 
             using var songFileInfo = songInfoResult.Value;
-            if (_cueFilesCache.TryGetValue((songFilePath, cueFilePath,  parentId), out var songs))
+            if (_cueFilesCache.TryGetValue((songExecutableFilePath, cueFilePath,  parentId), out var songs))
             {
                 return Result.Success(songs);
             }
 
-            TimeSpan allSongFileDuration = GetDuration(songFilePath) ?? songFileInfo.Properties.Duration;
+            TimeSpan fullSongFileDuration = GetDurationUsingNAudio(songExecutableFilePath) ?? songFileInfo.Properties.Duration;
             var fileName = Path.GetFileName(songFileInfo.Name);
 
             var parentDirectoryName = new FileInfo(songFileInfo.Name).Directory?.Name ?? string.Empty;
@@ -138,36 +146,42 @@ namespace MusicManager.Domain.Services.Implementations
 
             if (discNumberMatch.Success)
             {
-                var result = ParseCueFileTracksToSongs(
+				var discNumberCreationResult = DiscNumber.Create(int.Parse(discNumberMatch.Groups[1].Value));
+				if (discNumberCreationResult.IsFailure)
+				{
+					return Result.Failure<IReadOnlyCollection<Song>>(discNumberCreationResult.Error);
+				}
+
+				var result = ParseCueFileTracksToSongs(
                     cueFileTracks,
                     parentId,
-                    songFilePath.GetRelational(_root),
+                    songExecutableFilePath.GetRelational(_root),
                     cueFilePath.GetRelational(_root),
-                    allSongFileDuration,
-                    int.Parse(discNumberMatch.Groups[1].Value));
+                    fullSongFileDuration,
+                    discNumberCreationResult.Value);
 
                 if (result.IsFailure)
                 {
-                    return Result.Failure<IEnumerable<Song>>(result.Error);
+                    return Result.Failure<IReadOnlyCollection<Song>>(result.Error);
                 }
 
-                _cueFilesCache[(songFilePath, cueFilePath, parentId)] = result.Value;
+                _cueFilesCache[(songExecutableFilePath, cueFilePath, parentId)] = result.Value;
                 return result;
             }
 
             var resultWithoutDiscNumber = ParseCueFileTracksToSongs(
                     cueFileTracks,
                     parentId,
-                    songFilePath.GetRelational(_root),
+                    songExecutableFilePath.GetRelational(_root),
                     cueFilePath.GetRelational(_root),
-                    allSongFileDuration);
+                    fullSongFileDuration);
 
             if (resultWithoutDiscNumber.IsFailure)
             {
-                return Result.Failure<IEnumerable<Song>>(resultWithoutDiscNumber.Error);
+                return Result.Failure<IReadOnlyCollection<Song>>(resultWithoutDiscNumber.Error);
             }
 
-            _cueFilesCache[(songFilePath, cueFilePath, parentId)] = resultWithoutDiscNumber.Value;
+            _cueFilesCache[(songExecutableFilePath, cueFilePath, parentId)] = resultWithoutDiscNumber.Value;
             return resultWithoutDiscNumber;
         }
 
@@ -177,7 +191,7 @@ namespace MusicManager.Domain.Services.Implementations
 
         private Result<TagLib.File> GetSongFileInfo(string songPath)
         {
-            TagLib.File songInfo = null;
+            TagLib.File? songInfo = null;
             try
             {
                 songInfo = TagLib.File.Create(songPath);
@@ -187,31 +201,30 @@ namespace MusicManager.Domain.Services.Implementations
             {
                 songInfo?.Dispose();
                 _logger.LogError(e, "Something went wrong when trying to create songInfo.");
-                return Result.Failure<TagLib.File>(new Error(e.GetType().Name + '\n' + e.Message));
+                return Result.Failure<TagLib.File>(new(e.Message));
             }
         }
 
-        private TimeSpan? GetDuration(string filePath)
+        private TimeSpan? GetDurationUsingNAudio(string filePath)
         {
             try
             {
                 using var reader = new AudioFileReader(filePath);
                 return reader.TotalTime;
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex, "Something went wrong when trying to get duration.");
                 return null;
             }
         }
 
-        private Result<IEnumerable<Song>> ParseCueFileTracksToSongs(
+        private Result<IReadOnlyCollection<Song>> ParseCueFileTracksToSongs(
             IEnumerable<CueFileTrack> cueFileTracks,
             DiscId parent,
             string songRelationalFilePath,
             string cueRelationalFilePath,
             TimeSpan allSongFileDuration,
-            int? discNumber = null)
+            DiscNumber? discNumber = null)
         {
             var results = new List<Song>();
             var tracks = cueFileTracks.ToList();
@@ -221,64 +234,41 @@ namespace MusicManager.Domain.Services.Implementations
                 var previousTrack = tracks[i - 1];
                 var currentTrack = tracks[i];
 
-                var songCreationResult = discNumber is null ?
+                var songCreationResult =
                     Song.Create(
                     parent,
                     previousTrack.Title,
-                    previousTrack.TrackPosition,
+                    previousTrack.TrackOrder,
                     songRelationalFilePath,
                     currentTrack.Index01 - previousTrack.Index01,
                     cueRelationalFilePath,
                     previousTrack.Index00,
                     previousTrack.Index01,
-                    previousTrack.Title)
-                    :
-                    Song.Create(
-                    parent, 
                     previousTrack.Title,
-                    previousTrack.TrackPosition,
-                    (int)discNumber,
-                    songRelationalFilePath,
-                    currentTrack.Index01 - previousTrack.Index01,
-                    cueRelationalFilePath,
-                    previousTrack.Index00,
-                    previousTrack.Index01,
-                    previousTrack.Title
-                    );
+                    discNumber);
 
                 if (songCreationResult.IsFailure)
                 {
-                    return Result.Failure<IEnumerable<Song>>(songCreationResult.Error);
+                    return Result.Failure<IReadOnlyCollection<Song>>(songCreationResult.Error);
                 }
 
                 results.Add(songCreationResult.Value);
             }
 
             var lastTrack = tracks.Last();
-            var lastSongCreationResult = discNumber is null ?
+            var lastSongCreationResult =
                     Song.Create(
                     parent,
                     lastTrack.Title,
-                    lastTrack.TrackPosition,
+                    lastTrack.TrackOrder,
                     songRelationalFilePath,
                     allSongFileDuration - lastTrack.Index01,
                     cueRelationalFilePath,
                     lastTrack.Index00,
                     lastTrack.Index01,
-                    lastTrack.Title)
-                    :
-                    Song.Create(
-                    parent,
                     lastTrack.Title,
-                    lastTrack.TrackPosition,
-                    (int)discNumber,
-                    songRelationalFilePath,
-                    allSongFileDuration - lastTrack.Index01,
-                    cueRelationalFilePath,
-                    lastTrack.Index00,
-                    lastTrack.Index01,
-                    lastTrack.Title
-                    );
+                    discNumber);
+                   
 
             if (lastSongCreationResult.IsSuccess)
             {
@@ -286,22 +276,17 @@ namespace MusicManager.Domain.Services.Implementations
                 return results;
             }
 
-            return Result.Failure<IEnumerable<Song>>(lastSongCreationResult.Error);
+            return Result.Failure<IReadOnlyCollection<Song>>(lastSongCreationResult.Error);
         }
 
-        private int GetSongNumberFromFileName(string fileName)
-        {
-            var match = GetSongOrderFromRow().Match(fileName);
-            if (match.Success)
-            {
-                _ = int.TryParse(match.Value, out int result);
-                return result;
-            }
+		private int GetSongOrderFromFileName(string fileName)
+		{
+			var match = GetSongOrderFromRow().Match(fileName);
+			_ = int.TryParse(match.Value, out int result);
+            return result;
+		}
 
-            return 0;
-        }
-
-        [GeneratedRegex("^\\d+")]
+		[GeneratedRegex("^\\d+")]
         private static partial Regex GetSongOrderFromRow();
 
         [GeneratedRegex(@"^CD(\d+)")]

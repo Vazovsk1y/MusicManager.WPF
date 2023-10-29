@@ -1,15 +1,14 @@
 ﻿using MusicManager.Domain.Constants;
-using MusicManager.Domain.Enums;
 
 namespace MusicManager.Domain.Services;
 
 public static class DomainServicesConstants
 {
-    public const char SongwriterDirectoryNameSeparator = '.';
+    public const char SongwriterFolderNameSeparator = '.';
 
-    public const char MovieDirectoryNameSeparator = '-';
+    public const char MovieFolderNameSeparator = '-';
 
-    public const char DiscDirectoryNameSeparator = '-';
+    public const char DiscFolderNameSeparator = '-';
 
     public const string MOVIES_FOLDER_NAME = "movies";
 
@@ -17,9 +16,9 @@ public static class DomainServicesConstants
 
     public const string COVERS_FOLDER_NAME = "covers";
 
-    public const string FolderJPG = "folder.jpg";
+    public const string FolderJPGFileName = "folder.jpg";
 
-    public static string[] AudioFilesExtensions => new[]
+    public static readonly string[] AudioFilesExtensions = new[]
     {
         DomainConstants.WVExtension,
         DomainConstants.Mp3Extension,

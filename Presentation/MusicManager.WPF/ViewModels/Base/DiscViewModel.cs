@@ -37,8 +37,10 @@ internal partial class DiscViewModel<T> :
     public ObservableCollection<SongViewModel> Songs
     {
         get => _songs ??= new();
-        init => SetProperty(ref _songs, value);
+        set => SetProperty(ref _songs, value);
     }
+
+    public bool IsSongsLoaded { get; set; }
 
     public T PreviousState { get; private set; } = null!;
 

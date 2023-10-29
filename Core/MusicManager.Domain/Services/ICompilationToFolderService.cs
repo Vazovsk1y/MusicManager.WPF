@@ -5,7 +5,7 @@ namespace MusicManager.Domain.Services;
 
 public interface ICompilationToFolderService
 {
-    Task<Result<string>> CreateAssociatedFolderAndFileAsync(Compilation compilation, Songwriter parent);
+    Task<Result<string>> CreateAssociatedFolderAndFileAsync(Compilation compilation, Songwriter parent, CancellationToken cancellationToken = default);
 
-    Task<Result<string>> UpdateIfExistsAsync(Compilation compilation, CancellationToken cancellationToken = default);
+    Task<Result<string>> UpdateAsync(Compilation compilation, CancellationToken cancellationToken = default);
 }

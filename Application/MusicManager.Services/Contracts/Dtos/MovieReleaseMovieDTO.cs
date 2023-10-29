@@ -3,7 +3,7 @@ using MusicManager.Domain.Models;
 
 namespace MusicManager.Services.Contracts.Dtos;
 
-public record ExistingMovieReleaseToMovieDTO(
+public record MovieReleaseMovieDTO(
     MovieId MovieId,
     DiscId DiscId);
 

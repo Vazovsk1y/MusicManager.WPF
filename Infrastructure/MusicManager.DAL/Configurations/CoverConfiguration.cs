@@ -16,6 +16,6 @@ internal class CoverConfiguration : IEntityTypeConfiguration<Cover>
             e => e.Value, 
             value => new CoverId(value));
 
-        entityBuilder.Property(e => e.FullPath).IsRequired();
+        entityBuilder.Property(e => e.Path).IsRequired();
     }
 }

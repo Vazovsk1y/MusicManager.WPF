@@ -18,11 +18,11 @@ internal partial class UserConfigViewModel :
     [ObservableProperty]
     private bool _createAssociatedFolder;
 
-    private readonly IFileManagerInteractor _fileManagerInteractor;
+    private readonly IFileSystemManager _fileManagerInteractor;
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
 	public UserConfigViewModel(
-		IFileManagerInteractor fileManagerInteractor, IServiceScopeFactory serviceScopeFactory)
+		IFileSystemManager fileManagerInteractor, IServiceScopeFactory serviceScopeFactory)
 	{
 		_fileManagerInteractor = fileManagerInteractor;
 		_serviceScopeFactory = serviceScopeFactory;
@@ -34,7 +34,7 @@ internal partial class UserConfigViewModel :
 		using var scope = _serviceScopeFactory.CreateScope();
 		var config = scope.ServiceProvider.GetRequiredService<IUserConfig>();
         config.CreateAssociatedFolder = CreateAssociatedFolder;
-        config.RootPath = RootPath;
+        config.Path = RootPath;
         config.Save();
 	}
 
@@ -43,7 +43,7 @@ internal partial class UserConfigViewModel :
 	[RelayCommand]
     private void SelectRoot()
     {
-        var selectedFolderResult = _fileManagerInteractor.SelectDirectory();
+        var selectedFolderResult = _fileManagerInteractor.SelectFolder();
         if (selectedFolderResult.IsFailure)
         {
             MessageBoxHelper.ShowErrorBox(selectedFolderResult.Error.Message);
@@ -57,7 +57,7 @@ internal partial class UserConfigViewModel :
     {
         using var scope = _serviceScopeFactory.CreateScope();
         var config = scope.ServiceProvider.GetRequiredService<IUserConfig>();
-        RootPath = config.RootPath;
+        RootPath = config.Path;
         CreateAssociatedFolder = config.CreateAssociatedFolder;
     }
 }

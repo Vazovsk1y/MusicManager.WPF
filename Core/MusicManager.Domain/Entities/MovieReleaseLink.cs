@@ -16,11 +16,14 @@ public class MovieReleaseLink
 
     public Movie Movie { get; private set; }
 
-    public EntityDirectoryInfo? ReleaseLink { get; private set; }
+    public EntityDirectoryInfo? ReleaseLinkInfo { get; private set; }
 
-    private MovieReleaseLink() { }
+#pragma warning disable CS8618
+	private MovieReleaseLink() { }
 
-    private MovieReleaseLink(MovieRelease movieRelease, Movie movie)
+#pragma warning restore CS8618
+
+	private MovieReleaseLink(MovieRelease movieRelease, Movie movie)
     {
         MovieRelease = movieRelease;
         Movie = movie;
@@ -28,24 +31,24 @@ public class MovieReleaseLink
         MovieReleaseId = movieRelease.Id;
     }
 
-    internal static Result<MovieReleaseLink> Create(MovieRelease movieRelease, Movie movie, string? linkPath = null)
+    internal static Result<MovieReleaseLink> Create(MovieRelease movieRelease, Movie movie, string? moviReleaseLinkPath = null)
     {
         if (movie is null || movieRelease is null)
         {
-            return Result.Failure<MovieReleaseLink>(DomainErrors.NullEntityPassed($"{nameof(movieRelease)} or {nameof(movie)}"));
+            return Result.Failure<MovieReleaseLink>(DomainErrors.NullPassed("movie release or movie"));
         }
 
-        var result = new MovieReleaseLink(movieRelease, movie);
-        if (linkPath is not null)
+        var link = new MovieReleaseLink(movieRelease, movie);
+        if (moviReleaseLinkPath is not null)
         {
-            var entityDirInfoRes = EntityDirectoryInfo.Create(linkPath);
-            if (entityDirInfoRes.IsFailure)
+            var entityDirectoryInfoResult = EntityDirectoryInfo.Create(moviReleaseLinkPath);
+            if (entityDirectoryInfoResult.IsFailure)
             {
-                return Result.Failure<MovieReleaseLink>(entityDirInfoRes.Error);
+                return Result.Failure<MovieReleaseLink>(entityDirectoryInfoResult.Error);
             }
-            result.ReleaseLink = entityDirInfoRes.Value;
+            link.ReleaseLinkInfo = entityDirectoryInfoResult.Value;
         }
 
-        return result;
+        return link;
     }
 }

@@ -14,17 +14,17 @@ internal class UserConfig : IUserConfig
 {
 	public const string FileName = "appConfig.json";
 
-	public static readonly string SettingsFileFullPath = Path.Combine(App.AssociatedAppFolderFullPath, FileName);
+	public static readonly string SettingsFileFullPath = System.IO.Path.Combine(App.AssociatedAppFolderFullPath, FileName);
 
 	private readonly object _locker = new();
 
-	public required string RootPath { get; set; }
+	public required string Path { get; set; }
 
 	public required bool CreateAssociatedFolder { get; set; }
 
 	public static readonly UserConfig Default = new()
 	{
-		RootPath = App.WorkingDirectory,
+		Path = App.WorkingDirectory,
 		CreateAssociatedFolder = true,
 	};
 

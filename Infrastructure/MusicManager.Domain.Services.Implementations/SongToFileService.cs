@@ -17,14 +17,14 @@ public class SongToFileService : ISongToFileService
         _root = root;
     }
 
-    public Task<Result<string>> CopyToAsync(string fileFullPath, Disc parent, DiscNumber? discNumber = null)
+    public Task<Result<string>> CopyToAsync(string fileFullPath, Disc parent, DiscNumber? discNumber = null, CancellationToken cancellationToken = default)
     {
-        if (parent.EntityDirectoryInfo is null)
+        if (parent.AssociatedFolderInfo is null)
         {
             return Task.FromResult(Result.Failure<string>(new Error("Parent directory info isn't setted, unable to copy files.")));
         }
 
-        var rootDirectory = new DirectoryInfo(_root.CombineWith(parent.EntityDirectoryInfo.Path));
+        var rootDirectory = new DirectoryInfo(_root.CombineWith(parent.AssociatedFolderInfo.Path));
         if (!rootDirectory.Exists)
         {
             return Task.FromResult(Result.Failure<string>(new Error("Parent directory info isn't exists, unable to copy files.")));
@@ -63,20 +63,20 @@ public class SongToFileService : ISongToFileService
         return Task.FromResult(Result.Success(newFileLocation.FullName.GetRelational(_root)));
     }
 
-    public Task<Result<string>> UpdateIfExistsAsync(Song song, CancellationToken cancellationToken = default)
+    public Task<Result<string>> UpdateAsync(Song song, CancellationToken cancellationToken = default)
     {
         if (song.IsFromCue)
         {
             return Task.FromResult(Result.Failure<string>(new Error("Unable to modify the songFile from cue.")));
         }
 
-        var previousFile = new FileInfo(_root.CombineWith(song.PlaybackInfo.ExecutableFileFullPath));
+        var previousFile = new FileInfo(_root.CombineWith(song.PlaybackInfo.ExecutableFilePath));
         if (!previousFile.Exists)
         {
             return Task.FromResult(Result.Failure<string>(new Error("Executable song file is not exists.")));
         }
 
-        string newFileName = $"{song.Order} {song.Name}{previousFile.Extension}";
+        string newFileName = $"{song.Order} {song.Title}{previousFile.Extension}";
         string newFileFullPath = Path.Combine(previousFile.DirectoryName!, newFileName);
 
         if (previousFile.Name != newFileName)
@@ -85,7 +85,7 @@ public class SongToFileService : ISongToFileService
         }
 
         using var songFileInfo = TagLib.File.Create(newFileFullPath);
-        songFileInfo.Tag.Title = song.Name;
+        songFileInfo.Tag.Title = song.Title;
         songFileInfo.Tag.Track = (uint)song.Order;
         songFileInfo.Save();
 

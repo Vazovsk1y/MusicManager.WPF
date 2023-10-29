@@ -1,5 +1,4 @@
-﻿using IWshRuntimeLibrary;
-using MusicManager.Domain.Services;
+﻿using MusicManager.Domain.Services;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
 using MusicManager.Services.Contracts;
@@ -29,54 +28,71 @@ public class SongwriterFolderFactory : ISongwriterFolderFactory
             return Result.Failure<SongwriterFolder>(DomainServicesErrors.PassedDirectoryIsNotExists(songwriterDirectory.FullName));
         }
 
-        List<MovieFolder> moviesFolders = new();
-        List<DiscFolder> compilationsFolders = new();
         var subDirectories = songwriterDirectory.EnumerateDirectories();
-        var moviesDirectory = subDirectories.FirstOrDefault(d => d.Name == DomainServicesConstants.MOVIES_FOLDER_NAME);
-        var compilationsDirectory = subDirectories.FirstOrDefault(d => d.Name == DomainServicesConstants.COMPILATIONS_FOLDER_NAME);
-        
-        if (moviesDirectory is not null)
+        var moviesDirectory = subDirectories.FirstOrDefault(d => string.Equals(d.Name , DomainServicesConstants.MOVIES_FOLDER_NAME, StringComparison.OrdinalIgnoreCase));
+        var compilationsDirectory = subDirectories.FirstOrDefault(d => string.Equals(d.Name, DomainServicesConstants.COMPILATIONS_FOLDER_NAME, StringComparison.OrdinalIgnoreCase));
+
+        var moviesResult = GetMoviesFolders(moviesDirectory);
+        if (moviesResult.IsFailure)
         {
-            var moviesDirectories = moviesDirectory.EnumerateDirectories();
-            foreach (var movieFolder in moviesDirectories)
-            {
-                var result = _movieFolderFactory.Create(movieFolder);
-                if (result.IsFailure)
-                {
-                    return Result.Failure<SongwriterFolder>(result.Error);
-                }
+            return Result.Failure<SongwriterFolder>(moviesResult.Error);
+		}
 
-                moviesFolders.Add(result.Value);
-            }
-        }
-
-        if (compilationsDirectory is not null)
+        var compilationsResult = GetCompilationsFolders(compilationsDirectory);
+        if (compilationsResult.IsFailure)
         {
-            var compilationsDirectories = new List<DirectoryInfo>(compilationsDirectory.EnumerateDirectories());
-            var linksFiles = compilationsDirectory.EnumerateFiles().Where(e => e.Extension == ".lnk");
-
-            foreach (var linkFile in linksFiles)
-            {
-                WshShell shell = new();
-                WshShortcut shortcut = (WshShortcut)shell.CreateShortcut(linkFile.FullName);
-                compilationsDirectories.Add(new DirectoryInfo(shortcut.TargetPath));
-            }
-
-            foreach (var compilationFolder in compilationsDirectories)
-            {
-                var result = _compilationFolderFactory.Create(compilationFolder);
-                if (result.IsFailure)
-                {
-                    return Result.Failure<SongwriterFolder>(result.Error);
-                }
-
-                compilationsFolders.Add(result.Value);
-            }
+            return Result.Failure<SongwriterFolder>(compilationsResult.Error);
         }
 
         return new SongwriterFolder(
             songwriterDirectory.FullName, 
-            moviesFolders, 
-            compilationsFolders);
+            moviesResult.Value, 
+            compilationsResult.Value);
     }
+
+    private Result<IReadOnlyCollection<MovieFolder>> GetMoviesFolders(DirectoryInfo? moviesDirectory)
+    {
+        if (moviesDirectory is null)
+        {
+            return Result.Failure<IReadOnlyCollection<MovieFolder>>(new($"Required \"{DomainServicesConstants.MOVIES_FOLDER_NAME}\" folder is not exists."));
+        }
+
+		List<MovieFolder> moviesFolders = new();
+		var moviesDirectories = moviesDirectory.EnumerateDirectories();
+		foreach (var movieFolder in moviesDirectories)
+		{
+			var result = _movieFolderFactory.Create(movieFolder);
+			if (result.IsFailure)
+			{
+				return Result.Failure<IReadOnlyCollection<MovieFolder>>(result.Error);
+			}
+
+			moviesFolders.Add(result.Value);
+		}
+
+        return moviesFolders;
+	}
+
+	private Result<IReadOnlyCollection<DiscFolder>> GetCompilationsFolders(DirectoryInfo? compilationsDirectory)
+	{
+		if (compilationsDirectory is null)
+		{
+			return Result.Failure<IReadOnlyCollection<DiscFolder>>(new($"Required \"{DomainServicesConstants.COMPILATIONS_FOLDER_NAME}\" folder is not exists."));
+		}
+
+		List<DiscFolder> compilationsFolders = new();
+		var compilationsDirectories = compilationsDirectory.EnumerateDirectories();
+		foreach (var compilationFolder in compilationsDirectories)
+		{
+			var result = _compilationFolderFactory.Create(compilationFolder);
+			if (result.IsFailure)
+			{
+				return Result.Failure<IReadOnlyCollection<DiscFolder>>(result.Error);
+			}
+
+			compilationsFolders.Add(result.Value);
+		}
+
+		return compilationsFolders;
+	}
 }

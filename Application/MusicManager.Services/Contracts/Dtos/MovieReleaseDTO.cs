@@ -1,6 +1,6 @@
 ﻿using MusicManager.Domain.Common;
-using MusicManager.Domain.Models;
 using MusicManager.Domain.ValueObjects;
+using MusicManager.Services.Contracts.Base;
 
 namespace MusicManager.Services.Contracts.Dtos;
 
@@ -11,8 +11,7 @@ public record MovieReleaseDTO : DiscDTO
         string Identifier, 
         string? ProductionCountry, 
         int? ProductionYear, 
-        DiscType DiscType, 
-        IEnumerable<SongDTO> SongDTOs) : base(Id, Identifier, ProductionCountry, ProductionYear, DiscType, SongDTOs)
+        DiscType DiscType) : base(Id, Identifier, ProductionCountry, ProductionYear, DiscType)
     {
     }
 }

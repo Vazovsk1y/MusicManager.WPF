@@ -17,7 +17,7 @@ internal class MovieReleaseAddToMovieViewModel : MovieReleaseMovieViewModel
 
     protected override void Accept()
     {
-        var message = new ExistingMovieReleaseAddToMovieRequest(SelectedViewModel!);
+        var message = new ExistingMovieReleaseAddToMovieRequest(SelectedMovieRelease!.Id);
         Messenger.Send(message);
         _movieReleaseMovieWindowService.CloseDialog();
     }

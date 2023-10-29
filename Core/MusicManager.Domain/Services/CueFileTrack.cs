@@ -1,12 +1,14 @@
-﻿namespace MusicManager.Domain.Services;
+﻿using MusicManager.Domain.ValueObjects;
+
+namespace MusicManager.Domain.Services;
 
 public class CueFileTrack
 {
-    public string Title { get; set; } = string.Empty;
+    public string Title { get; set; } = ProductionInfo.UndefinedCountry;
 
-    public string Performer { get; set; } = string.Empty;
+    public string Performer { get; set; } = ProductionInfo.UndefinedCountry;
 
-    public int TrackPosition { get; set; }
+	public int TrackOrder { get; set; }
 
     public string? Isrc { get; set; }
 

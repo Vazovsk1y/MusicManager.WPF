@@ -13,10 +13,10 @@ namespace MusicManager.Services.Implementations;
 
 public class CompilationService : ICompilationService
 {
-    private readonly ISongService _songService;
     private readonly IFolderToCompilationService _pathToCompilationService;
-    private readonly IApplicationDbContext _dbContext;
     private readonly ICompilationToFolderService _compilationToFolderService;
+    private readonly IApplicationDbContext _dbContext;
+    private readonly ISongService _songService;
     private readonly IRoot _root;
 
     public CompilationService(
@@ -33,55 +33,33 @@ public class CompilationService : ICompilationService
         _root = root;
     }
 
-    public async Task<Result> DeleteAsync(SongwriterId parentId, DiscId discId, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(DiscId discId, CancellationToken cancellationToken = default)
     {
-        var songwriter = await _dbContext.Songwriters
-            .Include(e => e.Compilations)
-            .SingleOrDefaultAsync(e => e.Id == parentId, cancellationToken);
+        var compilation = await _dbContext.Compilations
+            .Include(e => e.Songs)
+            .ThenInclude(e => e.PlaybackInfo)
+            .Include(e => e.Covers)
+            .SingleOrDefaultAsync(e => e.Id == discId, cancellationToken)
+            .ConfigureAwait(false);
 
-        if (songwriter is null)
+        if (compilation is null)
         {
-            return Result.Failure(ServicesErrors.SongwriterWithPassedIdIsNotExists());
+            return Result.Failure(ServicesErrors.CompilationWithPassedIdIsNotExists());
         }
 
-        var removingResult = songwriter.RemoveCompilation(discId);
-        if (removingResult.IsFailure)
-        {
-            return removingResult;
-        }
-
+        _dbContext.Compilations.Remove(compilation);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 
-    public async Task<Result<IEnumerable<CompilationDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default)
+    public async Task<Result<IReadOnlyCollection<CompilationDTO>>> GetAllAsync(SongwriterId songwriterId, CancellationToken cancellation = default)
     {
-        var result = new List<CompilationDTO>();
-        var songwriter = await _dbContext
-            .Songwriters
+        var result = await _dbContext
+            .Compilations
             .AsNoTracking()
-            .Include(e => e.Compilations)
-            .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellation);
-
-        if (songwriter is null)
-        {
-            return Result.Failure<IEnumerable<CompilationDTO>>(ServicesErrors.SongwriterWithPassedIdIsNotExists());
-        }
-
-        var compilations = songwriter.Compilations;
-        foreach (var compilation in compilations)
-        {
-            var songsResult = await _songService.GetAllAsync(compilation.Id, cancellation);
-            if (songsResult.IsFailure)
-            {
-                return Result.Failure<IEnumerable<CompilationDTO>>(songsResult.Error);
-            }
-
-            result.Add(compilation.ToDTO() with
-            {
-                SongDTOs = songsResult.Value
-            });
-        }
+            .Where(e => e.SongwriterId == songwriterId)
+            .Select(e => e.ToDTO())
+            .ToListAsync(cancellation);
 
         return result;
     }
@@ -91,7 +69,8 @@ public class CompilationService : ICompilationService
         var songwriter = await _dbContext
             .Songwriters
             .Include(e => e.Compilations)
-            .SingleOrDefaultAsync(e => e.Id == compilationAddDTO.SongwriterId, cancellationToken);
+            .SingleOrDefaultAsync(e => e.Id == compilationAddDTO.SongwriterId, cancellationToken)
+            .ConfigureAwait(false);
 
         if (songwriter is null)
         {
@@ -111,32 +90,32 @@ public class CompilationService : ICompilationService
             return Result.Failure<DiscId>(creationResult.Error);
         }
 
-        var compilation = creationResult.Value;
-        var addingResult = songwriter.AddCompilation(compilation);
-        if (addingResult.IsFailure)
-        {
-            return Result.Failure<DiscId>(addingResult.Error);
-        }
+		var compilation = creationResult.Value;
+		var addingResult = songwriter.AddCompilation(compilation);
+		if (addingResult.IsFailure)
+		{
+			return Result.Failure<DiscId>(addingResult.Error);
+		}
 
         if (createAssociatedFolder)
         {
-            var createdAssociatedFolderAndFileResult = await _compilationToFolderService.CreateAssociatedFolderAndFileAsync(compilation, songwriter);
+            var createdAssociatedFolderAndFileResult = await _compilationToFolderService.CreateAssociatedFolderAndFileAsync(compilation, songwriter, cancellationToken);
             if (createdAssociatedFolderAndFileResult.IsFailure)
             {
                 return Result.Failure<DiscId>(createdAssociatedFolderAndFileResult.Error);
             }
 
-            compilation.SetDirectoryInfo(createdAssociatedFolderAndFileResult.Value);
+            compilation.SetAssociatedFolder(createdAssociatedFolderAndFileResult.Value);
         }
-        
-        await _dbContext.SaveChangesAsync(cancellationToken);
+
+		await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(compilation.Id);
     }
 
-    public async Task<Result<CompilationDTO>> SaveFromFolderAsync(DiscFolder compilationFolder, SongwriterId songwriterId, CancellationToken cancellationToken = default)
+    public async Task<Result<CompilationDTO>> SaveFromFolderAsync(DiscFolder compilationFolder, SongwriterId parentID, CancellationToken cancellationToken = default)
     {
         var compilationResult = await _pathToCompilationService
-            .GetEntityAsync(compilationFolder.Path, songwriterId)
+            .GetEntityAsync(compilationFolder.Path, parentID)
             .ConfigureAwait(false);
 
         if (compilationResult.IsFailure)
@@ -148,14 +127,14 @@ public class CompilationService : ICompilationService
         var songwriter = await _dbContext
             .Songwriters
             .Include(e => e.Compilations)
-            .SingleOrDefaultAsync(e => e.Id == songwriterId, cancellationToken);
+            .SingleOrDefaultAsync(e => e.Id == parentID, cancellationToken);
 
         if (songwriter is null) 
         {
             return Result.Failure<CompilationDTO>(ServicesErrors.SongwriterWithPassedIdIsNotExists());
         }
 
-        var addingResult = songwriter.AddCompilation(compilation, true);
+        var addingResult = songwriter.AddCompilation(compilation);
         if (addingResult.IsFailure)
         {
             return Result.Failure<CompilationDTO>(addingResult.Error);
@@ -171,27 +150,25 @@ public class CompilationService : ICompilationService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var songsDtos = new List<SongDTO>();
-        foreach (var song in compilationFolder.Songs)
+        foreach (var song in compilationFolder.SongsFiles)
         {
             var result = await _songService.SaveFromFileAsync(song, compilation.Id, true, cancellationToken);
             if (result.IsFailure)
             {
                 return Result.Failure<CompilationDTO>(result.Error);
             }
-
-            songsDtos.AddRange(result.Value);
         }
 
-        return compilation.ToDTO() with
-        {
-            SongDTOs = songsDtos,
-        };
+        return compilation.ToDTO();
     }
 
     public async Task<Result> UpdateAsync(CompilationUpdateDTO compilationUpdateDTO, CancellationToken cancellationToken = default)
     {
-        var compilation = await _dbContext.Compilations.SingleOrDefaultAsync(e => e.Id == compilationUpdateDTO.Id, cancellationToken);
+        var compilation = await _dbContext
+            .Compilations
+            .SingleOrDefaultAsync(e => e.Id == compilationUpdateDTO.Id, cancellationToken)
+            .ConfigureAwait(false);
+
         if (compilation is null)
         {
             return Result.Failure(ServicesErrors.CompilationWithPassedIdIsNotExists());
@@ -209,15 +186,15 @@ public class CompilationService : ICompilationService
             return Result.Failure(new(string.Join("\n", updateActions.Where(e => e.IsFailure).Select(e => e.Error.Message))));
         }
 
-        if (compilation.EntityDirectoryInfo is not null)
+        if (compilation.AssociatedFolderInfo is not null)
         {
-			var folderUpdatingResult = await _compilationToFolderService.UpdateIfExistsAsync(compilation);
+			var folderUpdatingResult = await _compilationToFolderService.UpdateAsync(compilation, cancellationToken);
 			if (folderUpdatingResult.IsFailure)
 			{
                 return folderUpdatingResult;
 			}
 
-			compilation.SetDirectoryInfo(folderUpdatingResult.Value);
+			compilation.SetAssociatedFolder(folderUpdatingResult.Value);
 		}
 
 		await _dbContext.SaveChangesAsync(cancellationToken);

@@ -34,10 +34,10 @@
                   SelectedItem="{Binding SelectedDiscType}"
                   />
 
-        <ComboBox ItemsSource="{Binding Source={x:Static utils:YearsHelper.Years}, UpdateSourceTrigger=PropertyChanged}" 
-                  Grid.Row="1"
-                  SelectedItem="{Binding SelectedYear}"
-                  />
+        <TextBox  Margin="15"
+           Grid.Row="1"
+           Text="{Binding SelectedYear, UpdateSourceTrigger=PropertyChanged}"
+           />
 
         <ComboBox ItemsSource="{Binding Source={x:Static utils:CountryHelper.Countries}}" 
                   Grid.Row="2"

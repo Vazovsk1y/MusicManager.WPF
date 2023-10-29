@@ -3,9 +3,9 @@ using System.IO;
 
 namespace MusicManager.Services.Implementations;
 
-public class FileManagerInteractor : IFileManagerInteractor
+public class FileSystemManager : IFileSystemManager
 {
-    public Result<DirectoryInfo> SelectDirectory(string description = "Select a directory:")
+    public Result<DirectoryInfo> SelectFolder(string description = "Select a directory:")
     {
         using var folderBrowserDialog = new FolderBrowserDialog()
         {
@@ -28,6 +28,7 @@ public class FileManagerInteractor : IFileManagerInteractor
         {
             Filter = filter,
             Title = title,
+            Multiselect = false,
         };
 
         var dialogResult = fileDialog.ShowDialog();

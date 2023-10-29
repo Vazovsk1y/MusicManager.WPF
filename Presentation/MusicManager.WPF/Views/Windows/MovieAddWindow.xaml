@@ -28,9 +28,9 @@
             </DockPanel>
         </GroupBox>
 
-        <ComboBox ItemsSource="{Binding Source={x:Static utils:YearsHelper.Years}, UpdateSourceTrigger=PropertyChanged}" 
+        <TextBox  Margin="30"
                   Grid.Row="1"
-                  SelectedItem="{Binding SelectedYear}"
+                  Text="{Binding SelectedYear, UpdateSourceTrigger=PropertyChanged}"
                   />
 
         <ComboBox ItemsSource="{Binding Source={x:Static utils:CountryHelper.Countries}}" 

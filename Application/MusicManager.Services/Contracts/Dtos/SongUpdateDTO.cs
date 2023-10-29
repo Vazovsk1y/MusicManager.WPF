@@ -4,6 +4,6 @@ namespace MusicManager.Services.Contracts.Dtos;
 
 public record SongUpdateDTO(
     SongId SongId,
-    string Name,
-    int SongOrder
+    string Title,
+    int Order
     );

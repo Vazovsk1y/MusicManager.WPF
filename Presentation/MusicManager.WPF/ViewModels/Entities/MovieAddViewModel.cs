@@ -87,7 +87,7 @@ internal partial class MovieAddViewModel : DialogViewModel<MovieAddWindow>
         _dialogService.CloseDialog();
     }
 
-    protected override bool CanAccept() => NullValidator.IsAllNotNull(SelectedCountry, SelectedSongwriter, SelectedYear);
+    protected override bool CanAccept() => NullValidator.IsNotNull(SelectedCountry, SelectedSongwriter, SelectedYear);
 
     #endregion
 

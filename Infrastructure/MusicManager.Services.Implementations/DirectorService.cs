@@ -15,7 +15,7 @@ public class DirectorService : IDirectorService
         _context = context;
     }
 
-    public async Task<Result<IEnumerable<DirectorDTO>>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<IReadOnlyCollection<DirectorDTO>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context
             .Directors

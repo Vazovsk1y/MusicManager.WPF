@@ -1,6 +1,8 @@
-﻿using MusicManager.Domain.Extensions;
+﻿using Microsoft.Extensions.Logging;
+using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
 using MusicManager.Domain.Services.Implementations.Errors;
+using MusicManager.Domain.Services.Storage;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 
@@ -24,7 +26,7 @@ public class FolderToMovieService :
 
     #region --Constructors--
 
-    public FolderToMovieService(IRoot userConfig) : base(userConfig)
+    public FolderToMovieService(IRoot userConfig, ILogger<FolderToMovieService> logger) : base(userConfig, logger)
     {
     }
 
@@ -34,7 +36,7 @@ public class FolderToMovieService :
 
     public Task<Result<Movie>> GetEntityAsync(string moviePath, SongwriterId songwriterId)
     {
-        var isAbleToMoveNextResult = IsAbleToMoveNext<DirectoryInfo>(moviePath);
+        var isAbleToMoveNextResult = IsAbleToParse<DirectoryInfo>(moviePath);
         if (isAbleToMoveNextResult.IsFailure)
         {
             return Task.FromResult(Result.Failure<Movie>(isAbleToMoveNextResult.Error));
@@ -71,10 +73,10 @@ public class FolderToMovieService :
         return Task.FromResult(Result.Success(movieCreationResult.Value));
     }
 
-    private (bool isSuccessfullyExtracted, int year, string? title) GetMovieInfoFromDirectoryName(string directoryName)
+    private static (bool isSuccessfullyExtracted, int year, string? title) GetMovieInfoFromDirectoryName(string directoryName)
     {
         var info = directoryName
-            .Split(DomainServicesConstants.MovieDirectoryNameSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Split(DomainServicesConstants.MovieFolderNameSeparator, StringSplitOptions.RemoveEmptyEntries)
             .Select(i => i.TrimEnd().TrimStart())
             .ToList();
 
@@ -83,8 +85,8 @@ public class FolderToMovieService :
             return (false, default, null);
         }
 
-        _ = int.TryParse(info[0], out int result);
-        return (true, result, info[1]);
+        _ = int.TryParse(info[0], out int year);
+        return (true, year, info[1]);
     }
 
     #endregion

@@ -3,8 +3,8 @@ using MusicManager.Domain.ValueObjects;
 
 namespace MusicManager.Services.Contracts.Dtos;
 
-public record SongAddDTO(
-    DiscId DiscId,
-    SongFile SongFile,
-    DiscNumber? DiscNumber = null
+public record MovieReleaseLookupDTO(
+    DiscId Id,
+    string Identifier,
+    DiscType DiscType
     );

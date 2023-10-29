@@ -17,13 +17,13 @@ internal class SongwriterViewModel : ObservableObject
 	public ObservableCollection<CompilationViewModel> Compilations 
 	{ 
 		get => _compilations ??= new(); 
-		init => SetProperty(ref _compilations, value);
+		set => SetProperty(ref _compilations, value);
 	}
 
     public ObservableCollection<MovieViewModel> Movies 
 	{ 
 		get => _movies ??= new();
-		init => SetProperty(ref _movies, value); 
+		set => SetProperty(ref _movies, value); 
 	}
 
 	public string? FullName
@@ -31,4 +31,8 @@ internal class SongwriterViewModel : ObservableObject
 		get => _fullName;
 		set => SetProperty(ref _fullName, value);
 	}
+
+	public bool IsCompilationsLoaded { get; set; }
+
+	public bool IsMoviesLoaded { get; set; }
 }

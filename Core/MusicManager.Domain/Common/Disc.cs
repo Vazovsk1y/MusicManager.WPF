@@ -20,82 +20,86 @@ public class Disc : IAggregateRoot
 
     public DiscId Id { get; }
 
-    public EntityDirectoryInfo? EntityDirectoryInfo { get; protected set; }
-
-    public ProductionInfo ProductionInfo { get; protected set; } = null!;
-
     public DiscType Type { get; protected set; }
 
-    public string Identifier { get; protected set; } = string.Empty;
+    public ProductionInfo ProductionInfo { get; protected set; }
+
+    public string Identifier { get; protected set; }
+
+    public EntityDirectoryInfo? AssociatedFolderInfo { get; protected set; }
 
     public IReadOnlyCollection<Song> Songs => _songs.ToList();
 
     public IReadOnlyCollection<Cover> Covers => _covers.ToList();
 
-    #endregion
+	#endregion
 
-    #region --Constructors--
+	#region --Constructors--
 
-    protected Disc()
-    {
+#pragma warning disable CS8618 
+	protected Disc()
+	{
         Id = DiscId.Create();
     }
+#pragma warning restore CS8618 
 
-    #endregion
 
-    #region --Methods--
+	#endregion
 
-    public virtual Result AddCover(string coverPath)
+	#region --Methods--
+
+	public virtual Result AddCover(string coverPath)
     {
-        var coverCreationResult = Cover.Create(Id, coverPath);
+		var coverCreationResult = Cover.Create(Id, coverPath);
         if (coverCreationResult.IsFailure)
         {
-            return Result.Failure(new (coverCreationResult.Error));
+            return Result.Failure(coverCreationResult.Error);
         }
 
-        if (_covers.SingleOrDefault(e => 
-        e.FullPath == coverCreationResult.Value.FullPath) is not null)
-        {
-            return Result.Failure(new Error($"Cover with passed path [{coverPath}] is already exists."));
-        }
+        var cover = coverCreationResult.Value;
+		if (IsCoverAlreadyExists())
+		{
+			return Result.Failure(DomainErrors.Disc.CoverWithPassedPathAlreadyAdded(coverPath));
+		}
 
-        _covers.Add(coverCreationResult.Value);
+		_covers.Add(cover);
         return Result.Success();
+
+        bool IsCoverAlreadyExists()
+        {
+            return _covers.SingleOrDefault(e => e.Path == cover.Path) is not null;
+		}
     }
 
-    public virtual Result AddSong(Song song, bool checkPlaybackInfo = false)
+    public virtual Result AddSong(Song song)
     {
         if (song is null)
         {
-            return Result.Failure(DomainErrors.NullEntityPassed(nameof(song)));
+            return Result.Failure(DomainErrors.NullPassed(nameof(song)));
         }
 
-        if (_songs.SingleOrDefault(i => i.Id == song.Id) is not null)
+        if (IsSongAlreadyExists())
         {
-            return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(song)));
-        }
-
-        if (checkPlaybackInfo && _songs.SingleOrDefault(e =>
-        e.PlaybackInfo == song.PlaybackInfo) is not null)
-        {
-            return Result.Failure(new Error("Song with passed playback info is already exists."));
+            return Result.Failure(DomainErrors.PassedEntityAlreadyAdded(nameof(song)));
         }
 
         _songs.Add(song);
         return Result.Success();
-    }
 
-    public virtual Result SetDirectoryInfo(string fullPath)
+        bool IsSongAlreadyExists() => _songs.SingleOrDefault(s => s.Id == song.Id || s.PlaybackInfo == song.PlaybackInfo) is not null; 
+	}
+
+    public virtual Result SetAssociatedFolder(string path)
     {
-        var result = EntityDirectoryInfo.Create(fullPath);
+        var result = EntityDirectoryInfo.Create(path);
 
-        if (result.IsSuccess)
+        if (result.IsFailure)
         {
-            EntityDirectoryInfo = result.Value;
             return result;
         }
 
-        return result;
+		AssociatedFolderInfo = result.Value;
+		return Result.Success();
     }
 
     public virtual Result SetIdentifier(string identifier)
@@ -109,44 +113,31 @@ public class Disc : IAggregateRoot
         return Result.Success();
     }
 
-    public virtual Result RemoveSong(SongId songId)
-    {
-        var song = _songs.SingleOrDefault(e => e.Id == songId);
-        if (song is null)
-        {
-            return Result.Failure(new Error("Unable to remove song because it with this id is not exists."));
-        }
-
-        _songs.Remove(song);
-        return Result.Success();
-    }
-
     public virtual Result SetProductionInfo(string? productionCountry, int? productionYear)
     {
         if (productionYear is null)
         {
             if (Type != DiscType.Bootleg && Type != DiscType.Unknown)
             {
-				return Result.Failure(new Error("At least production year must be setted for other types except bootleg and unknown."));
+				return Result.Failure(DomainErrors.Disc.ProductionYearCanNotBeNullForOtherTypesExceptBootlegAndUnknown);
 			}
 		}
 
         var result = ProductionInfo.Create(productionCountry, productionYear);
-
-        if (result.IsSuccess)
+        if (result.IsFailure)
         {
-            ProductionInfo = result.Value;
-            return Result.Success();
+            return result;
         }
 
-        return Result.Failure(result.Error);
-    }
+		ProductionInfo = result.Value;
+		return Result.Success();
+	}
 
     public virtual Result SetDiscType(DiscType discType)
     {
         if (discType == null)
         {
-            return Result.Failure(DomainErrors.NullEntityPassed("disc type"));
+            return Result.Failure(DomainErrors.NullPassed("disc type"));
         }
 
         Type = discType;

@@ -9,12 +9,10 @@ internal static class Mapper
 {
     public static SongwriterViewModel ToViewModel(this SongwriterDTO songwriterDTO)
     {
-        return new SongwriterViewModel() 
+        return new SongwriterViewModel()
         {
             SongwriterId = songwriterDTO.Id,
-            FullName = songwriterDTO.Name + " " + songwriterDTO.LastName,
-            Compilations = new (songwriterDTO.CompilationDTOs.Select(e => e.ToViewModel())),
-            Movies = new (songwriterDTO.MovieDTOs.Select(e => e.ToViewModel())),
+            FullName = $"{songwriterDTO.Name} {songwriterDTO.LastName}",
         };
     }
 
@@ -28,7 +26,6 @@ internal static class Mapper
             ProductionCountry = movieDTO.ProductionCountry,
             ProductionYear = movieDTO.ProductionYear,
             Title = movieDTO.Title,
-            MoviesReleasesLinks = new(movieDTO.MoviesReleasesLinks.Select(e => e.ToViewModel())),
         };
 
         entity.SetCurrentAsPrevious();
@@ -37,7 +34,7 @@ internal static class Mapper
 
     public static MovieReleaseLinkViewModel ToViewModel(this MovieReleaseLinkDTO movieReleaseLinkDTO)
     {
-        return new MovieReleaseLinkViewModel { IsFolder = movieReleaseLinkDTO.IsFolder, MovieRelease = movieReleaseLinkDTO.MovieReleaseDTO.ToViewModel() };
+        return new MovieReleaseLinkViewModel { IsFolder = movieReleaseLinkDTO.IsReleaseAddedAsFolder, MovieRelease = movieReleaseLinkDTO.MovieRelease.ToViewModel() };
     }
 
     public static DirectorViewModel ToViewModel(this DirectorDTO directorDTO)
@@ -62,7 +59,6 @@ internal static class Mapper
             ProductionCountry = compilationDTO.ProductionCountry,
             ProductionYear = compilationDTO.ProductionYear,
             SelectedDiscType = compilationDTO.DiscType,
-            Songs = new(compilationDTO.SongDTOs.Select(e => e.ToViewModel())),
         };
 
         entity.SetCurrentAsPrevious();
@@ -78,7 +74,6 @@ internal static class Mapper
             ProductionCountry = movieReleaseLink.ProductionCountry,
             ProductionYear = movieReleaseLink.ProductionYear,
             SelectedDiscType = movieReleaseLink.DiscType,
-            Songs = new (movieReleaseLink.SongDTOs.Select(e => e.ToViewModel())),
         };
 
         entity.SetCurrentAsPrevious();
@@ -91,10 +86,10 @@ internal static class Mapper
         { 
             SongId = songDTO.Id,
             DiscId= songDTO.DiscId,
-            Number = songDTO.SongNumber,
+            Number = songDTO.Order,
             DiscNumber = songDTO.DiscNumber,
-            Title = songDTO.Name,
-            Type = songDTO.ExecutableType.ToString(),
+            Title = songDTO.Title,
+            Type = songDTO.AudioType.ToString(),
             Duration = songDTO.Duration,
         };
 

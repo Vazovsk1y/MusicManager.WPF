@@ -66,7 +66,7 @@ public class Compilation : Disc
         SongwriterId songwriterId,
         DiscType discType,
         string identifier,
-        string directoryFullPath,
+        string associatedFolderPath,
         int? productionYear = null,
         string? productionCountry = null)
     {
@@ -77,10 +77,11 @@ public class Compilation : Disc
             return creationResult;
         }
 
-        var settingDirectoryInfoResult = creationResult.Value.SetDirectoryInfo(directoryFullPath);
+        var compilation = creationResult.Value;
+		var settingDirectoryInfoResult = compilation.SetAssociatedFolder(associatedFolderPath);
 
         return settingDirectoryInfoResult.IsFailure ?
-            Result.Failure<Compilation>(settingDirectoryInfoResult.Error) : creationResult.Value;
+            Result.Failure<Compilation>(settingDirectoryInfoResult.Error) : compilation;
     }
 
     #endregion

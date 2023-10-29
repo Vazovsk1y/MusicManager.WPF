@@ -6,33 +6,35 @@ namespace MusicManager.Domain.Entities;
 
 public class Cover
 {
-    public CoverId Id { get; private set; }
+    public CoverId Id { get; }
 
     public DiscId DiscId { get; private set; }
 
-    public string FullPath { get; private set; }
+    public string Path { get; private set; }
 
-    private Cover() 
-    {
+#pragma warning disable CS8618 
+	private Cover()
+	{
         Id = CoverId.Create();
     }
+#pragma warning restore CS8618 
 
-    internal static Result<Cover> Create(DiscId parentId, string fullPath)
+	internal static Result<Cover> Create(DiscId discId, string path)
     {
-        if (string.IsNullOrWhiteSpace(fullPath))
+        if (string.IsNullOrWhiteSpace(path))
         {
-            return Result.Failure<Cover>(DomainErrors.NullOrEmptyStringPassed(nameof(fullPath)));
+            return Result.Failure<Cover>(DomainErrors.NullOrEmptyStringPassed("cover path"));
         }
 
         return new Cover() 
         {
-            FullPath = fullPath,
-            DiscId = parentId
+            Path = path,
+            DiscId = discId
         };
     }
 }
 
 public record CoverId(Guid Value)
 {
-    public static CoverId Create() => new CoverId(Guid.NewGuid());
+    public static CoverId Create() => new(Guid.NewGuid());
 }

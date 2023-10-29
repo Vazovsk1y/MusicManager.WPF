@@ -1,6 +1,6 @@
 ﻿namespace MusicManager.Domain.Enums;
 
-public enum SongFileType
+public enum AudioType
 {
     Unknown,
     Mp3,

@@ -19,10 +19,10 @@ internal class SongwriterConfiguration : IEntityTypeConfiguration<Songwriter>
 
         builder.Property(e => e.Name).IsRequired();
 
-        builder.Property(e => e.Surname).IsRequired();
+        builder.Property(e => e.LastName).IsRequired();
 
         builder
-        .Property(e => e.EntityDirectoryInfo)
+        .Property(e => e.AssociatedFolderInfo)
         .HasConversion(
             e => e != null ? e.Path : null,
             e => e != null ? EntityDirectoryInfo.Create(e).Value : null)

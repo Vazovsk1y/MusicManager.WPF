@@ -53,10 +53,10 @@ public class MovieRelease : Disc
             return Result.Failure<MovieRelease>(settingDiscTypeRes.Error);
         }
 
-        var settingResult = movieRelease.SetProductionInfo(productionCountry, productionYear);
-        if (settingResult.IsFailure)
+        var settingProductionInfoResult = movieRelease.SetProductionInfo(productionCountry, productionYear);
+        if (settingProductionInfoResult.IsFailure)
         {
-            return Result.Failure<MovieRelease>(settingResult.Error);
+            return Result.Failure<MovieRelease>(settingProductionInfoResult.Error);
         }
 
         return movieRelease;
@@ -65,7 +65,7 @@ public class MovieRelease : Disc
     public static Result<MovieRelease> Create(
         DiscType discType,
         string identifier,
-        string directoryFullPath,   
+        string associatedFolderPath,   
         int? productionYear = null,
         string? productionCountry = null)
     {
@@ -76,17 +76,16 @@ public class MovieRelease : Disc
             return creationResult;
         }
 
-        var settingDirectoryInfoResult = creationResult.Value.SetDirectoryInfo(directoryFullPath);
+        var movieRelease = creationResult.Value;
+		var settingDirectoryInfoResult = movieRelease.SetAssociatedFolder(associatedFolderPath);
 
         return settingDirectoryInfoResult.IsFailure ? 
-            Result.Failure<MovieRelease>(settingDirectoryInfoResult.Error) : creationResult.Value;
+            Result.Failure<MovieRelease>(settingDirectoryInfoResult.Error) : movieRelease;
     }
 
-    internal Result AddMovieLink(MovieReleaseLink movieLink)
+    internal void AddMovieLink(MovieReleaseLink movieLink)
     {
-
         _moviesLinks.Add(movieLink);
-        return Result.Success();
     }
 
     #endregion

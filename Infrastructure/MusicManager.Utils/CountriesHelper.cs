@@ -10,10 +10,7 @@ public static class CountryHelper
     {
         get
         {
-            foreach (var item in _countriesNames.Order())
-            {
-                yield return item;
-            }
+            return _countriesNames.AsReadOnly();
         }
     }
 

@@ -2,7 +2,7 @@
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Services.Implementations.Errors;
 using MusicManager.Domain.Shared;
-using MusicManager.Utils;
+using MusicManager.Domain.ValueObjects;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
@@ -79,22 +79,22 @@ public partial class CueFileInteractor : ICueFileInteractor
 
         if (splittedText.Count is 0)
         {
-            return Result.Failure<CueSheetInfo>(new Error("Error occured while cue file reading."));
+            return Result.Failure<CueSheetInfo>(new Error("Unable to find \"track\" sections."));
         }
 
-        var rowsWithFileName = string.Join("", splittedText)
+        var rowsWithFileName = string.Join(string.Empty, splittedText)
             .Split(_cueRowsSeparators, StringSplitOptions.RemoveEmptyEntries)
             .Where(e => e.Contains(FILE_KeyWord));
 
         if (rowsWithFileName.Count() > 1)
         {
-            return Result.Failure<CueSheetInfo>(new Error($"Cue {cueFilePath} contain more than one file inside it."));
+            return Result.Failure<CueSheetInfo>(new Error($"Cue {cueFilePath} contain info about more than one file inside it."));
         }
 
-        string rowWithFileName = rowsWithFileName!.FirstOrDefault();
+        string rowWithFileName = rowsWithFileName.FirstOrDefault()!;
         if (rowWithFileName is null)
         {
-            return Result.Failure<CueSheetInfo>(new Error($"Can't to get an executable file name for passed cue file {cueFilePath}."));
+            return Result.Failure<CueSheetInfo>(new Error($"Unable to get an executable file name for passed cue file {cueFilePath}."));
         }
 
         var tracks = new List<CueFileTrack>();
@@ -107,7 +107,7 @@ public partial class CueFileInteractor : ICueFileInteractor
         var executableFileName = GetRowFromQuotes(rowWithFileName);
         if (string.IsNullOrWhiteSpace(executableFileName))
         {
-            return Result.Failure<CueSheetInfo>(new Error("Error occured while tried to get an executable file name for passed cue file."));
+            return Result.Failure<CueSheetInfo>(new Error($"Error occured while tried to get an executable file name from quotes for passed cue file {cueFilePath}."));
         }
 
         var result = new CueSheetInfo(executableFileName, tracks);
@@ -136,8 +136,8 @@ public partial class CueFileInteractor : ICueFileInteractor
 
         if (splittedText.Count is 0)
         {
-            return Result.Failure<CueSheetInfo>(new Error("Error occured while cue file reading."));
-        }
+			return Result.Failure<CueSheetInfo>(new Error("Unable to find \"track\" sections."));
+		}
 
         var rowsWithFileName = string.Join("", splittedText)
             .Split(_cueRowsSeparators, StringSplitOptions.RemoveEmptyEntries)
@@ -145,13 +145,13 @@ public partial class CueFileInteractor : ICueFileInteractor
 
         if (rowsWithFileName.Count() > 1)
         {
-            return Result.Failure<CueSheetInfo>(new Error($"Cue {cueFilePath} contain more than one file inside it."));
-        }
+			return Result.Failure<CueSheetInfo>(new Error($"Cue {cueFilePath} contain info about more than one file inside it."));
+		}
 
-        string rowWithFileName = rowsWithFileName!.FirstOrDefault();
+        string rowWithFileName = rowsWithFileName.FirstOrDefault()!;
         if (rowWithFileName is null)
         {
-            return Result.Failure<CueSheetInfo>(new Error($"Can't to get an executable file name for passed cue file {cueFilePath}."));
+            return Result.Failure<CueSheetInfo>(new Error($"Unable to get an executable file name for passed cue file {cueFilePath}."));
         }
 
         var tracks = new List<CueFileTrack>();
@@ -164,8 +164,8 @@ public partial class CueFileInteractor : ICueFileInteractor
         var executableFileName = GetRowFromQuotes(rowWithFileName);
         if (string.IsNullOrWhiteSpace(executableFileName))
         {
-            return Result.Failure<CueSheetInfo>(new Error("Error occured while tried to get an executable file name for passed cue file."));
-        }
+			return Result.Failure<CueSheetInfo>(new Error($"Error occured while tried to get an executable file name from quotes for passed cue file {cueFilePath}."));
+		}
 
         var result = new CueSheetInfo(executableFileName, tracks);
         _cache[cueFilePath] = result;
@@ -180,14 +180,9 @@ public partial class CueFileInteractor : ICueFileInteractor
     {
         var fileInfo = new FileInfo(cuePath);
 
-        if (!PathValidator.IsValid(cuePath))
-        {
-            return Result.Failure<FileInfo>(DomainServicesErrors.PassedFilePathIsInvalid(cuePath));
-        }
-
         if (!fileInfo.Exists)
         {
-            return Result.Failure<FileInfo>(DomainServicesErrors.PassedFileIsNotExists(cuePath));
+            return Result.Failure<FileInfo>(DomainServicesErrors.PassedDirectoryIsNotExists(cuePath));
         }
 
         if (fileInfo.Extension != DomainConstants.CueExtension)
@@ -214,19 +209,19 @@ public partial class CueFileInteractor : ICueFileInteractor
         {
             if (row.Contains(AudioKeyWord))
             {
-                track.TrackPosition = GetTrackPosition(row);
+                track.TrackOrder = GetTrackPosition(row);
                 continue;
             }
 
             if (row.Contains(TitleKeyWord))
             {
-                track.Title = GetRowFromQuotes(row) ?? "Undefined";
+                track.Title = GetRowFromQuotes(row) ?? ProductionInfo.UndefinedCountry;
                 continue;
             }
 
             if (row.Contains(PerformerKeyWord))
             {
-                track.Performer = GetRowFromQuotes(row) ?? "Undefined";
+                track.Performer = GetRowFromQuotes(row) ?? ProductionInfo.UndefinedCountry;
                 continue;
             }
 
@@ -248,26 +243,26 @@ public partial class CueFileInteractor : ICueFileInteractor
                 continue;
             }
 
-            if (row.Contains(Index01KeyWord))
-            {
-                var match = GetTimeSpanRowFromLine().Match(row);
-                if (match.Success)
-                    {
-                        track.Index01 = ParseToTimeSpan(match.Value);
-                    }
-                    break;
-                }
-            }
+			if (row.Contains(Index01KeyWord))
+			{
+				var match = GetTimeSpanRowFromLine().Match(row);
+				if (match.Success)
+				{
+					track.Index01 = ParseToTimeSpan(match.Value);
+				}
+				continue;
+			}
+		}
 
-        return track;
+		return track;
     }
 
     private TimeSpan ParseToTimeSpan(string timeSpanString)
     {
-        var timeComponents = timeSpanString.Split(":");
-        const int IndexesComponentsCount = 3;
+        var timeComponents = timeSpanString.Split(":", StringSplitOptions.RemoveEmptyEntries);
+        const int TimeComponentsCount = 3;
 
-        if (timeComponents.Length != IndexesComponentsCount)
+        if (timeComponents.Length != TimeComponentsCount)
         {
             return TimeSpan.Zero;
         }

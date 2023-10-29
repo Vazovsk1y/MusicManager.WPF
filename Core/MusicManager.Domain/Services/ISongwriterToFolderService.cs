@@ -5,5 +5,5 @@ namespace MusicManager.Domain.Services;
 
 public interface ISongwriterToFolderService
 {
-    Task<Result<string>> CreateAssociatedFolderAndFileAsync(Songwriter songwriter);
+    Task<Result<string>> CreateAssociatedFolderAndFileAsync(Songwriter songwriter, CancellationToken cancellationToken = default);
 }

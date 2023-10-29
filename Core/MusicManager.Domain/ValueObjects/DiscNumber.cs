@@ -1,4 +1,5 @@
 ﻿using MusicManager.Domain.Common;
+using MusicManager.Domain.Errors;
 using MusicManager.Domain.Shared;
 
 namespace MusicManager.Domain.ValueObjects;
@@ -13,16 +14,11 @@ public class DiscNumber : ValueObject<DiscNumber>
 
     private DiscNumber() {  }
 
-    protected override IEnumerable<object?> GetEqualityComponents()
-    {
-        yield return Value;
-    }
-
     public static Result<DiscNumber> Create(int number)
     {
-        if (int.IsNegative(number))
+        if (number <= 0)
         {
-            return Result.Failure<DiscNumber>(new Error("Disc number must greater than 0."));
+            return Result.Failure<DiscNumber>(DomainErrors.DiscNumber.DiscNumberDigitMustBeGreaterThanZero);
         }
 
         return new DiscNumber()
@@ -33,7 +29,12 @@ public class DiscNumber : ValueObject<DiscNumber>
 
     public static IEnumerable<DiscNumber> EnumerateRange(byte count = 5)
     {
-        return Enumerable.Range(1, count - 1).Select(e => new DiscNumber { Digit = e });
+        return Enumerable.Range(1, count).Select(e => new DiscNumber { Digit = e });
     }
+
+	protected override IEnumerable<object?> GetEqualityComponents()
+	{
+		yield return Value;
+	}
 }
 

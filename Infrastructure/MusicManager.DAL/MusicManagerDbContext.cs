@@ -19,7 +19,7 @@ public class MusicManagerDbContext : DbContext, IApplicationDbContext
 
     public DbSet<Movie> Movies { get; set; }
 
-    public DbSet<MovieRelease> MovieReleases { get; set; }
+    public DbSet<MovieRelease> MoviesReleases { get; set; }
 
     public DbSet<Compilation> Compilations { get; set; }
 

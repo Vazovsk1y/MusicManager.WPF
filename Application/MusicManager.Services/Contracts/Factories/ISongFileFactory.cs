@@ -4,7 +4,7 @@ namespace MusicManager.Services.Contracts.Factories;
 
 public interface ISongFileFactory
 {
-    Result<SongFile> Create(FileInfo songFilePath);
+    Result<SongFile> Create(FileInfo songFileInfo);
 }
 
 

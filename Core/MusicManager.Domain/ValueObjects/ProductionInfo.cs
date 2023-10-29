@@ -36,7 +36,7 @@ public class ProductionInfo : ValueObject<ProductionInfo>
 
     internal static Result<ProductionInfo> Create(string? country, int? year)
     {
-        if (year is  null && string.IsNullOrWhiteSpace(country))
+        if (year is null && string.IsNullOrWhiteSpace(country))
         {
             return new ProductionInfo(None.Country, None.Year);
         }
@@ -47,7 +47,7 @@ public class ProductionInfo : ValueObject<ProductionInfo>
             {
                 return new ProductionInfo(country, year);
             }
-            return Result.Failure<ProductionInfo>(DomainErrors.ProductInfo.IncorrectYearPassed(year.ToString()!));
+            return Result.Failure<ProductionInfo>(DomainErrors.ProductionInfo.IncorrectYearPassed(year.ToString()!));
         }
 
         return new ProductionInfo(country, year);

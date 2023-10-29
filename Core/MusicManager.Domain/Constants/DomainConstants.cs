@@ -7,4 +7,5 @@ public static class DomainConstants
     public const string Mp3Extension = ".mp3";
     public const string WVExtension = ".wv";
     public const string ApeExtension = ".ape";
+    public const string LnkExtension = ".lnk";
 }

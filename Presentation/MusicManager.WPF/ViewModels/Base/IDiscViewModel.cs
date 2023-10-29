@@ -16,5 +16,5 @@ internal interface IDiscViewModel
 
     DiscId DiscId { get; init; }
 
-    ObservableCollection<SongViewModel> Songs { get; init; }
+    ObservableCollection<SongViewModel> Songs { get; set; }
 }

@@ -17,7 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Documents;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace MusicManager.WPF.ViewModels;
 
@@ -27,7 +27,7 @@ internal partial class SongwirtersPanelViewModel :
 {
     private readonly ObservableCollection<SongwriterViewModel> _songwriters = new();
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly IFileManagerInteractor _fileManagerInteractor;
+    private readonly IFileSystemManager _fileManagerInteractor;
     private readonly ISongwriterFolderFactory _songwriterFolderFactory;
     private readonly IUserDialogService<SongwriterAddWindow> _dialogService;
     private readonly UserConfigViewModel _settingsViewModel;
@@ -39,7 +39,7 @@ internal partial class SongwirtersPanelViewModel :
 
     public SongwirtersPanelViewModel(
         IServiceScopeFactory serviceScopeFactory,
-        IFileManagerInteractor fileManagerInteractor,
+        IFileSystemManager fileManagerInteractor,
         ISongwriterFolderFactory songwriterFolderFactory,
         IUserDialogService<SongwriterAddWindow> dialogService,
         UserConfigViewModel settingsViewModel) : base()
@@ -102,7 +102,6 @@ internal partial class SongwirtersPanelViewModel :
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
             Songwriters.AddRange(dtos.Select(e => e.ToViewModel()));
-            ReplaceMovieReleasesDuplicates();
         });
 
         if (folders.Count > 0 && dtos.Count > 0) 
@@ -149,44 +148,52 @@ internal partial class SongwirtersPanelViewModel :
         using var scope = _serviceScopeFactory.CreateScope();
         var songwriterService = scope.ServiceProvider.GetRequiredService<ISongwriterService>();
 
-        var result = await songwriterService.GetAllAsync();
-        if (result.IsSuccess)
+		var result = await songwriterService.GetAllAsync();
+		if (result.IsSuccess)
+		{
+			Songwriters.AddRange(result.Value.Select(e => e.ToViewModel()));
+		}
+	}
+
+	[RelayCommand]
+	private async Task SelectionChanged(SongwriterViewModel songwriter)
+	{
+        if (songwriter is null)
         {
-            foreach (var songwriterDTO in result.Value)
-            {
-                Songwriters.Add(songwriterDTO.ToViewModel());
-            }
+            return;
         }
 
-        ReplaceMovieReleasesDuplicates();
-    }
-
-    private void ReplaceMovieReleasesDuplicates()
-    {
-        var duplicates = Songwriters
-            .SelectMany(e => e.Movies)
-            .SelectMany(e => e.MoviesReleasesLinks.Select(e => e.MovieRelease))
-            .GroupBy(e => e.DiscId)
-            .Where(e => e.Count() > 1);
-
-        var movies = Songwriters.SelectMany(e => e.Movies);
-
-        foreach (var movie in movies)
+		using var scope = _serviceScopeFactory.CreateScope();
+		if (!songwriter.IsMoviesLoaded)
         {
-            foreach (var moviesReleases in duplicates)
-            {
-                var mrToSwap = movie.MoviesReleasesLinks.FirstOrDefault(e => e.MovieRelease.DiscId == moviesReleases.Key);
-                if (mrToSwap is not null)
-                {
-                    //int index = movie.MoviesReleasesLinks.IndexOf(mrToSwap);
-                    //movie.MoviesReleasesLinks. = moviesReleases.First();
-                    mrToSwap.MovieRelease = moviesReleases.First();
-                }
-            }
-        }
-    }
+			var movieService = scope.ServiceProvider.GetRequiredService<IMovieService>();
+			var moviesResult = await movieService.GetAllAsync(songwriter.SongwriterId);
+			if (moviesResult.IsSuccess)
+			{
+				await Application.Current.Dispatcher.InvokeAsync(() =>
+				{
+					songwriter.Movies = new(moviesResult.Value.Select(e => e.ToViewModel()));
+					songwriter.IsMoviesLoaded = true;
+				});
+			}
+		}
 
-    public async void Receive(SongwriterCreatedMessage message)
+        if (!songwriter.IsCompilationsLoaded)
+        {
+			var compilationService = scope.ServiceProvider.GetRequiredService<ICompilationService>();
+			var compilationsResult = await compilationService.GetAllAsync(songwriter.SongwriterId);
+			if (compilationsResult.IsSuccess)
+			{
+				await Application.Current.Dispatcher.InvokeAsync(() =>
+				{
+					songwriter.Compilations = new(compilationsResult.Value.Select(e => e.ToViewModel()));
+					songwriter.IsCompilationsLoaded = true;
+				});
+			}
+		}
+	}
+
+	public async void Receive(SongwriterCreatedMessage message)
     {
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {

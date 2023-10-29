@@ -7,7 +7,7 @@ internal static class DomainErrors
 {
     #region --Particular domain classes errors--
 
-    internal static class ProductInfo
+    internal static class ProductionInfo
     {
         public static Error IncorrectYearPassed(string year) => new($"The passed [{year}] year wasn't correct.");
     } 
@@ -17,11 +17,28 @@ internal static class DomainErrors
         public static Error InvalidPathPassed(string path) => new($"The passed path [{path}] wasn't a directory path.");
     }
 
-    internal static class SongPlayInfo
+    internal static class PlaybackInfo
     {
-        public static Error UndefinedExecutableTypePassed(string extension) => new($"Passed executable song file type [{extension}] is not support.");
-
         public static Error IncorrectCuePathPassed(string cuePath) => new($"Passed cue file path [{cuePath}] isn't correct.");
+
+        public static readonly Error CueFileNotPlacedInTheExecutableFileFolder = new("Cue file must be place in the same folder like executable file.");
+    }
+
+    internal static class Disc
+    {
+        public static Error CoverWithPassedPathAlreadyAdded(string coverPath) => new ($"Cover with passed path [{coverPath}] has already added.");
+
+		public static readonly Error ProductionYearCanNotBeNullForOtherTypesExceptBootlegAndUnknown = new("Production year must be set for other disc types except bootleg and unknown.");
+	}
+
+    internal static class Song
+    {
+        public static readonly Error SongOrderCouldNotBeNegativeNumber = new("Song order must be non-negative number.");
+	}
+
+    internal static class DiscNumber
+    {
+        public static readonly Error DiscNumberDigitMustBeGreaterThanZero = new("Disc number must be greater than 0.");
     }
 
     #endregion
@@ -30,7 +47,7 @@ internal static class DomainErrors
 
     public static Error NullOrEmptyStringPassed(params string[] valuesNames)
     {
-        var builder = new StringBuilder("The passed string ");
+        var builder = new StringBuilder("The passed row/s ");
 
         foreach (var valueName in valuesNames)
         {
@@ -44,9 +61,9 @@ internal static class DomainErrors
 
     public static Error NullOrEmptyStringPassed() => new($"Some of the string arguments passed were equal to null or was empty.");
 
-    public static Error NullEntityPassed(string entityName) => new($"Passed {entityName} was null.");
+    public static Error NullPassed(string entityName) => new($"Passed {entityName} was equal to null.");
 
-    public static Error EntityAlreadyExists(string entityName) => new($"Passed {entityName} is already exists.");
+    public static Error PassedEntityAlreadyAdded(string entityName) => new($"Passed {entityName} has already added.");
 
     #endregion
 }

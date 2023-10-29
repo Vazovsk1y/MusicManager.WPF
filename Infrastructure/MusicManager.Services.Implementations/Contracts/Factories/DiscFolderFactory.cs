@@ -12,19 +12,20 @@ namespace MusicManager.Services.Implementations.Contracts.Factories;
 
 public class DiscFolderFactory : IDiscFolderFactory
 {
-    private readonly string[] _allowedFilesExtensions = new[]
+    private static readonly string[] _allowedFilesExtensions = new[]
     {
         DomainConstants.WVExtension,
         DomainConstants.Mp3Extension,
         DomainConstants.ApeExtension,
         DomainConstants.FlacExtension,
-        DomainConstants.CueExtension,
     };
 
     private readonly ISongFileFactory _songFileFactory;
     private readonly ICueFileInteractor _cueFileInteractor;
 
-    public DiscFolderFactory(ISongFileFactory songFileFactory, ICueFileInteractor cueFileInteractor)
+    public DiscFolderFactory(
+		ISongFileFactory songFileFactory, 
+		ICueFileInteractor cueFileInteractor)
     {
         _songFileFactory = songFileFactory;
         _cueFileInteractor = cueFileInteractor;
@@ -37,70 +38,95 @@ public class DiscFolderFactory : IDiscFolderFactory
             return Result.Failure<DiscFolder>(DomainServicesErrors.PassedDirectoryIsNotExists(discDirectory.FullName));
         }
 
-        var coversFolder = discDirectory
-            .EnumerateDirectories()
-            .FirstOrDefault(d => d.Name == DomainServicesConstants.COVERS_FOLDER_NAME);
-
-        List<string> covers = coversFolder is null ? new List<string>() : coversFolder.EnumerateFiles().Select(f => f.FullName).ToList();
-        var folderJPGfile = discDirectory
-            .EnumerateFiles()
-            .FirstOrDefault(f => string.Equals(f.Name, DomainServicesConstants.FolderJPG, StringComparison.OrdinalIgnoreCase));
-
-        if (folderJPGfile is not null)
+        var coversResult = GetCoversResult(discDirectory);
+        if (coversResult.IsFailure)
         {
-            covers.Add(folderJPGfile.FullName);
+            return Result.Failure<DiscFolder>(coversResult.Error);
         }
 
-        List<SongFile> songsFiles = new();
-        var songsFromCdFolders = discDirectory
-            .EnumerateDirectories()
-            .Where(d => d.Name.StartsWith(DiscNumber.CD_KEYWORD))
-            .SelectMany(d => 
-            d.EnumerateFiles().Where(f => _allowedFilesExtensions.Contains(f.Extension)));
+		var songsResult = GetSongsResult(discDirectory);
+		if (songsResult.IsFailure)
+		{
+			return Result.Failure<DiscFolder>(songsResult.Error);
+		}
 
-        var allSongsFiles = songsFromCdFolders
-            .Union(discDirectory.EnumerateFiles().Where(f => _allowedFilesExtensions.Contains(f.Extension))).ToList();
-
-        var cueFiles = allSongsFiles.Where(f => f.Extension == DomainConstants.CueExtension).ToList();
-
-        foreach (var cueFile in cueFiles)
-        {
-            var cueInteractorResult = _cueFileInteractor.GetCueSheet(cueFile.FullName);
-            if (cueInteractorResult.IsFailure)
-            {
-                return Result.Failure<DiscFolder>(cueInteractorResult.Error);
-            }
-
-            var executableFileForCue = allSongsFiles
-                .FirstOrDefault(e => e.Name == cueInteractorResult.Value.ExecutableFileName);
-
-            if (executableFileForCue is null)
-            {
-                return Result.Failure<DiscFolder>(new($"Couldn't find an executable file for cue file [{cueFile.FullName}]."));
-            }
-
-            var result = _songFileFactory.Create(cueFile);
-            if (result.IsFailure)
-            {
-                return Result.Failure<DiscFolder>(result.Error);
-            }
-
-            allSongsFiles.Remove(executableFileForCue);
-            allSongsFiles.Remove(cueFile);
-            songsFiles.Add(result.Value);
-        }
-
-        foreach (var songFile in allSongsFiles)
-        {
-            var result = _songFileFactory.Create(songFile);
-            if (result.IsFailure)
-            {
-                return Result.Failure<DiscFolder>(result.Error);
-            }
-
-            songsFiles.Add(result.Value);
-        }
-
-        return new DiscFolder(discDirectory.FullName, songsFiles, covers, linkPath);
+        return new DiscFolder(
+			discDirectory.FullName, 
+			songsResult.Value, 
+			coversResult.Value, 
+			linkPath);
     }
+
+	private Result<IReadOnlyCollection<SongFile>> GetSongsResult(DirectoryInfo discDirectory)
+	{
+		List<SongFile> result = new();
+		var allFiles = discDirectory.EnumerateDirectories()
+			.Where(d => d.Name.StartsWith(DiscNumber.CD_KEYWORD))
+			.SelectMany(d => d.EnumerateFiles())
+			.Union(discDirectory.EnumerateFiles());
+
+		var audioFilesInfo = allFiles
+			.Where(f => _allowedFilesExtensions.Contains(f.Extension))
+			.ToList();
+
+		var cueFiles = allFiles
+			.Where(f => string.Equals(f.Extension, DomainConstants.CueExtension, StringComparison.OrdinalIgnoreCase));
+
+		foreach (var cueFile in cueFiles)
+		{
+			var cueInteractorResult = _cueFileInteractor.GetCueSheet(cueFile.FullName);
+			if (cueInteractorResult.IsFailure)
+			{
+				return Result.Failure<IReadOnlyCollection<SongFile>>(cueInteractorResult.Error);
+			}
+
+			var executableFileForCue = audioFilesInfo
+				.FirstOrDefault(e => e.Name == cueInteractorResult.Value.ExecutableFileName);
+
+			if (executableFileForCue is null)
+			{
+				return Result.Failure<IReadOnlyCollection<SongFile>>(new($"Couldn't find an executable file for cue file [{cueFile.FullName}]."));
+			}
+
+			var songFileCreationResult = _songFileFactory.Create(cueFile);
+			if (songFileCreationResult.IsFailure)
+			{
+				return Result.Failure<IReadOnlyCollection<SongFile>>(songFileCreationResult.Error);
+			}
+
+			audioFilesInfo.Remove(executableFileForCue);
+			result.Add(songFileCreationResult.Value);
+		}
+
+		foreach (var songFile in audioFilesInfo)
+		{
+			var songFileResult = _songFileFactory.Create(songFile);
+			if (songFileResult.IsFailure)
+			{
+				return Result.Failure<IReadOnlyCollection<SongFile>>(songFileResult.Error);
+			}
+			result.Add(songFileResult.Value);
+		}
+
+		return result;
+	}
+
+	private static Result<IReadOnlyCollection<string>> GetCoversResult(DirectoryInfo discDirectory)
+    {
+		var coversFolder = discDirectory
+			.EnumerateDirectories()
+			.FirstOrDefault(d => string.Equals(d.Name, DomainServicesConstants.COVERS_FOLDER_NAME, StringComparison.OrdinalIgnoreCase));
+
+		List<string> result = coversFolder is null ? new List<string>() : coversFolder.EnumerateFiles().Select(f => f.FullName).ToList();
+		var folderJPGfile = discDirectory
+			.EnumerateFiles()
+			.FirstOrDefault(f => string.Equals(f.Name, DomainServicesConstants.FolderJPGFileName, StringComparison.OrdinalIgnoreCase));
+
+		if (folderJPGfile is not null)
+		{
+			result.Add(folderJPGfile.FullName);
+		}
+
+        return result;
+	}
 }

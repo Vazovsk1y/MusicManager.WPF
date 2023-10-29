@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
+using MusicManager.Domain.Services.Storage;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 using MusicManager.Repositories.Data;
@@ -20,20 +21,20 @@ public class SongwriterToFolderService : ISongwriterToFolderService
         _root = root;
     }
 
-    public async Task<Result<string>> CreateAssociatedFolderAndFileAsync(Songwriter songwriter)
+    public async Task<Result<string>> CreateAssociatedFolderAndFileAsync(Songwriter songwriter, CancellationToken cancellationToken = default)
     {
-        var rootDirectory = new DirectoryInfo(_root.RootPath);
+        var rootDirectory = new DirectoryInfo(_root.Path);
         if (!rootDirectory.Exists)
         {
-            return Result.Failure<string>(new Error($"Root folder for songwriter is not exists {_root.RootPath}."));
+            return Result.Failure<string>(new Error($"Root folder for songwriter is not exists {_root.Path}."));
         }
 
-        string createdSongwriterDirectoryName = $"{songwriter.Name}{DomainServicesConstants.SongwriterDirectoryNameSeparator}{songwriter.Surname}";
+        string createdSongwriterDirectoryName = $"{songwriter.Name}{DomainServicesConstants.SongwriterFolderNameSeparator}{songwriter.LastName}";
         string createdSongwriterDirectoryFullPath = _root.CombineWith(createdSongwriterDirectoryName);
         string createdSongwriterRelationalPath = createdSongwriterDirectoryFullPath.GetRelational(_root);
 
         if (Directory.Exists(createdSongwriterDirectoryFullPath)
-            || await _dBcontext.Songwriters.AnyAsync(e => e.EntityDirectoryInfo == EntityDirectoryInfo.Create(createdSongwriterRelationalPath).Value))
+            || await _dBcontext.Songwriters.AnyAsync(e => e.AssociatedFolderInfo == EntityDirectoryInfo.Create(createdSongwriterRelationalPath).Value))
         {
             return Result.Failure<string>(new Error("Directory for this songwriter is already exists or songwriter with that directory info is already added to database."));
         }

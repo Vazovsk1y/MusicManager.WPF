@@ -9,9 +9,9 @@ public interface ISongwriterService
 {
     Task<Result<SongwriterDTO>> SaveFromFolderAsync(SongwriterFolder songwriterFolder, CancellationToken cancellationToken = default);
 
-    Task<Result<IEnumerable<SongwriterDTO>>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<Result<IReadOnlyCollection<SongwriterDTO>>> GetAllAsync(CancellationToken cancellationToken = default);
 
-    Task<Result<IEnumerable<SongwriterLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken= default);
+    Task<Result<IReadOnlyCollection<SongwriterLookupDTO>>> GetLookupsAsync(CancellationToken cancellationToken= default);
 
     Task<Result<SongwriterId>> SaveAsync(SongwriterAddDTO songwriterAddDTO, bool createAssociatedFolder = true, CancellationToken cancellationToken = default);
 

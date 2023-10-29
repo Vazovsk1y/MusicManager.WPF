@@ -65,7 +65,7 @@ internal partial class MoviesPanelViewModel :
         {
             using var scope = _serviceScopeFactory.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<IMovieService>();
-            var result = await service.DeleteAsync(SelectedMovie!.SongwriterId, SelectedMovie!.MovieId);
+            var result = await service.DeleteAsync(SelectedMovie!.MovieId);
             if (result.IsFailure)
             {
                 MessageBoxHelper.ShowErrorBox(result.Error.Message);
@@ -83,21 +83,39 @@ internal partial class MoviesPanelViewModel :
     private bool CanDelete() => SelectedMovie is not null;
 
     [RelayCommand(CanExecute = nameof(CanAddMovieRelease))]
-    private void AddMovieRelease()
+    private async Task AddMovieRelease()
     {
-        var movieReleasesToSelectFrom = Movies
-            .SelectMany(e => e.MoviesReleasesLinks.Select(e => e.MovieRelease))
-            .DistinctBy(e => e.DiscId)
-            .Where(e => !SelectedMovie!.MoviesReleasesLinks.Select(e => e.MovieRelease).Contains(e));
+        if (AddMovieReleaseCommand.IsRunning)
+        {
+            return;
+        }
 
         using var scope = _serviceScopeFactory.CreateScope();
-        var dialogService = scope.ServiceProvider.GetRequiredService<IUserDialogService<MovieReleaseMovieWindow>>();
-        var dataContext = scope.ServiceProvider.GetRequiredService<MovieReleaseAddToMovieViewModel>();
-        dataContext.MoviesReleasesToSelectFrom = movieReleasesToSelectFrom;
-        dialogService.ShowDialog(dataContext);
+        var movieReleaseService = scope.ServiceProvider.GetRequiredService<IMovieReleaseService>();
+        var lookupsResult = await movieReleaseService.GetLookupsAsync();
+        if (lookupsResult.IsSuccess)
+        {
+			var dialogService = scope.ServiceProvider.GetRequiredService<IUserDialogService<MovieReleaseMovieWindow>>();
+			var dataContext = scope.ServiceProvider.GetRequiredService<MovieReleaseAddToMovieViewModel>();
+
+            var moviesReleaseToSelectFrom = lookupsResult.Value.Where(e => !SelectedMovie!.MoviesReleasesLinks.Select(e => e.MovieRelease).Any(it => it.DiscId == e.Id));
+			dataContext.MoviesReleasesToSelectFrom = moviesReleaseToSelectFrom;
+			dialogService.ShowDialog(dataContext);
+		}
+        else
+        {
+            MessageBoxHelper.ShowErrorBox(lookupsResult.Error.Message);
+        }
+
+		
+
+        //var movieReleasesToSelectFrom = Movies
+        //    .SelectMany(e => e.MoviesReleasesLinks.Select(e => e.MovieRelease))
+        //    .DistinctBy(e => e.DiscId)
+        //    .Where(e => !SelectedMovie!.MoviesReleasesLinks.Select(e => e.MovieRelease).Contains(e));
     }
 
-    [RelayCommand]
+	[RelayCommand]
     private async Task Save()
     {
         if (SaveCommand.IsRunning)
@@ -175,20 +193,83 @@ internal partial class MoviesPanelViewModel :
         return SelectedMovie is not null;
     }
 
-    public async void Receive(ExistingMovieReleaseAddToMovieRequest request)
+	[RelayCommand]
+	private async Task SelectionChanged(MovieViewModel movie)
+	{
+		if (movie is null)
+		{
+			return;
+		}
+
+		if (!movie.IsReleasesLinksLoaded)
+		{
+			using var scope = _serviceScopeFactory.CreateScope();
+			var movieReleaseService = scope.ServiceProvider.GetRequiredService<IMovieReleaseService>();
+			var moviesReleasesLinksResult = await movieReleaseService.GetLinksAsync(movie.MovieId);
+			if (moviesReleasesLinksResult.IsSuccess)
+			{
+				await Application.Current.Dispatcher.InvokeAsync(() =>
+				{
+					movie.MoviesReleasesLinks = new(moviesReleasesLinksResult.Value.Select(e => e.ToViewModel()));
+					movie.IsReleasesLinksLoaded = true;
+
+                    ReplaceMovieReleasesDuplicates();
+				});
+			}
+		}
+	}
+
+	private void ReplaceMovieReleasesDuplicates()
+	{
+		var duplicates = Movies
+			.SelectMany(e => e.MoviesReleasesLinks.Select(e => e.MovieRelease))
+			.GroupBy(e => e.DiscId)
+			.Where(e => e.Count() > 1);
+
+		foreach (var movie in Movies)
+		{
+			foreach (var moviesReleases in duplicates)
+			{
+				var mrToSwap = movie.MoviesReleasesLinks.FirstOrDefault(e => e.MovieRelease.DiscId == moviesReleases.Key);
+				if (mrToSwap is not null)
+				{
+					mrToSwap.MovieRelease = moviesReleases.First();
+				}
+			}
+		}
+	}
+
+	public async void Receive(ExistingMovieReleaseAddToMovieRequest request)
     {
         using var scope = _serviceScopeFactory.CreateScope();
         var movieService = scope.ServiceProvider.GetRequiredService<IMovieService>();
-        var addingResult = await movieService.AddExistingMovieRelease(new ExistingMovieReleaseToMovieDTO(SelectedMovie!.MovieId, request.MovieReleaseViewModel.DiscId));
+        var addingResult = await movieService.AddReleaseAsync(new MovieReleaseMovieDTO(SelectedMovie!.MovieId, request.SelectedMovieReleaseId));
 
-        if (addingResult.IsSuccess)
-        {
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                SelectedMovie.MoviesReleasesLinks.Add(new MovieReleaseLinkViewModel { MovieRelease = request.MovieReleaseViewModel, IsFolder = false });
-            });
-        }
-        else
+		if (addingResult.IsSuccess)
+		{
+			await Application.Current.Dispatcher.InvokeAsync(async () =>
+			{
+				var viewModel = SongwritersPanelViewModel.Songwriters
+				.SelectMany(e => e.Movies.SelectMany(e => e.MoviesReleasesLinks))
+				.Select(e => e.MovieRelease)
+				.FirstOrDefault(e => e.DiscId == request.SelectedMovieReleaseId);
+
+				if (viewModel is null)
+				{
+                    var movieReleaseService = scope.ServiceProvider.GetRequiredService<IMovieReleaseService>();
+                    var result = await movieReleaseService.GetAsync(request.SelectedMovieReleaseId);
+                    if (result.IsSuccess)
+                    {
+						SelectedMovie.MoviesReleasesLinks.Add(new MovieReleaseLinkViewModel { MovieRelease = result.Value.ToViewModel(), IsFolder = false });
+					}
+				}
+				else
+				{
+					SelectedMovie.MoviesReleasesLinks.Add(new MovieReleaseLinkViewModel { MovieRelease = viewModel, IsFolder = false });
+				}
+			});
+		}
+		else
         {
             MessageBoxHelper.ShowErrorBox(addingResult.Error.Message);
         }

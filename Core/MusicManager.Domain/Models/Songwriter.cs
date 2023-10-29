@@ -17,36 +17,39 @@ public class Songwriter : IAggregateRoot
 
     #region --Properties--
 
-    public SongwriterId Id { get; private set; }
+    public SongwriterId Id { get; }
 
-    public string Name { get; private set; } = string.Empty;
+    public string Name { get; private set; } 
 
-    public string Surname { get; private set; } = string.Empty;
+    public string LastName { get; private set; }
 
-    public EntityDirectoryInfo? EntityDirectoryInfo { get; private set; }
+    public EntityDirectoryInfo? AssociatedFolderInfo { get; private set; }
 
     public IReadOnlyCollection<Compilation> Compilations => _compilations.ToList();
 
-    public IReadOnlyCollection<Movie> Movies => _movies.ToList(); 
+    public IReadOnlyCollection<Movie> Movies => _movies.ToList();
 
-    #endregion
+	#endregion
 
-    #region --Constructors--
+	#region --Constructors--
 
-    private Songwriter()
-    {
+#pragma warning disable CS8618
+	private Songwriter()
+	{
         Id = SongwriterId.Create();
     }
 
-    #endregion
+#pragma warning restore CS8618
 
-    #region --Methods--
+	#endregion
 
-    public static Result<Songwriter> Create(
+	#region --Methods--
+
+	public static Result<Songwriter> Create(
         string name, 
-        string surname)
+        string lastName)
     {
-        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(surname)) 
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(lastName)) 
         {
             return Result.Failure<Songwriter>(DomainErrors.NullOrEmptyStringPassed());
         }
@@ -54,23 +57,23 @@ public class Songwriter : IAggregateRoot
         return new Songwriter
         {
             Name = name,
-            Surname = surname,
+            LastName = lastName,
         };
     }
 
     public static Result<Songwriter> Create(
         string name, 
-        string surname, 
-        string directoryFullPath)
+        string lastName, 
+        string associatedFolderPath)
     {
-        var creationResult = Create(name, surname);
+        var creationResult = Create(name, lastName);
         if (creationResult.IsFailure)
         {
             return creationResult;
         }
-
+        
         var songwriter = creationResult.Value;
-        var settingDirInfoResult = songwriter.SetDirectoryInfo(directoryFullPath);
+        var settingDirInfoResult = songwriter.SetAssociatedFolder(associatedFolderPath);
 
         return settingDirInfoResult.IsFailure ?
             Result.Failure<Songwriter>(settingDirInfoResult.Error)
@@ -78,84 +81,47 @@ public class Songwriter : IAggregateRoot
             songwriter;
     }
 
-    public Result SetDirectoryInfo(string fullPath)
+    public Result SetAssociatedFolder(string path)
     {
-        var result = EntityDirectoryInfo.Create(fullPath);
-
+        var result = EntityDirectoryInfo.Create(path);
         if (result.IsFailure)
         {
             return Result.Failure(result.Error);
         }
 
-        EntityDirectoryInfo = result.Value;
+        AssociatedFolderInfo = result.Value;
         return Result.Success();
     }
 
-    public Result AddMovie(Movie movie, bool checkDirectoryInfo = false)
+    public Result AddMovie(Movie movie)
     {
         if (movie is null)
         {
-            return Result.Failure(DomainErrors.NullEntityPassed(nameof(movie)));
+            return Result.Failure(DomainErrors.NullPassed(nameof(movie)));
         }
 
-        if (_movies.SingleOrDefault(i => i.Id == movie.Id) is not null)
+        if (_movies.SingleOrDefault(m => m.Id == movie.Id || m.AssociatedFolderInfo == movie.AssociatedFolderInfo) is not null)
         {
-            return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(movie)));
-        }
-
-        if (checkDirectoryInfo && _movies.SingleOrDefault(m =>
-            m.EntityDirectoryInfo == movie.EntityDirectoryInfo) is not null)
-        {
-            return Result.Failure(new Error("Movie with passed directory info is already exists."));
+            return Result.Failure(DomainErrors.PassedEntityAlreadyAdded(nameof(movie)));
         }
 
         _movies.Add(movie);
         return Result.Success();
     }
 
-    public Result AddCompilation(Compilation disc, bool checkDirectoryInfo = false)
+    public Result AddCompilation(Compilation compilation)
     {
-        if (disc is null)
-        {
-            return Result.Failure(DomainErrors.NullEntityPassed(nameof(disc)));
-        }
-
-        if (_compilations.SingleOrDefault(i => i.Id == disc.Id) is not null)
-        {
-            return Result.Failure(DomainErrors.EntityAlreadyExists(nameof(disc)));
-        }
-
-        if (checkDirectoryInfo && _compilations.SingleOrDefault(m =>
-        m.EntityDirectoryInfo == disc.EntityDirectoryInfo) is not null)
-        {
-            return Result.Failure(new Error($"Compilation with passed directory info is already exists."));
-        }
-
-        _compilations.Add(disc);
-        return Result.Success();
-    }
-
-    public Result RemoveCompilation(DiscId discId)
-    {
-        var compilation = _compilations.SingleOrDefault(e => e.Id == discId);
         if (compilation is null)
         {
-            return Result.Failure(new Error("Unable to remove compilation because it with this id is not exists."));
+            return Result.Failure(DomainErrors.NullPassed(nameof(compilation)));
         }
 
-        _compilations.Remove(compilation);
-        return Result.Success();
-    }
-
-    public Result RemoveMovie(MovieId movieId)
-    {
-        var movie = _movies.SingleOrDefault(e => e.Id == movieId);
-        if (movie is null)
+        if (_compilations.SingleOrDefault(c => c.Id == compilation.Id || c.AssociatedFolderInfo == compilation.AssociatedFolderInfo) is not null)
         {
-            return Result.Failure(new Error("Unable to remove movie because it with this id is not exists."));
+            return Result.Failure(DomainErrors.PassedEntityAlreadyAdded(nameof(compilation)));
         }
 
-        _movies.Remove(movie);
+        _compilations.Add(compilation);
         return Result.Success();
     }
 

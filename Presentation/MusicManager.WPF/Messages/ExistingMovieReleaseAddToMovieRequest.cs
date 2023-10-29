@@ -1,5 +1,5 @@
-﻿using MusicManager.WPF.ViewModels.Entities;
+﻿using MusicManager.Domain.Common;
 
 namespace MusicManager.WPF.Messages;
 
-internal record ExistingMovieReleaseAddToMovieRequest(MovieReleaseViewModel MovieReleaseViewModel);
+internal record ExistingMovieReleaseAddToMovieRequest(DiscId SelectedMovieReleaseId);

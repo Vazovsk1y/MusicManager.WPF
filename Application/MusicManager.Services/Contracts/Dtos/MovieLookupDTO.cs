@@ -5,6 +5,6 @@ namespace MusicManager.Services.Contracts.Dtos;
 public record MovieLookupDTO(
     MovieId MovieId,
     string Title,
-    int Year
+    int ProductionYear
     );
 

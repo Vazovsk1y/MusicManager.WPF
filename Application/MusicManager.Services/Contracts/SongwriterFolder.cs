@@ -2,5 +2,8 @@
 
 namespace MusicManager.Services.Contracts;
 
-public record SongwriterFolder(string Path, IReadOnlyCollection<MovieFolder> MoviesFolders, IReadOnlyCollection<DiscFolder> CompilationsFolders);
+public record SongwriterFolder(
+	string Path, 
+	IEnumerable<MovieFolder> MoviesFolders, 
+	IEnumerable<DiscFolder> CompilationsFolders);
 

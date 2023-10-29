@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MusicManager.WPF.Views.Controls" 
              xmlns:viewmodels="clr-namespace:MusicManager.WPF.ViewModels" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              d:DataContext="{d:DesignInstance Type=viewmodels:DiscsPanelViewModel, IsDesignTimeCreatable=True}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
@@ -13,7 +14,7 @@
             <TabItem Header="Releases">
                 <ScrollViewer>
                     <StackPanel>
-                        <DataGrid ItemsSource="{Binding MoviesPanelViewModel.SelectedMovie.MoviesReleasesLinks}"
+                        <DataGrid x:Name="mrLinkDataGrid" ItemsSource="{Binding MoviesPanelViewModel.SelectedMovie.MoviesReleasesLinks}"
           SelectedItem="{Binding SelectedItem}"
           AutoGenerateColumns="False">
 
@@ -34,6 +35,12 @@
                                 <DataGridTextColumn Header="IsFolder" Binding="{Binding IsFolder}" IsReadOnly="True"/>
                             </DataGrid.Columns>
 
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName = "SelectedCellsChanged">
+                                    <i:InvokeCommandAction Command = "{Binding MovieReleaseLinkSelectionChangedCommand, UpdateSourceTrigger=PropertyChanged}"
+     CommandParameter="{Binding ElementName=mrLinkDataGrid, Path=SelectedItem}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
                         </DataGrid>
 
                         <Button Content="Add" Command="{Binding AddMovieReleaseCommand}"/>
@@ -47,7 +54,7 @@
             <TabItem Header="Compilations">
                 <ScrollViewer>
                     <StackPanel>
-                        <DataGrid ItemsSource="{Binding SongwritersPanelViewModel.SelectedSongwriter.Compilations}"
+                        <DataGrid x:Name="cDataGrid" ItemsSource="{Binding SongwritersPanelViewModel.SelectedSongwriter.Compilations}"
           SelectedItem="{Binding SelectedDisc}"
           AutoGenerateColumns="False">
 
@@ -67,6 +74,12 @@
                                 <DataGridTextColumn Header="SongsCount" Binding="{Binding Songs.Count}" IsReadOnly="True"/>
                             </DataGrid.Columns>
 
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName = "SelectedCellsChanged">
+                                    <i:InvokeCommandAction Command = "{Binding CompilationSelectionChangedCommand, UpdateSourceTrigger=PropertyChanged}"
+     CommandParameter="{Binding ElementName=cDataGrid, Path=SelectedItem}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
                         </DataGrid>
 
                         <Button Content="Add" Command="{Binding AddCompilationCommand}"/>

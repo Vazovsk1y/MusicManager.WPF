@@ -81,7 +81,7 @@ internal partial class CompilationAddViewModel : DialogViewModel<CompilationAddW
 
     protected override bool CanAccept()
     {
-        return NullValidator.IsAllNotNull(SelectedSongwriter, SelectedDiscType);
+        return NullValidator.IsNotNull(SelectedSongwriter, SelectedDiscType);
     }
 
     protected override async void OnActivated()

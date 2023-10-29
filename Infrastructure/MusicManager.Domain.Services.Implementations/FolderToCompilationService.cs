@@ -1,6 +1,8 @@
-﻿using MusicManager.Domain.Enums;
+﻿using Microsoft.Extensions.Logging;
+using MusicManager.Domain.Enums;
 using MusicManager.Domain.Extensions;
 using MusicManager.Domain.Models;
+using MusicManager.Domain.Services.Storage;
 using MusicManager.Domain.Shared;
 using MusicManager.Domain.ValueObjects;
 using System.Collections.Concurrent;
@@ -15,29 +17,27 @@ public partial class FolderToCompilationService :
 
     private readonly ConcurrentDictionary<string, Compilation> _cache = new();
 
-    public FolderToCompilationService(IRoot userConfig) : base(userConfig)
+	#endregion
+
+	#region --Properties--
+
+
+
+	#endregion
+
+	#region --Constructors--
+
+	public FolderToCompilationService(IRoot userConfig, ILogger<FolderToCompilationService> logger) : base(userConfig, logger)
+	{
+	}
+
+	#endregion
+
+	#region --Methods--
+
+	public Task<Result<Compilation>> GetEntityAsync(string compilationPath, SongwriterId parentId)
     {
-    }
-
-    #endregion
-
-    #region --Properties--
-
-
-
-    #endregion
-
-    #region --Constructors--
-
-
-
-    #endregion
-
-    #region --Methods--
-
-    public Task<Result<Compilation>> GetEntityAsync(string compilationPath, SongwriterId parent)
-    {
-        var isAbleToMoveNextResult = IsAbleToMoveNext<DirectoryInfo>(compilationPath);
+        var isAbleToMoveNextResult = IsAbleToParse<DirectoryInfo>(compilationPath);
         if (isAbleToMoveNextResult.IsFailure)
         {
             return Task.FromResult(Result.Failure<Compilation>(isAbleToMoveNextResult.Error));
@@ -54,7 +54,7 @@ public partial class FolderToCompilationService :
             var entityJsonResult = GetEntityInfoFromJsonFile<CompilationEntityJson, Compilation>(fileInfo);
             if (entityJsonResult.IsSuccess)
             {
-                var entityResult = entityJsonResult.Value.ToEntity(parent, compilationPath.GetRelational(_root));
+                var entityResult = entityJsonResult.Value.ToEntity(parentId, compilationPath.GetRelational(_root));
                 if (entityResult.IsFailure)
                 {
                     Task.FromResult(Result.Failure<Compilation>(entityResult.Error));
@@ -69,7 +69,7 @@ public partial class FolderToCompilationService :
         }
 
         var compilationCreationResult = directoryInfo.Name.Contains(DiscType.Bootleg.Value) ?
-            CreateBootLeg(directoryInfo, parent) : CreateSimpleDisc(directoryInfo, parent);
+            CreateBootLeg(directoryInfo, parentId) : CreateSimpleDisc(directoryInfo, parentId);
 
         if (compilationCreationResult.IsSuccess)
         {
@@ -93,20 +93,20 @@ public partial class FolderToCompilationService :
 
     private Result<Compilation> CreateSimpleDisc(DirectoryInfo discDirectoryInfo, SongwriterId parent)
     {
-        var gettingComponentsResult = GetDiscComponentsFromDirectoryName(discDirectoryInfo.Name);
+        var gettingComponentsResult = GetDiscComponentsFromFolderName(discDirectoryInfo.Name);
 
         if (gettingComponentsResult.IsFailure)
         {
             return Result.Failure<Compilation>(gettingComponentsResult.Error);
         }
 
-        var (type, identificator, prodCountry, prodYear) = gettingComponentsResult.Value;
+        var (type, identifier, prodCountry, prodYear) = gettingComponentsResult.Value;
         if (prodCountry is null)
         {
             return Compilation.Create(
                 parent,
                 type,
-                identificator,
+                identifier,
                 discDirectoryInfo.FullName.GetRelational(_root)
                 );
         }
@@ -114,7 +114,7 @@ public partial class FolderToCompilationService :
         var creationDiscResult = Compilation.Create(
             parent,
             type,
-            identificator,
+            identifier,
             discDirectoryInfo.FullName.GetRelational(_root),
             prodYear,
             prodCountry);
