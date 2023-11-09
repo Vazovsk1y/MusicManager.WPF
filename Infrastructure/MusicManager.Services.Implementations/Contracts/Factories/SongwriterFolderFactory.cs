@@ -36,7 +36,7 @@ public class SongwriterFolderFactory : ISongwriterFolderFactory
         if (moviesResult.IsFailure)
         {
             return Result.Failure<SongwriterFolder>(moviesResult.Error);
-		}
+        }
 
         var compilationsResult = GetCompilationsFolders(compilationsDirectory);
         if (compilationsResult.IsFailure)
@@ -52,12 +52,12 @@ public class SongwriterFolderFactory : ISongwriterFolderFactory
 
     private Result<IReadOnlyCollection<MovieFolder>> GetMoviesFolders(DirectoryInfo? moviesDirectory)
     {
+        List<MovieFolder> moviesFolders = new();
         if (moviesDirectory is null)
         {
-            return Result.Failure<IReadOnlyCollection<MovieFolder>>(new($"Required \"{DomainServicesConstants.MOVIES_FOLDER_NAME}\" folder is not exists."));
+            return moviesFolders;
         }
 
-		List<MovieFolder> moviesFolders = new();
 		var moviesDirectories = moviesDirectory.EnumerateDirectories();
 		foreach (var movieFolder in moviesDirectories)
 		{
@@ -75,12 +75,12 @@ public class SongwriterFolderFactory : ISongwriterFolderFactory
 
 	private Result<IReadOnlyCollection<DiscFolder>> GetCompilationsFolders(DirectoryInfo? compilationsDirectory)
 	{
-		if (compilationsDirectory is null)
+        List<DiscFolder> compilationsFolders = new();
+        if (compilationsDirectory is null)
 		{
-			return Result.Failure<IReadOnlyCollection<DiscFolder>>(new($"Required \"{DomainServicesConstants.COMPILATIONS_FOLDER_NAME}\" folder is not exists."));
+            return compilationsFolders;
 		}
 
-		List<DiscFolder> compilationsFolders = new();
 		var compilationsDirectories = compilationsDirectory.EnumerateDirectories();
 		foreach (var compilationFolder in compilationsDirectories)
 		{
