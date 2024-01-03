@@ -25,6 +25,7 @@ internal partial class DiscsPanelViewModel :
     IRecipient<MovieReleaseCreatedMessage>
 {
     private const int DiscTypeMaxCount = 15;
+
     public SongwirtersPanelViewModel SongwritersPanelViewModel { get; }
 
     public MoviesPanelViewModel MoviesPanelViewModel { get; }

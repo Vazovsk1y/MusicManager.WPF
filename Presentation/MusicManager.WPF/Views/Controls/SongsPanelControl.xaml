@@ -14,6 +14,8 @@
 
                 <DataGrid ItemsSource="{Binding DiscsPanelViewModel.SelectedDisc.Songs}"
               SelectedItem="{Binding SelectedSong}"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
           AutoGenerateColumns="False">
 
                     <DataGrid.Columns>

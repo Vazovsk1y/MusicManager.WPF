@@ -14,7 +14,8 @@
             <StackPanel>
                 <DataGrid x:Name="dataGrid" ItemsSource="{Binding SongwritersPanelViewModel.SelectedSongwriter.Movies}"
           SelectedItem="{Binding SelectedMovie}"
-                          CanUserAddRows="False"
+                           CanUserAddRows="False"
+ CanUserDeleteRows="False"
           AutoGenerateColumns="False"
           >
 

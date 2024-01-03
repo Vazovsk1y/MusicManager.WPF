@@ -16,6 +16,8 @@
                     <StackPanel>
                         <DataGrid x:Name="mrLinkDataGrid" ItemsSource="{Binding MoviesPanelViewModel.SelectedMovie.MoviesReleasesLinks}"
           SelectedItem="{Binding SelectedItem}"
+          CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
           AutoGenerateColumns="False">
 
                             <DataGrid.Resources>
@@ -56,6 +58,8 @@
                     <StackPanel>
                         <DataGrid x:Name="cDataGrid" ItemsSource="{Binding SongwritersPanelViewModel.SelectedSongwriter.Compilations}"
           SelectedItem="{Binding SelectedDisc}"
+          CanUserAddRows="False"
+          CanUserDeleteRows="False"
           AutoGenerateColumns="False">
 
                             <DataGrid.Resources>
