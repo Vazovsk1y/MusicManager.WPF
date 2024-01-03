@@ -11,7 +11,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <TabControl>
-            <TabItem Header="Releases">
+            <TabItem Header="Релизы к фильму">
                 <ScrollViewer>
                     <StackPanel>
                         <DataGrid x:Name="mrLinkDataGrid" ItemsSource="{Binding MoviesPanelViewModel.SelectedMovie.MoviesReleasesLinks}"
@@ -23,16 +23,16 @@
                             </DataGrid.Resources>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="IsUpdatable" Binding="{Binding MovieRelease.UpdatableSign}" IsReadOnly="True"/>
+                                <DataGridTextColumn Binding="{Binding MovieRelease.UpdatableSign}" IsReadOnly="True"/>
 
-                                <DataGridComboBoxColumn Header="Type" 
+                                <DataGridComboBoxColumn Header="Тип" 
                                     ItemsSource="{Binding Source={StaticResource EnableDiscTypes}}" 
                                     SelectedItemBinding="{Binding MovieRelease.SelectedDiscType}" DisplayMemberPath="Value"/>
-                                <DataGridTextColumn Header="Country" Binding="{Binding  MovieRelease.ProductionCountry}"/>
-                                <DataGridTextColumn Header="Year" Binding="{Binding MovieRelease.ProductionYear}"/>
-                                <DataGridTextColumn Header="Identificator" Binding="{Binding MovieRelease.Identifier}"/>
-                                <DataGridTextColumn Header="SongsCount" Binding="{Binding MovieRelease.Songs.Count}"/>
-                                <DataGridTextColumn Header="IsFolder" Binding="{Binding IsFolder}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Страна выпуска" Binding="{Binding  MovieRelease.ProductionCountry}"/>
+                                <DataGridTextColumn Header="Год выпуска" Binding="{Binding MovieRelease.ProductionYear}"/>
+                                <DataGridTextColumn Header="Идентификатор" Binding="{Binding MovieRelease.Identifier}"/>
+                                <DataGridTextColumn Header="Кол-во композиций" Binding="{Binding MovieRelease.Songs.Count, Mode=OneWay}"/>
+                                <DataGridTextColumn Header="Является папкой" Binding="{Binding IsFolder}" IsReadOnly="True"/>
                             </DataGrid.Columns>
 
                             <i:Interaction.Triggers>
@@ -43,15 +43,15 @@
                             </i:Interaction.Triggers>
                         </DataGrid>
 
-                        <Button Content="Add" Command="{Binding AddMovieReleaseCommand}"/>
-                        <Button Content="Save" Command="{Binding SaveMoviesReleasesCommand}"/>
-                        <Button Content="Delete" Command="{Binding DeleteMovieReleaseCommand}"/>
-                        <Button Content="AddSong" Command="{Binding AddSongCommand}"/>
+                        <Button Content="Добавить" Command="{Binding AddMovieReleaseCommand}"/>
+                        <Button Content="Сохранить" Command="{Binding SaveMoviesReleasesCommand}"/>
+                        <Button Content="Удалить" Command="{Binding DeleteMovieReleaseCommand}"/>
+                        <Button Content="Добавить композицию\и" Command="{Binding AddSongCommand}"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
             
-            <TabItem Header="Compilations">
+            <TabItem Header="Компиляции">
                 <ScrollViewer>
                     <StackPanel>
                         <DataGrid x:Name="cDataGrid" ItemsSource="{Binding SongwritersPanelViewModel.SelectedSongwriter.Compilations}"
@@ -63,15 +63,15 @@
                             </DataGrid.Resources>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="IsUpdatable" Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
+                                <DataGridTextColumn Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
 
-                                <DataGridComboBoxColumn Header="Type" 
+                                <DataGridComboBoxColumn Header="Тип" 
                                     ItemsSource="{Binding Source={StaticResource EnableDiscTypes}}" 
                                     SelectedItemBinding="{Binding SelectedDiscType}" DisplayMemberPath="Value"/>
-                                <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry, Mode=TwoWay}"/>
-                                <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear, Mode=TwoWay}"/>
-                                <DataGridTextColumn Header="Identificator" Binding="{Binding Identifier, Mode=TwoWay}"/>
-                                <DataGridTextColumn Header="SongsCount" Binding="{Binding Songs.Count}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Страна выпуска" Binding="{Binding ProductionCountry, Mode=TwoWay}"/>
+                                <DataGridTextColumn Header="Год выпуска" Binding="{Binding ProductionYear, Mode=TwoWay}"/>
+                                <DataGridTextColumn Header="Идентификатор" Binding="{Binding Identifier, Mode=TwoWay}"/>
+                                <DataGridTextColumn Header="Кол-во композиций" Binding="{Binding Songs.Count, Mode=OneWay}" IsReadOnly="True"/>
                             </DataGrid.Columns>
 
                             <i:Interaction.Triggers>
@@ -82,10 +82,10 @@
                             </i:Interaction.Triggers>
                         </DataGrid>
 
-                        <Button Content="Add" Command="{Binding AddCompilationCommand}"/>
-                        <Button Content="Save" Command="{Binding SaveCompilationsCommand}"/>
-                        <Button Content="Delete" Command="{Binding DeleteCompilationCommand}"/>
-                        <Button Content="AddSong" Command="{Binding AddSongCommand}"/>
+                        <Button Content="Добавить" Command="{Binding AddCompilationCommand}"/>
+                        <Button Content="Сохранить" Command="{Binding SaveCompilationsCommand}"/>
+                        <Button Content="Удалить" Command="{Binding DeleteCompilationCommand}"/>
+                        <Button Content="Добавить композицию\и" Command="{Binding AddSongCommand}"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

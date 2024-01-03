@@ -17,20 +17,20 @@
           AutoGenerateColumns="False">
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="IsUpdatable" Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
+                        <DataGridTextColumn Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
 
-                        <DataGridTextColumn Header="Order" Binding="{Binding Number}"/>
-                        <DataGridTextColumn Header="DiscNumber" Binding="{Binding DiscNumber}" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="Title" Binding="{Binding Title}"/>
-                        <DataGridTextColumn Header="SongType" Binding="{Binding Type}" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="Duration" Binding="{Binding Duration}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Порядковый номер" Binding="{Binding Number}"/>
+                        <DataGridTextColumn Header="Номер диска" Binding="{Binding DiscNumber}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Название" Binding="{Binding Title}"/>
+                        <DataGridTextColumn Header="Тип" Binding="{Binding Type}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Длительность" Binding="{Binding Duration, StringFormat='{}{0:mm\\:ss}'}" IsReadOnly="True"/>
                     </DataGrid.Columns>
 
                 </DataGrid>
 
                 
-                <Button Content="Save" Command="{Binding SaveCommand}"/>
-                <Button Content="Delete" Command="{Binding DeleteSongCommand}"/>
+                <Button Content="Сохранить" Command="{Binding SaveCommand}"/>
+                <Button Content="Удалить" Command="{Binding DeleteSongCommand}"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>

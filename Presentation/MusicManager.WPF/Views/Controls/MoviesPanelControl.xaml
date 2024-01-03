@@ -23,12 +23,11 @@
                     </DataGrid.Resources>
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="IsUpdatable" Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="Title" Binding="{Binding Title, Mode=TwoWay}"/>
-                        <DataGridTextColumn Header="Year" Binding="{Binding ProductionYear, Mode=TwoWay}"/>
-                        <DataGridTextColumn Header="Country" Binding="{Binding ProductionCountry, Mode=TwoWay}"/>
-                        <DataGridTextColumn Header="Director" Binding="{Binding Director.FullName}" IsReadOnly="True"/>
-                        <DataGridComboBoxColumn Header="Swap director" 
+                        <DataGridTextColumn Binding="{Binding UpdatableSign}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Название" Binding="{Binding Title, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Год выпуска" Binding="{Binding ProductionYear, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Страна выпуска" Binding="{Binding ProductionCountry, Mode=TwoWay}"/>
+                        <DataGridComboBoxColumn Header="Сменить режисера" 
     ItemsSource="{Binding Source={StaticResource EnableDirectors}}" 
     SelectedItemBinding="{Binding Director}" DisplayMemberPath="FullName"/>
 
@@ -44,13 +43,17 @@
                     
                 </DataGrid>
 
-                <Button Content="AddMovie" Command="{Binding AddMovieCommand}"/>
-                <Button Content="AddMR" Command="{Binding AddMovieReleaseCommand}"/>
-                <Button Content="Save" Command="{Binding SaveCommand}"/>
-                <Button Content="Delete" Command="{Binding DeleteMovieCommand}"/>
+                <Button Content="Добавить" Command="{Binding AddMovieCommand}"/>
+                <Button Content="Создать ссылку на релиз" Command="{Binding AddMovieReleaseCommand}"/>
+                <Button Content="Сохранить" Command="{Binding SaveCommand}"/>
+                <Button Content="Удалить" Command="{Binding DeleteMovieCommand}"/>
 
-                <TextBox x:Name="directorFullName"/>
-                <Button Content="AddDirector" Command="{Binding AddDirectorCommand}" CommandParameter="{Binding Text, ElementName=directorFullName}"/>
+                <StackPanel Margin="0,40, 0, 0">
+                    <TextBlock Text="Полное имя режиссера: "/>
+                    <TextBox x:Name="directorFullName" FontSize="20" TextAlignment="Center"/>
+                    <Button Content="Добавить режиссера" Command="{Binding AddDirectorCommand}" CommandParameter="{Binding Text, ElementName=directorFullName}"/>
+                </StackPanel>
+                
             </StackPanel>
         </ScrollViewer>
     </Grid>

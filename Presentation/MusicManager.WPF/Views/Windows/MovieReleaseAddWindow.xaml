@@ -8,7 +8,7 @@
         xmlns:utils="clr-namespace:MusicManager.Utils;assembly=MusicManager.Utils"
         d:DataContext="{d:DesignInstance Type=entities:MovieReleaseAddViewModel}"
         mc:Ignorable="d"
-        Title="MovieReleaseAddWindow" Height="500" Width="400">
+        Title="Окно добавления релиза" Height="500" Width="400">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -20,43 +20,61 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <ComboBox ItemsSource="{Binding Movies}"
-                  Grid.Row="0"
-                  DisplayMemberPath="Title"
-                  SelectedItem="{Binding SelectedMovie}"
-                  />
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Доступные фильмы: "/>
+            <ComboBox ItemsSource="{Binding Movies}"
+          Grid.Row="0"
+          DisplayMemberPath="Title"
+          SelectedItem="{Binding SelectedMovie}"
+          />
+        </StackPanel>
 
-        <ListBox Grid.Row="1"
-                 ItemsSource="{Binding SelectedMovies}"
-                 >
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Movie.Title}"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="Выбранные фильмы (куда будет добавлен релиз): "/>
+            <ListBox Grid.Row="1"
+          ItemsSource="{Binding SelectedMovies}"
+          >
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Movie.Title}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="Тип диска:"/>
+            <ComboBox ItemsSource="{Binding DiscTypes, UpdateSourceTrigger=PropertyChanged}" 
+           Grid.Row="2"
+           DisplayMemberPath="Value"
+           SelectedItem="{Binding SelectedDiscType}"
+           />
+        </StackPanel>
+
+        <StackPanel Grid.Row="3">
+            <TextBlock Text="Год выпуска:"/>
+            <TextBox  Margin="0, 5, 5, 5"
+Grid.Row="3"
+                      TextAlignment="Center"
+                      FontSize="20"
+Text="{Binding SelectedYear, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
 
 
-        <ComboBox ItemsSource="{Binding DiscTypes, UpdateSourceTrigger=PropertyChanged}" 
-                  Grid.Row="2"
-                  DisplayMemberPath="Value"
-                  SelectedItem="{Binding SelectedDiscType}"
-                  />
-
-        <TextBox  Margin="15"
-    Grid.Row="3"
-    Text="{Binding SelectedYear, UpdateSourceTrigger=PropertyChanged}"
-    />
-
-        <ComboBox ItemsSource="{Binding Source={x:Static utils:CountryHelper.Countries}}" 
+        <StackPanel Grid.Row="4">
+            <TextBlock Text="Страна выпуска:"/>
+            <ComboBox ItemsSource="{Binding Source={x:Static utils:CountryHelper.Countries}}" 
                   Grid.Row="4"
                   SelectedItem="{Binding SelectedCountry}"
                   />
+        </StackPanel>
 
-        <StackPanel Grid.Row="5" Margin="10">
-            <TextBlock Text="Индетификатор диска: "/>
+
+        <StackPanel Grid.Row="5">
+            <TextBlock Text="Идентификатор релиза: "/>
             <TextBox FontFamily="Century Gothic"
                      FontSize="20"
+                     Margin="0, 5, 5, 5"
                      TextAlignment="Center"
                      Text="{Binding Identifier, UpdateSourceTrigger=PropertyChanged}"
                      />

@@ -57,7 +57,7 @@ internal partial class MovieViewModel :
 
     public bool IsReleasesLinksLoaded { get; set; }
 
-    public void SetCurrentAsPrevious()
+    public void SaveState()
     {
         PreviousState = (MovieViewModel)MemberwiseClone();
         OnPropertyChanged(nameof(IsModified));

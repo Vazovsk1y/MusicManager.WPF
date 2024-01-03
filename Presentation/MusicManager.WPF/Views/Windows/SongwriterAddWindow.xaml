@@ -7,7 +7,7 @@
         xmlns:entities="clr-namespace:MusicManager.WPF.ViewModels.Entities" 
         d:DataContext="{d:DesignInstance Type=entities:SongwriterAddViewModel}"
         mc:Ignorable="d"
-        Title="SongwriterAddWindow" Height="400" Width="400">
+        Title="Окно добавления композитора" Height="400" Width="400">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -29,7 +29,7 @@
         </GroupBox>
 
         <StackPanel Grid.Row="2" Margin="10">
-            <TextBlock Text="Last name: "/>
+            <TextBlock Text="Фамилия (второе имя): "/>
             <TextBox FontFamily="Century Gothic"
                      FontSize="20"
                      TextAlignment="Center"
@@ -38,8 +38,8 @@
         </StackPanel>
 
         <StackPanel Grid.Row="1" Margin="10">
-            <TextBlock Text="Name: "/>
-            <TextBox FontFamily="Century Gothic"
+            <TextBlock Text="Имя: "/>
+            <TextBox FontFamily="Century"
                      FontSize="20"
                      TextAlignment="Center"
                      Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"

@@ -8,7 +8,7 @@
         xmlns:utils="clr-namespace:MusicManager.Utils;assembly=MusicManager.Utils"
         d:DataContext="{d:DesignInstance Type=entities:CompilationAddViewModel}"
         mc:Ignorable="d"
-        Title="CompilationAddWindow" Height="400" Width="400">
+        Title="Окно добавления компиляции" Height="400" Width="400">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -28,31 +28,44 @@
             </DockPanel>
         </GroupBox>
 
-        <ComboBox ItemsSource="{Binding DiscTypes, UpdateSourceTrigger=PropertyChanged}" 
-                  Grid.Row="0"
-                  DisplayMemberPath="Value"
-                  SelectedItem="{Binding SelectedDiscType}"
-                  />
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="Тип диска:"/>
+            <ComboBox ItemsSource="{Binding DiscTypes, UpdateSourceTrigger=PropertyChanged}" 
+    Grid.Row="2"
+    DisplayMemberPath="Value"
+    SelectedItem="{Binding SelectedDiscType}"
+    />
+        </StackPanel>
 
-        <TextBox  Margin="15"
-           Grid.Row="1"
-           Text="{Binding SelectedYear, UpdateSourceTrigger=PropertyChanged}"
-           />
+        <StackPanel Grid.Row="3">
+            <TextBlock Text="Год выпуска:"/>
+            <TextBox  Margin="0, 5, 5, 5"
+Grid.Row="3"
+                      TextAlignment="Center"
+                      FontSize="20"
+Text="{Binding SelectedYear, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
 
-        <ComboBox ItemsSource="{Binding Source={x:Static utils:CountryHelper.Countries}}" 
-                  Grid.Row="2"
-                  SelectedItem="{Binding SelectedCountry}"
-                  />
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="Страна выпуска:"/>
+            <ComboBox ItemsSource="{Binding Source={x:Static utils:CountryHelper.Countries}}" 
+            SelectedItem="{Binding SelectedCountry}"
+            />
+        </StackPanel>
 
-        <ComboBox ItemsSource="{Binding Songwriters}" 
-                  Grid.Row="3"
-                  DisplayMemberPath="FullName"
-                  SelectedItem="{Binding SelectedSongwriter}"
-                  />
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Композитор: "/>
+            <ComboBox ItemsSource="{Binding Songwriters}" 
+          DisplayMemberPath="FullName"
+          SelectedItem="{Binding SelectedSongwriter}"
+          />
+        </StackPanel>
+        
 
-        <StackPanel Grid.Row="4" Margin="10">
-            <TextBlock Text="Индетификатор диска: "/>
+        <StackPanel Grid.Row="4">
+            <TextBlock Text="Идентификатор компиляции: "/>
             <TextBox FontFamily="Century Gothic"
+                     Margin="0, 5, 5, 5"
                      FontSize="20"
                      TextAlignment="Center"
                      Text="{Binding Identifier, UpdateSourceTrigger=PropertyChanged}"

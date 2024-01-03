@@ -7,8 +7,8 @@ using MusicManager.Services.Contracts;
 using MusicManager.Services.Contracts.Dtos;
 using MusicManager.Services.Contracts.Factories;
 using MusicManager.Utils;
-using MusicManager.WPF.Messages;
 using MusicManager.WPF.Infrastructure;
+using MusicManager.WPF.Messages;
 using MusicManager.WPF.ViewModels.Entities;
 using MusicManager.WPF.Views.Windows;
 using System.Collections.Generic;
@@ -17,7 +17,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace MusicManager.WPF.ViewModels;
 
@@ -52,7 +51,9 @@ internal partial class SongwirtersPanelViewModel :
         _settingsViewModel = settingsViewModel;
     }
 
-    [ObservableProperty]
+
+
+	[ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DeleteSongwriterCommand))]
     private SongwriterViewModel? _selectedSongwriter;
 
@@ -141,20 +142,6 @@ internal partial class SongwirtersPanelViewModel :
 
     #endregion
 
-    protected override async void OnActivated()
-    {
-        base.OnActivated(); // register messages handlers
-
-        using var scope = _serviceScopeFactory.CreateScope();
-        var songwriterService = scope.ServiceProvider.GetRequiredService<ISongwriterService>();
-
-		var result = await songwriterService.GetAllAsync();
-		if (result.IsSuccess)
-		{
-			Songwriters.AddRange(result.Value.Select(e => e.ToViewModel()));
-		}
-	}
-
 	[RelayCommand]
 	private async Task SelectionChanged(SongwriterViewModel songwriter)
 	{
@@ -174,7 +161,7 @@ internal partial class SongwirtersPanelViewModel :
 				{
 					songwriter.Movies = new(moviesResult.Value.Select(e => e.ToViewModel()));
 					songwriter.IsMoviesLoaded = true;
-				});
+                });
 			}
 		}
 
@@ -200,5 +187,19 @@ internal partial class SongwirtersPanelViewModel :
             Songwriters.Add(message.SongwriterViewModel);
         });
     }
+
+	protected override async void OnActivated()
+	{
+		base.OnActivated(); // register messages handlers
+
+		using var scope = _serviceScopeFactory.CreateScope();
+		var songwriterService = scope.ServiceProvider.GetRequiredService<ISongwriterService>();
+
+		var result = await songwriterService.GetAllAsync();
+		if (result.IsSuccess)
+		{
+			Songwriters.AddRange(result.Value.Select(e => e.ToViewModel()));
+		}
+	}
 }
 

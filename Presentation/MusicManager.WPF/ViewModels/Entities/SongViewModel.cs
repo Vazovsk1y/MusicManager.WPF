@@ -57,7 +57,7 @@ internal partial class SongViewModel :
         Number = PreviousState.Number;
     }
 
-    public void SetCurrentAsPrevious()
+    public void SaveState()
     {
         PreviousState = (SongViewModel)MemberwiseClone();
         OnPropertyChanged(nameof(IsModified));

@@ -17,6 +17,7 @@ public static class CountryHelper
     static CountryHelper()
     {
         Initialize();
+        _countriesNames = _countriesNames.Order().ToList();
     }
 
     private static void Initialize()

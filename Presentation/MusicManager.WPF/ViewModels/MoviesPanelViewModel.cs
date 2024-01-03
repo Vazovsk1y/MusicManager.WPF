@@ -32,9 +32,9 @@ internal partial class MoviesPanelViewModel :
     private readonly IUserDialogService<MovieAddWindow> _movieAddDialogService;
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public ObservableCollection<DirectorViewModel> EnableDirectors { get; } = new ObservableCollection<DirectorViewModel>();
+	public ObservableCollection<DirectorViewModel> EnableDirectors { get; } = new ObservableCollection<DirectorViewModel>();
 
-    public MoviesPanelViewModel()
+	public MoviesPanelViewModel()
     {
         InvalidOperationExceptionHelper.ThrowIfTrue(!App.IsInDesignMode, "Parametrless ctor is only for design time.");
     }
@@ -106,45 +106,38 @@ internal partial class MoviesPanelViewModel :
         {
             MessageBoxHelper.ShowErrorBox(lookupsResult.Error.Message);
         }
-
-		
-
-        //var movieReleasesToSelectFrom = Movies
-        //    .SelectMany(e => e.MoviesReleasesLinks.Select(e => e.MovieRelease))
-        //    .DistinctBy(e => e.DiscId)
-        //    .Where(e => !SelectedMovie!.MoviesReleasesLinks.Select(e => e.MovieRelease).Contains(e));
     }
 
 	[RelayCommand]
     private async Task Save()
     {
-        if (SaveCommand.IsRunning)
+		var moviesToUpdate = Movies.Where(e => e.IsModified).ToList();
+		if (SaveCommand.IsRunning || moviesToUpdate.Count == 0)
         {
             return;
         }
 
         using var scope = _serviceScopeFactory.CreateScope();
         var movieService = scope.ServiceProvider.GetRequiredService<IMovieService>();
-        var moviesToUpdate = Movies.Where(e => e.IsModified);
 
         var results = new List<Result>();
-        foreach (var item in moviesToUpdate)
+        foreach (var movie in moviesToUpdate)
         {
             var dto = new MovieUpdateDTO(
-                item.MovieId,
-                item.Title,
-                item.ProductionCountry,
-                item.ProductionYear,
-                item.Director?.Id);
+                movie.MovieId,
+                movie.Title,
+                movie.ProductionCountry,
+                movie.ProductionYear,
+                movie.Director?.Id);
 
             var updateResult = await movieService.UpdateAsync(dto);
             if (updateResult.IsFailure)
             {
-                item.RollBackChanges();
+                movie.RollBackChanges();
             }
             else
             {
-                item.SetCurrentAsPrevious();
+                movie.SaveState();
             }
 
             results.Add(updateResult);
@@ -175,12 +168,13 @@ internal partial class MoviesPanelViewModel :
         {
             await App.Current.Dispatcher.InvokeAsync(() =>
             {
-                EnableDirectors.Add(new DirectorViewModel
+				EnableDirectors.Add(new DirectorViewModel
                 {
                     Id = result.Value,
                     FullName = fullName,
                 });
             });
+            MessageBoxHelper.ShowInfoBox("Succes.");
         }
         else
         {
@@ -267,6 +261,8 @@ internal partial class MoviesPanelViewModel :
 				{
 					SelectedMovie.MoviesReleasesLinks.Add(new MovieReleaseLinkViewModel { MovieRelease = viewModel, IsFolder = false });
 				}
+
+				SelectedMovie.MoviesReleasesLinks = new(SelectedMovie.MoviesReleasesLinks.OrderBy(e => e.MovieRelease.ProductionYear));
 			});
 		}
 		else
@@ -285,23 +281,23 @@ internal partial class MoviesPanelViewModel :
 
             if (songwriter is not null)
             {
-                message.MovieViewModel.SetCurrentAsPrevious();
+                message.MovieViewModel.SaveState();
                 songwriter.Movies.Add(message.MovieViewModel);
+                songwriter.Movies = new(songwriter.Movies.OrderBy(e => e.Title));
             }
         });
     }
 
-    protected override async void OnActivated()
-    {
-        base.OnActivated();
+	protected override async void OnActivated()
+	{
+		base.OnActivated();
 
-        using var scope = _serviceScopeFactory.CreateScope();
-        var service = scope.ServiceProvider.GetRequiredService<IDirectorService>();
-        var result = await service.GetAllAsync();
-
-        if (result.IsSuccess)
-        {
-            EnableDirectors.AddRange(result.Value.Select(e => e.ToViewModel()));
-        }
-    }
+		using var scope = _serviceScopeFactory.CreateScope();
+		var service = scope.ServiceProvider.GetRequiredService<IDirectorService>();
+		var result = await service.GetAllAsync();
+		if (result.IsSuccess)
+		{
+			EnableDirectors.AddRange(result.Value.Select(e => e.ToViewModel()));
+		}
+	}
 }

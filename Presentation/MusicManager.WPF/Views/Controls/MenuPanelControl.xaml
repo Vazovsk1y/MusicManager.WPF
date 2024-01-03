@@ -10,11 +10,11 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <Menu>
-            <MenuItem Header="Settings">
+            <MenuItem Header="Настройки">
                 <TextBlock Text="{Binding RootPath}"/>
-                <Button Content="Select root" Command="{Binding SelectRootCommand}"/>
-                <CheckBox Content="CreateAssociatedFolder" IsChecked="{Binding CreateAssociatedFolder}"/>
-                <Button Content="Save" Command="{Binding SaveCommand}"/>
+                <Button Content="Сменить корневой путь" Command="{Binding SelectRootCommand}"/>
+                <CheckBox Content="Воспроизводить файловую структуру" IsChecked="{Binding CreateAssociatedFolder}"/>
+                <Button Content="Сохранить" Command="{Binding SaveCommand}"/>
             </MenuItem>
         </Menu>
     </Grid>

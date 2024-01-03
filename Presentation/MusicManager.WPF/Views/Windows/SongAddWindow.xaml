@@ -7,7 +7,7 @@
         xmlns:entities="clr-namespace:MusicManager.WPF.ViewModels.Entities" 
         d:DataContext="{d:DesignInstance Type=entities:SongAddViewModel}"
         mc:Ignorable="d"
-        Title="SongAddWindow" Height="400" Width="400">
+        Title="Окно добавления композиции" Height="400" Width="400">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -27,15 +27,19 @@
             </DockPanel>
         </GroupBox>
 
-        <TextBlock Text="{Binding SelectedDisc.Identifier,StringFormat='Selected disc: {0}'}"
+        <TextBlock Text="{Binding SelectedDisc.Identifier,StringFormat='Куда будет добавлена композиция: {0}'}"
                   Grid.Row="0"
                   />
 
-        <ComboBox ItemsSource="{Binding DiscNumbers, UpdateSourceTrigger=PropertyChanged}" 
-                  Grid.Row="3"
-                  DisplayMemberPath="Value"
-                  SelectedItem="{Binding SelectedDiscNumber}"
-                  />
+        <StackPanel Grid.Row="3">
+            <TextBlock Text="Номер диска: "/>
+            <ComboBox ItemsSource="{Binding DiscNumbers, UpdateSourceTrigger=PropertyChanged}" 
+            Grid.Row="3"
+            DisplayMemberPath="Value"
+            SelectedItem="{Binding SelectedDiscNumber}"
+            />
+        </StackPanel>
+      
 
         <TextBlock Grid.Row="2"
             Text="{Binding SelectedSongPath.FullName}"/>
@@ -43,10 +47,10 @@
         <StackPanel Grid.Row="1"
                     Orientation="Vertical">
             <CheckBox 
-                  Content="From cue?"
+                  Content="Добавить как cue файл"
                  IsChecked="{Binding IsFromCue}"/>
 
-            <Button Content="Select" Command="{Binding SelectPathCommand}"/>
+            <Button Content="Выбрать путь к композиции" Command="{Binding SelectPathCommand}"/>
         </StackPanel>
        
     </Grid>

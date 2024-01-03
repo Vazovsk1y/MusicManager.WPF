@@ -13,7 +13,7 @@
              d:DesignHeight="150" d:DesignWidth="800">
     <Grid>
         <StackPanel>
-            <Button Command="{Binding AddSongwriterFromFolderCommand}" Content="AddFromFolder"/>
+            <Button Command="{Binding AddSongwriterFromFolderCommand}" Content="Считать структуру"/>
             <ComboBox x:Name="cm" ItemsSource="{Binding Songwriters}" SelectedItem="{Binding SelectedSongwriter}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type viewmodelsEnt:SongwriterViewModel}">
@@ -29,8 +29,8 @@
                 </i:Interaction.Triggers>
                 
             </ComboBox>
-            <Button Content="Add" Command="{Binding AddSongwriterCommand}"/>
-            <Button Content="Delete" Command="{Binding DeleteSongwriterCommand}"/>
+            <Button Content="Добавить" Command="{Binding AddSongwriterCommand}"/>
+            <Button Content="Удалить" Command="{Binding DeleteSongwriterCommand}"/>
         </StackPanel>
     </Grid>
 </UserControl>

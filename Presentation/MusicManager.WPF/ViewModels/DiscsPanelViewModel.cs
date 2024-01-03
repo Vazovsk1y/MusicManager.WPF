@@ -198,35 +198,34 @@ internal partial class DiscsPanelViewModel :
 	[RelayCommand]
     private async Task SaveCompilations()
     {
-        if (SaveCompilationsCommand.IsRunning)
+		var compilationsToUpdate = Compilations.Where(e => e.IsModified).ToList();
+		if (SaveCompilationsCommand.IsRunning || compilationsToUpdate.Count == 0)
         {
             return;
         }
 
         using var scope = _serviceScopeFactory.CreateScope();
         var compilationService = scope.ServiceProvider.GetRequiredService<ICompilationService>();
-        var compilationsToUpdate = Compilations.Where(e => e.IsModified);
-
         var results = new List<Result>();
-        foreach (var item in compilationsToUpdate)
+        foreach (var compilation in compilationsToUpdate)
         {
             var dto = new CompilationUpdateDTO
             (
-                item.DiscId,
-                item.Identifier,
-                item.ProductionCountry,
-                item.ProductionYear,
-                item.SelectedDiscType
+                compilation.DiscId,
+                compilation.Identifier,
+                compilation.ProductionCountry,
+                compilation.ProductionYear,
+                compilation.SelectedDiscType
             );
 
             var updateResult = await compilationService.UpdateAsync(dto);
             if (updateResult.IsFailure)
             {
-                item.RollBackChanges();
+                compilation.RollBackChanges();
             }
             else
             {
-                item.SetCurrentAsPrevious();
+                compilation.SaveState();
             }
 
             results.Add(updateResult);
@@ -245,35 +244,35 @@ internal partial class DiscsPanelViewModel :
     [RelayCommand]
     private async Task SaveMoviesReleases()
     {
-        if (SaveMoviesReleasesCommand.IsRunning)
+		var moviesReleasesToUpdate = MovieReleases.Where(e => e.IsModified).ToList();
+		if (SaveMoviesReleasesCommand.IsRunning || moviesReleasesToUpdate.Count == 0)
         {
             return;
         }
 
         using var scope = _serviceScopeFactory.CreateScope();
         var movieReleaseService = scope.ServiceProvider.GetRequiredService<IMovieReleaseService>();
-        var moviesReleasesToUpdate = MovieReleases.Where(e => e.IsModified);
 
         var results = new List<Result>();
-        foreach (var item in moviesReleasesToUpdate)
+        foreach (var release in moviesReleasesToUpdate)
         {
             var dto = new MovieReleaseUpdateDTO
             (
-                item.DiscId,
-                item.Identifier,
-                item.ProductionCountry,
-                item.ProductionYear,
-                item.SelectedDiscType
+                release.DiscId,
+                release.Identifier,
+                release.ProductionCountry,
+                release.ProductionYear,
+                release.SelectedDiscType
             );
 
             var updateResult = await movieReleaseService.UpdateAsync(dto);
             if (updateResult.IsFailure)
             {
-                item.RollBackChanges();
+                release.RollBackChanges();
             }
             else
             {
-                item.SetCurrentAsPrevious();
+                release.SaveState();
             }
 
             results.Add(updateResult);
@@ -310,10 +309,25 @@ internal partial class DiscsPanelViewModel :
             if (songwriter is not null)
             {
                 songwriter.Compilations.Add(message.CompilationViewModel);
-                message.CompilationViewModel.SetCurrentAsPrevious();
+                message.CompilationViewModel.SaveState();
+                songwriter.Compilations = new(songwriter.Compilations.OrderBy(e => e.ProductionYear));
             }
         });
     }
+
+	public async void Receive(MovieReleaseCreatedMessage message)
+	{
+		await App.Current.Dispatcher.InvokeAsync(() =>
+		{
+			foreach (var movieLink in message.MoviesLinks)
+			{
+				var movie = MoviesPanelViewModel.Movies.FirstOrDefault(e => movieLink.MovieId == e.MovieId);
+				movie!.MoviesReleasesLinks.Add(new MovieReleaseLinkViewModel { MovieRelease = message.MovieReleaseViewModel, IsFolder = movieLink.AddReleaseAsFolder });
+				message.MovieReleaseViewModel.SaveState();
+                movie.MoviesReleasesLinks = new(movie.MoviesReleasesLinks.OrderBy(e => e.MovieRelease.ProductionYear));
+			}
+		});
+	}
 
 	[RelayCommand]
 	private async Task MovieReleaseLinkSelectionChanged(MovieReleaseLinkViewModel movieReleaseLink)
@@ -332,7 +346,7 @@ internal partial class DiscsPanelViewModel :
 			{
 				await Application.Current.Dispatcher.InvokeAsync(() =>
 				{
-					movieReleaseLink.MovieRelease.Songs = new(songsResult.Value.Select(e => e.ToViewModel()));
+					movieReleaseLink.MovieRelease.Songs.AddRange(songsResult.Value.Select(e => e.ToViewModel()));
 					movieReleaseLink.MovieRelease.IsSongsLoaded = true;
 				});
 			}
@@ -356,23 +370,10 @@ internal partial class DiscsPanelViewModel :
 			{
 				await Application.Current.Dispatcher.InvokeAsync(() =>
 				{
-					compilation.Songs = new(songsResult.Value.Select(e => e.ToViewModel()));
+					compilation.Songs.AddRange(songsResult.Value.Select(e => e.ToViewModel()));
 					compilation.IsSongsLoaded = true;
 				});
 			}
 		}
 	}
-
-	public async void Receive(MovieReleaseCreatedMessage message)
-    {
-        await App.Current.Dispatcher.InvokeAsync(() =>
-        {
-            foreach (var movieLink in message.MoviesLinks)
-            {
-                var movie = MoviesPanelViewModel.Movies.FirstOrDefault(e => movieLink.MovieId == e.MovieId);
-                movie?.MoviesReleasesLinks.Add(new MovieReleaseLinkViewModel { MovieRelease = message.MovieReleaseViewModel, IsFolder = movieLink.AddReleaseAsFolder });
-                message.MovieReleaseViewModel.SetCurrentAsPrevious();
-            }
-        });
-    }
 }

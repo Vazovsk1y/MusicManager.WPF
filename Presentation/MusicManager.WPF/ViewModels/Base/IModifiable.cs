@@ -8,5 +8,5 @@ public interface IModifiable<T> where T : IModifiable<T>
 
     void RollBackChanges();
 
-    void SetCurrentAsPrevious();
+    void SaveState();
 }

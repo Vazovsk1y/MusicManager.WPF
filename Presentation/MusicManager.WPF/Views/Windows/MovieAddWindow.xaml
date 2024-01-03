@@ -8,7 +8,7 @@
         xmlns:utils="clr-namespace:MusicManager.Utils;assembly=MusicManager.Utils"
         d:DataContext="{d:DesignInstance Type=entities:MovieAddViewModel}"
         mc:Ignorable="d"
-        Title="MovieAddWindow" Height="450" Width="400">
+        Title="Окно добавления фильма" Height="450" Width="400">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -28,28 +28,44 @@
             </DockPanel>
         </GroupBox>
 
-        <TextBox  Margin="30"
-                  Grid.Row="1"
-                  Text="{Binding SelectedYear, UpdateSourceTrigger=PropertyChanged}"
-                  />
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Композитор:"/>
+            <ComboBox ItemsSource="{Binding Songwriters}" 
+          DisplayMemberPath="FullName"
+          SelectedItem="{Binding SelectedSongwriter}"
+          />
+        </StackPanel>
 
-        <ComboBox ItemsSource="{Binding Source={x:Static utils:CountryHelper.Countries}}" 
-                  Grid.Row="2"
-                  SelectedItem="{Binding SelectedCountry}"
-                  />
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="Год выпуска:"/>
+            <TextBox  Margin="0, 5, 5, 5"
+                      FontSize="20"
+                      TextAlignment="Center"
+           Grid.Row="1"
+           Text="{Binding SelectedYear, UpdateSourceTrigger=PropertyChanged}"
+           />
+        </StackPanel>
 
-        <StackPanel Grid.Row="3" Margin="10">
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="Страна выпуска: "/>
+            <ComboBox ItemsSource="{Binding Source={x:Static utils:CountryHelper.Countries}}" 
+          Grid.Row="2"
+          SelectedItem="{Binding SelectedCountry}"
+          />
+        </StackPanel>
+
+        
+
+        <StackPanel Grid.Row="3">
             <TextBlock Text="Название фильма: "/>
             <TextBox FontFamily="Century Gothic"
+                     Margin="0, 5, 5, 5"
                      FontSize="20"
                      TextAlignment="Center"
                      Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
                      />
         </StackPanel>
 
-        <ComboBox ItemsSource="{Binding Songwriters}" 
-                  DisplayMemberPath="FullName"
-                  SelectedItem="{Binding SelectedSongwriter}"
-                  />
+        
     </Grid>
 </Window>

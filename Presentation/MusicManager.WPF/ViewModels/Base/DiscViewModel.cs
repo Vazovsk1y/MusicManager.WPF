@@ -10,8 +10,6 @@ internal partial class DiscViewModel<T> :
     IDiscViewModel,
     IModifiable<T> where T : DiscViewModel<T>
 {
-    private ObservableCollection<SongViewModel>? _songs;
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsModified))]
     [NotifyPropertyChangedFor(nameof(UpdatableSign))]
@@ -34,11 +32,8 @@ internal partial class DiscViewModel<T> :
 
     public required DiscId DiscId { get; init; }
 
-    public ObservableCollection<SongViewModel> Songs
-    {
-        get => _songs ??= new();
-        set => SetProperty(ref _songs, value);
-    }
+    [ObservableProperty]
+    private ObservableCollection<SongViewModel> _songs = new();
 
     public bool IsSongsLoaded { get; set; }
 
@@ -65,7 +60,7 @@ internal partial class DiscViewModel<T> :
         SelectedDiscType = PreviousState.SelectedDiscType;
     }
 
-    public virtual void SetCurrentAsPrevious()
+    public virtual void SaveState()
     {
         PreviousState = (T)MemberwiseClone();
         OnPropertyChanged(nameof(IsModified));

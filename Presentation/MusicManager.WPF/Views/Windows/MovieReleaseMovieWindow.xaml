@@ -10,10 +10,11 @@
         Title="TestWindow" Height="400" Width="400">
     <Grid>
         <StackPanel>
+            <TextBlock Text="Создать ссылку на: "/>
             <ComboBox ItemsSource="{Binding MoviesReleasesToSelectFrom}"
                       SelectedItem="{Binding SelectedMovieRelease}"
                       DisplayMemberPath="Identifier"/>
-            <Button Content="Ok" Command="{Binding AcceptCommand}"/>
+            <Button Content="Ок" Command="{Binding AcceptCommand}"/>
         </StackPanel>
     </Grid>
 </Window>

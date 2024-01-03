@@ -56,31 +56,31 @@ internal partial class SongsPanelViewModel :
     [RelayCommand]
     private async Task Save()
     {
-        if (SaveCommand.IsRunning)
+		var songsToUpdate = Songs.Where(e => e.IsModified).ToList();
+		if (SaveCommand.IsRunning || songsToUpdate.Count == 0)
         {
             return;
         }
 
         using var scope = _serviceScopeFactory.CreateScope();
         var songService = scope.ServiceProvider.GetRequiredService<ISongService>();
-        var songsToUpdate = Songs.Where(e => e.IsModified);
 
         var results = new List<Result>();
-        foreach (var item in songsToUpdate)
+        foreach (var song in songsToUpdate)
         {
             var dto = new SongUpdateDTO(
-                item.SongId,
-                item.Title,
-                item.Number);
+                song.SongId,
+                song.Title,
+                song.Number);
 
             var updateResult = await songService.UpdateAsync(dto);
             if (updateResult.IsFailure)
             {
-                item.RollBackChanges();
+                song.RollBackChanges();
             }
             else
             {
-                item.SetCurrentAsPrevious();
+                song.SaveState();
             }
 
             results.Add(updateResult);
@@ -131,9 +131,10 @@ internal partial class SongsPanelViewModel :
             var disc = DiscsPanelViewModel.Discs.FirstOrDefault(e => e.DiscId == message.DiscId);
             foreach (var song in message.SongsViewsModels)
             {
-                song.SetCurrentAsPrevious();
+                song.SaveState();
             }
-            disc?.Songs.AddRange(message.SongsViewsModels);
+            disc!.Songs.AddRange(message.SongsViewsModels);
+            disc.Songs = new(disc.Songs.OrderBy(e => e.Title));
         });
     }
 }

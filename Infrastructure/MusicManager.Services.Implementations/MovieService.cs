@@ -110,6 +110,7 @@ public class MovieService : IMovieService
     {
         var result = await _dbContext.Movies
             .AsNoTracking()
+            .Include(e => e.Director)
             .Where(e => e.SongwriterId == parentId)
             .Select(e => e.ToDTO())
             .ToListAsync(cancellation);

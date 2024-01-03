@@ -28,7 +28,7 @@ internal static class Mapper
             Title = movieDTO.Title,
         };
 
-        entity.SetCurrentAsPrevious();
+        entity.SaveState();
         return entity;
     }
 
@@ -45,7 +45,7 @@ internal static class Mapper
             FullName = directorDTO.FullName,
         };
 
-        entity.SetCurrentAsPrevious();
+        entity.SaveState();
         return entity;
     }
 
@@ -61,7 +61,7 @@ internal static class Mapper
             SelectedDiscType = compilationDTO.DiscType,
         };
 
-        entity.SetCurrentAsPrevious();
+        entity.SaveState();
         return entity;
     }
 
@@ -76,7 +76,7 @@ internal static class Mapper
             SelectedDiscType = movieReleaseLink.DiscType,
         };
 
-        entity.SetCurrentAsPrevious();
+        entity.SaveState();
         return entity;
     }
 
@@ -93,7 +93,7 @@ internal static class Mapper
             Duration = songDTO.Duration,
         };
 
-        entity.SetCurrentAsPrevious();
+        entity.SaveState();
         return entity;
     }
 }
